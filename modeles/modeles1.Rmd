@@ -1,0 +1,276 @@
+---
+title: |
+    | Fiche de modélisations n°1
+subtitle : "Sélection automatique de modèles prédictifs sur la pauvreté subjective"
+author: |
+    | Kim Antunez
+automaticcontents: true
+output:
+  bookdown::pdf_document2:
+        toc: false
+        toc_depth: 2
+        number_sections: true
+        fig_caption: true
+        highlight: default
+        keep_tex: no
+        includes:
+          in_header: preamble.tex
+themeoptions: "coding=utf8,language=french"
+classoption: 'french'
+fontsize: 11pt
+geometry: margin=0.90in
+lang: "french"
+documentclass: "article"
+---
+
+# Objectif
+
+L'objectif de cette première série de modèles est de détecter les variables de l'enquête du Baromètre d'opinion de la DREES qui permettent le mieux de prédire la **pauvreté subjective**.
+
+Cette partie n'a **aucune visée explicative**. L'objectif est ici **purement prédictif**, dans un but de statistiques descriptives / défrichement de terrain, pour permettre de déceler une première série de variables particulièrement liées à la pauvreté subjective. Les modèles qui suivront permettront certainement d'aller beaucoup plus en profondeur dans l'analyse des véritables **déterminants de la pauvreté subjective**. 
+
+# Analyses
+
+\begin{tcolorbox}
+Le principal facteur qui explique la pauvreté subjective est lui-même subjectif, il s’agit de trouver que sa situation actuelle est assez mauvaise. Vient ensuite le facteur institutionnel de disposer d’une allocation logement puis la pauvreté monétaire. Puis, le fait de ne pas vivre en couple (situation d’isolement social), d’être locataire (facteur important de précarité sociale), d’être au RSA (autre facteur institutionnel en plus des APL). Ce n’est qu’ensuite que les facteurs de précarité sur le marché du travail entrent en compte : celui de ne pas exercer d’activité professionnelle, d’occuper certaines PCS particulières (ouvrier) ou qu’elles soient occupées par la personne référente du ménage. 
+
+\bigskip
+
+Dans une moindre mesure, d’autres facteurs subjectifs entrent ensuite en compte et sont des indices d’une forte insécurité sociale : une forte préoccupation concernant la thématique du logement, de la pauvreté, du pouvoir d’achat et du niveau des retraites (mais pas des crises financières et de la dette, sujets de préoccupations attribués aux riches), le fait de ne pas être couvert par une mutuelle (indicateur cette fois-ci objectif) ou de ne pas se sentir prêts à épargner en vu d’une situation de dépendance ou de la retraite (pour soi ou ses proches). Les personnes qui se sentent pauvres adhèrent aussi plus généralement au stéréotype de genre de la femme au foyer, votent plus souvent à l’extrême-gauche, se sentent insatisfaits du système de protection sociale, en particulier le système de soin, et ont plus souvent un entourage socialement précaire (SMIC, SDF...). Bien sûr, ils reçoivent également moins souvent des revenus complémentaires à leurs salaires (patrimoine financier et immobilier). 
+\end{tcolorbox}
+
+
+\newpage
+
+Résultats détaillés : 
+
+- Quand $\lambda = 0,1$, deux modalités permettent à elles seules de prédire le sentiment de pauvreté avec 85 % de chance d'avoir bon (*accuracy*). Il s'agit de la modalité "assez mauvaise" de la question "OG1" qui interroge les Français sur le fait de qualifier leur situation actuelle (+^[Un signe + indique que la variable influe positivement sur le sentiment de pauvreté, inversement pour un signe -. ]), ainsi que le fait d'avoir perçu une allocation logement au cours des 12 derniers mois au sein de son ménage (+). 
+- En pénalisant moins le modèle $\lambda = 0,05$, viennent s'ajouter des variables de revenus (-) et de niveau de vie (-), en d'autres termes, la pauvreté monétaire telle que mesurée dans le Baromètre. 
+- Quand $\lambda = 0,04$, s'ajoute le fait de vivre en couple (-), d'être locataire (+), d'être au RSA (+). 
+
+- Quand $\lambda = 0,03$, s'ajoute le fait de ne pas exercer d'activité professionnelle (+), le pessimisme envers l'avenir (+).
+- Quand $\lambda = 0,02$, s'ajoute l'année 2019 (+), le fait que la personne de référence soit sans emploi ou ouvrier (+), le fait d’être préoccupé par la thématique du logement (+)  ou le fait de juger que le niveau général des retraites est insuffisant (+), le fait d'avoir un diplôme du supérieur (-). 
+- Puis, quand $\lambda = 0,01$, 60 variables sont retenues et l'*accuracy* vaut 86 %, soit seulement un point de plus qu'avec le premier modèle à 2 variables ! S'ajoute l'année 2017 (+ mais faible), de nombreuses autres PCS (que ce soit de l'individu ou de la personne de référence), de nombreux autres sujets de préoccupations sociales : logement, pauvreté, pouvoir d’achat (+) contrairement à dette et crises financières (-). D’autres facteurs entrent également en compte : l’adhésion au stéréotype de genre de la femme au foyer (+), la prise en charge des parents en situation de dépendance en les accueillant chez eux (+) mais sans être prêts à épargner pour soi ni pour les autres en prévision de la vieillesse (retraite ou dépendance), le mauvais état de santé et l’insatisfaction envers le système de soin et le niveau de protection sociale (+) ne souhaitant pas limiter les remboursements de la sécurité sociale (+), avoir un entourage qui lui-même connaît des situations de précarités (SMIC, SDF, handicap, +), recevoir des revenus d’actifs financiers ou de locations (-), et voter extrême-gauche (+). 
+
+
+# Code et résultats
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+#library(rmdformats)
+
+## Global options
+#options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.width = 10,
+               fig.height = 5
+               )
+#opts_knit$set(width=75)
+
+```
+
+
+```{r}
+#chargement des packages
+library(dplyr) #manipuler les bases de données
+library(glmnet) #sélection automatique de modèles (lasso, ridge, elasticnet)
+
+# alea fixé
+set.seed(1)
+```
+
+```{r, include=FALSE}
+#fonctions
+couper_string <- function(string,coupure){
+    string_sortie  <- gsub(paste0('(.{1,',round(coupure,0),'})(\\s|$)'), '\\1\n',string )
+    string_sortie <- sub("\n$", "", string_sortie)
+    return(string_sortie)
+}
+
+colnames_to_nomexplicite<- function(string,base_labels=bdd){
+  string <- gsub("LASSO_","",string)
+  #S'il y a des modalités
+  if(grepl("-", string, fixed = TRUE)){
+    variable <- strsplit(string, "-")[[1]][1]
+    modalite <- strsplit(string, "-")[[1]][2]
+    label_variable = ifelse(!is.null(attr(base_labels[[variable]],"label")),attr(base_labels[[variable]],"label"),variable)
+    if(!is.null(attr(base_labels[[variable]],"labels"))){
+      label_modalites <-attr(base_labels[[variable]],"labels")   
+    } else{
+      label_modalites <-unique(base_labels[[variable]]) %>% magrittr::set_names(unique(base_labels[[variable]]))
+    }
+    
+    string_retour <- paste0(label_variable," ",
+                            names(label_modalites)[which(label_modalites==modalite)])
+    
+  }else{
+    string_retour <- attr(base_labels[[string]],"label")
+  }
+  return(string_retour)
+}
+
+
+### BDD
+bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
+  filter(annee%in%2016:2019) %>% 
+  mutate(subj_diff_mini_vivre = as.numeric(sdrevcl_imput) - as.numeric(pe7)) %>% 
+  rename(subj_risque_pauvrete = pe3) %>% 
+  rename(subj_aide_pv_pub = pe15)
+
+indics_subj <- bdd %>% select(starts_with("subj")) %>% colnames
+indics <- setdiff(colnames(bdd),c("ident","poids","sdageenf_7",
+                                  "sdageenf_8","sdageenf_9",
+                                  "sdageenf_10"))
+### Nettoyer les variables
+
+bdd$subj_risque_pauvrete <- factor(bdd$subj_risque_pauvrete,
+                                   levels=c(3,1,2,4),
+                   labels=couper_string(names(attr(bdd$subj_risque_pauvrete,"labels")),20)[c(3,1,2,4)]
+                   )
+```
+
+Création de la base de données permettant de réaliser les différents modèles économétriques. Différents traitements sont effectués :
+
+1. On crée des indicatrices en remplacement des variables catégorielles (par défaut on supprime la première modalité de la variable pour que les modèles économétriques soient identifiables). On renomme ces variables selon la nomenclature suivante : `LASSO_nomvar_nummodalite`.
+
+2. On créer la variable `y_LASSO` que l'on cherche à prédire. C'est une indicatrice qui vaut 0 quand l'individu répond "Je me considère déjà comme pauvre" à la question "PE3. Vous personnellement, pensez-vous qu'il y a un risque que vous deveniez pauvre dans les cinq prochaines années ?". 
+
+3. On supprime les colonnes qui contiennent des valeurs manquantes (qui ne sont pas disponibles pour tous les millésimes ou pour tous les enquêtés) : `sdstatemp`, `sdnbenf`, `og2`^[Une autre option aurait été de les recoder en une modalité à part, nous avons choisi l'option de les supprimer par simplicité.]...
+
+
+```{r}
+bdd_lasso <- bdd
+for(col in setdiff(colnames(bdd_lasso),c("ident"))){
+  if(is.character(bdd_lasso[[col]])){
+      modalites <- unique(bdd_lasso[[col]])[-1]
+      for(mod in modalites){
+        nom_var = paste0("LASSO_",col,"-",mod)
+        bdd_lasso[[nom_var]] = 1*c(bdd_lasso[[col]]==mod)
+      }
+  } else{
+    nom_var = paste0("LASSO_",col)
+    bdd_lasso[[nom_var]] = bdd_lasso[[col]]
+  }
+}
+bdd_lasso <- bdd_lasso %>% 
+  mutate( LASSO_y = factor(ifelse(
+    subj_risque_pauvrete=="Je me considère déjà\ncomme pauvre",1,0))
+    ) %>%
+  select(-LASSO_subj_risque_pauvrete) %>% 
+  select(starts_with("LASSO"))
+
+
+#On supprime les colonnes qui contiennent des valeurs manquantes
+for(col in colnames(bdd_lasso)){
+  if(any(is.na(bdd_lasso[[col]]))){
+    bdd_lasso[[col]] <- NULL
+  }
+}
+
+```
+
+On sélectionne aléatoirement : 
+
+1. Un échantillon d'entraînement pour entraîner le modèle [70 % des données]
+2. Un échantillon test pour calculer les performances du modèles en l'occurrence l'*accuracy* (le pourcentage de bien prédits) [30 % des données]
+
+```{r}
+select_train = sort(sample(nrow(bdd_lasso), nrow(bdd_lasso)*.7))
+train<-bdd_lasso[select_train,]
+test<-bdd_lasso[-select_train,]
+```
+
+On essaie différents modèles de type Lasso avec plusieurs niveau de pénalisation $\lambda$. Le principe est que plus $\lambda$ est élevé, plus on pénalise le fait de choisir un grand nombre de variables et moins le nombre de variables sélectionnées est important. Inversement, un modèle avec un faible $\lambda$ est peu sélectif. 
+
+On affiche pour chaque valeur de $\lambda$ le nombre de variables retenues^[modalités en cas de variables catégorielles et nom de la variable en cas de variables continues] (dont le coefficient de la régression est non nul) et on les liste.
+
+```{r, echo=FALSE}
+# Modèle entier sans pénalisation (trop complexe à faire tourner : bug)
+#glm <- glm(LASSO_y ~., data=train,family = "binomial")
+
+# Find the best lambda using cross-validation : marche mais choix du lambda fait bugger la suite
+#set.seed(123) 
+#cv.lasso <- cv.glmnet(x=as.matrix(train[,-ncol(train)]), y=train$LASSO_y, alpha=1, family="binomial")
+#plot(cv.lasso)
+#cv.lasso$lambda.min
+#cv.lasso$lambda.1se
+
+#plot(lasso.model, xvar="lambda")
+#probabilities <- lasso.model %>% predict(newx = as.matrix(test[,-ncol(test)]))
+#mean(ifelse(probabilities > 0.5, 1, 0) == test$LASSO_y)
+
+```
+
+```{r}
+# Note alpha=1 for lasso only and alpha=0 ridge only.
+for(lambda in c(0.9,0.5,0.1,0.05,0.04,0.03,0.02, 0.01)){ 
+  cat(paste0("Valeur de la pénalisation : ", lambda,"\n"))
+  lasso.model <- glmnet(x=as.matrix(train[-ncol(train)]),
+                        y=train$LASSO_y, alpha=1,family="binomial",
+                        lambda = lambda) #cv.lasso$lambda.min
+  myCoefs <- coef(lasso.model, s=0)
+  myCoefs_nonnuls <- myCoefs@Dimnames[[1]][which(myCoefs != 0 ) ][-1]
+  cat(paste0("Nombre de variables retenues : ",
+             length(myCoefs_nonnuls),"\n"))
+   if(length(myCoefs_nonnuls)!=0){
+     cat(paste0(
+       do.call(c,lapply(myCoefs_nonnuls,
+                        function(x){
+                          paste0("- ", couper_string(colnames_to_nomexplicite(x),90))                                                 }
+       )),collapse = "\n"
+     ))
+     
+    probabilities <- lasso.model %>%
+      predict(newx = as.matrix(test[,-ncol(test)]))
+    cat(paste0("\n>>> Pourcentages de bien prédits : ",
+               round(100*mean(
+                 ifelse(probabilities > 0.5, 1, 0) == test$LASSO_y)
+                 )," %"))
+  }
+  cat("\n\n")
+}
+
+```
+
+Pour le dernier modèle (le moins pénalisé), on regarde la valeur des coefficients associés aux variables, en les triant par ordre d'importance en valeur absolue. 
+
+```{r}
+myResults <- data.frame(
+  features = myCoefs@Dimnames[[1]][ which(myCoefs != 0 ) ],
+  coefs    = round(myCoefs              [ which(myCoefs != 0 ) ],2)
+) %>%
+  mutate(features_nom = 
+lapply(features, colnames_to_nomexplicite)) %>% 
+  mutate(absv=abs(coefs)) %>%
+  arrange(desc(absv)) %>% 
+  select(-absv)
+
+myResults %>%
+  select(features,features_nom,coefs) %>% 
+  kable(format = 'latex', booktabs = TRUE, longtable = TRUE) %>%
+   kableExtra::column_spec(1, width = "4cm") %>% 
+   kableExtra::column_spec(2, width = "9cm") %>% 
+   kableExtra::column_spec(3, width = "2cm") %>% 
+kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header"))
+```
+
+# Notes méthodologiques
+
+Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). 
+
+# Bibliographie {.unnumbered}
+
+https://www.math.univ-toulouse.fr/~besse/Wikistat/pdf/st-scenar-reg-penal-prostate.pdf
+
+https://glmnet.stanford.edu/articles/glmnet.html
+
+http://www.sthda.com/english/articles/36-classification-methods-essentials/149-penalized-logistic-regression-essentials-in-r-ridge-lasso-and-elastic-net/
+
+Machine Learning Essentials: Practical Guide in R
+

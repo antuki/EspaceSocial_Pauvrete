@@ -1,0 +1,334 @@
+---
+title: |
+    |  Analyse en variables latentes
+author: |
+    | Kim Antunez (année scolaire 2020--2021)
+automaticcontents: true
+output:
+  bookdown::word_document2:
+    toc: true
+always_allow_html: true
+---
+
+
+
+<!-- output: -->
+<!--   bookdown::pdf_document2: -->
+<!--         toc: false -->
+<!--         toc_depth: 2 -->
+<!--         number_sections: true -->
+<!--         fig_width: 5 -->
+<!--         fig_height: 6 -->
+<!--         fig_caption: true -->
+<!--         highlight: default -->
+<!--         template: default.tex -->
+<!--         keep_tex: yes -->
+<!-- themeoptions: "coding=utf8,language=french" -->
+<!-- classoption: 'french' -->
+<!-- fontsize: 11pt -->
+<!-- geometry: margin=0.90in -->
+<!-- lang: "french" -->
+<!-- documentclass: "article" -->
+<!-- header-includes: -->
+<!-- - \usepackage{caption} -->
+<!-- - \usepackage{graphicx} -->
+<!-- - \usepackage{natbib} -->
+<!-- - \usepackage[dvipsnames]{xcolor} -->
+<!-- - \usepackage{fontawesome5} -->
+<!-- - \DeclareMathOperator{\arctanh}{arctanh} -->
+<!-- - \usepackage{subcaption} -->
+<!-- - \usepackage{amsfonts} -->
+<!-- - \usepackage{dsfont} -->
+<!-- - \usepackage{xspace} -->
+<!-- - \usepackage{enumitem} -->
+<!-- - \usepackage{pifont} -->
+<!-- - \usepackage{wrapfig} -->
+<!-- - \usepackage{textpos} -->
+<!-- - \usepackage{array} -->
+<!-- - \usepackage{amsmath} -->
+<!-- - \usepackage{mathrsfs} -->
+<!-- - \usepackage{tcolorbox} -->
+
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+#library(rmdformats)
+
+## Global options
+#options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.width = 8,
+               fig.height = 4
+               )
+#opts_knit$set(width=75)
+```
+
+
+<!-- sjPlot #descriptive analysis -->
+<!-- lavaan #CFA, SEMs -->
+<!-- poLCA #latent class analysis.  -->
+<!-- install_github("doomlab/MeMoBootR") #mediation/moderation -->
+<!-- lme4 -->
+<!-- semTools : extension of lavaan -->
+
+<!-- https://m-clark.github.io/sem/preface.html -->
+<!-- https://lavaan.ugent.be/index.html -->
+
+
+```{r}
+#chargement des packages
+# library(haven) #lire les formats .dta
+library(psych) #PCA
+library(dplyr) #manipuler les bases de données
+library(lavaan) #modèles SEM
+# library(semTools) #comparaison de modèles
+# library(poLCA) #manipuler des clusters
+# library(nnet) # regression multinomiale
+library(FactoMineR)
+
+```
+
+```{r}
+# chargement de la base de données
+bdd <- readRDS("../data/2019/barometre_latent_2019.rds")
+
+# 3 variables latentes
+indics_mat <- bdd %>% select(starts_with("mat")) %>% colnames
+indics_preca <- bdd %>% select(starts_with("preca")) %>% colnames
+indics_subj <- bdd %>% select(starts_with("subj")) %>% colnames
+indics <- c(indics_mat,indics_preca,indics_subj)
+
+# on fixe l'éventuel aléa
+set.seed(1)
+```
+
+# Statistiques descriptives
+
+```{r}
+# Question PE3 (subj_risque_pauvrete)
+attr(bdd$subj_risque_pauvrete,"label")
+attr(bdd$subj_risque_pauvrete,"labels")
+
+bdd %>%
+  filter(annee==2019) %>% 
+  count(subj_risque_pauvrete, wt=poids) %>% 
+  mutate(n = 100*n/sum(n))
+
+bdd %>%
+  filter(annee==2019) %>% 
+  group_by(mat_nivie) %>% 
+  count(subj_risque_pauvrete, wt=poids) %>% 
+  mutate(n = 100*n/sum(n))
+
+# Graphique du sentiment de pauvreté 
+bdd %>%
+  count(subj_risque_pauvrete, wt=poids) %>% 
+  mutate(n = 100*n/sum(n)) %>% 
+  mutate(subj_risque_pauvrete=factor(subj_risque_pauvrete,labels=names(attr(bdd$subj_risque_pauvrete,"labels"))), 
+         subj_risque_pauvrete=factor(subj_risque_pauvrete,levels=levels(subj_risque_pauvrete)[c(4,2,1,3)])) %>%
+  ggplot(aes(x=1, y=n, fill=subj_risque_pauvrete)) +
+  geom_bar(stat="identity") + coord_flip()+
+  labs(title="Sentiment de pauvreté (2017 à 2019)", y="Part (%)") +
+  scale_fill_manual(name= paste(strwrap(attr(bdd$subj_risque_pauvrete,"label"),50),collapse="\n"),
+                    values=rev(c('red','orange','lightgreen','gray')),
+                    guide=guide_legend(reverse=TRUE)
+                    )+
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) + 
+  geom_text(aes(label = paste0(round(n,0)," %")), 
+          position = position_stack(vjust = 0.5))
+  
+
+# Graphique du sentiment de pauvreté selon le niveau de vie
+bdd %>%
+  group_by(mat_nivie) %>% 
+  count(subj_risque_pauvrete, wt=poids) %>% 
+  mutate(n = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  mutate(mat_nivie=factor(mat_nivie,labels=names(attr(bdd$mat_nivie,"labels"))),
+         subj_risque_pauvrete=factor(subj_risque_pauvrete,labels=names(attr(bdd$subj_risque_pauvrete,"labels"))), 
+         subj_risque_pauvrete=factor(subj_risque_pauvrete,levels=levels(subj_risque_pauvrete)[c(4,2,1,3)])) %>% 
+  ggplot(aes(x=mat_nivie, y=n, fill=subj_risque_pauvrete)) +
+  geom_bar(stat="identity") + coord_flip() +
+  labs(title="Sentiment de pauvreté en fonction du niveau de vie (2017 à 2019)", y="Part (%)", x="Niveau de vie") +
+  scale_fill_manual(name= paste(strwrap(attr(bdd$subj_risque_pauvrete,"label"),50),collapse="\n"),
+                    values=rev(c('red','orange','lightgreen','gray')),
+                    guide=guide_legend(reverse=TRUE)) + 
+  geom_text(aes(label = paste0(round(n,0)," %")), 
+            position = position_stack(vjust = 0.5))
+
+
+
+attr(bdd$preca_RSA_menage,"label")
+attr(bdd$preca_RSA_menage,"labels")
+
+# Graphique du sentiment de pauvreté selon le fait de recevoir le RSA
+bdd %>%
+  filter(preca_RSA_menage!=3) %>% 
+  group_by(preca_RSA_menage) %>% 
+  count(subj_risque_pauvrete, wt=poids) %>% 
+  mutate(n = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  mutate(preca_RSA_menage=factor(preca_RSA_menage,labels=names(attr(bdd$preca_RSA_menage,"labels")[-3])), #attention
+         subj_risque_pauvrete=factor(subj_risque_pauvrete,labels=names(attr(bdd$subj_risque_pauvrete,"labels"))), 
+         subj_risque_pauvrete=factor(subj_risque_pauvrete,levels=levels(subj_risque_pauvrete)[c(4,2,1,3)])) %>% 
+  ggplot(aes(x=preca_RSA_menage, y=n, fill=subj_risque_pauvrete)) +
+  geom_bar(stat="identity") + coord_flip() +
+  labs(title="Sentiment de pauvreté en fonction de si le ménage reçoit le RSA (2017 à 2019)", y="Part (%)", x="Ménage qui a perçu le RSA\nau cours des 12 derniers mois") +
+  scale_fill_manual(name= paste(strwrap(attr(bdd$subj_risque_pauvrete,"label"),50),collapse="\n"),
+                    values=rev(c('red','orange','lightgreen','gray')),
+                    guide=guide_legend(reverse=TRUE)) + 
+  geom_text(aes(label = paste0(round(n,0)," %")), 
+            position = position_stack(vjust = 0.5))
+
+
+# Question PE15 #Non présente
+
+# Question PE7 
+attr(barometre2000_2019_diff$pe7,"label")
+summary(barometre2000_2019_diff$pe7)
+
+barometre2000_2019_diff %>%
+  filter(annee==2019) %>%
+  summarise(mediane  = spatstat::weighted.median(pe7, poids))
+  #{ weighted.median(.[["pe7"]],w=.[["poids"]]) }
+
+# Question subj_diff_mini_vivre (dérivée de PE7) 
+bdd %>%
+  filter(annee==2019) %>% 
+  mutate(subj_diff_mini_vivre_signe=ifelse(subj_diff_mini_vivre>0,"1",ifelse(subj_diff_mini_vivre==0,"0","-1"))) %>% 
+  count(subj_diff_mini_vivre_signe, wt=poids) %>% 
+  mutate(n = 100*n/sum(n))
+```
+
+# ACM : Diminuer la dimension de l'espace
+
+
+```{r}
+bdd_acm <- bdd %>% 
+  filter(mat_salaire_menage!=3, mat_rev_financiers!=3, mat_rev_locatifs!=3, preca_salaire_indp_menage!=3, preca_RSA_menage!=3, preca_chom_menage!=3, preca_alloc_logement!=3, preca_bourse_etude!=3, preca_statut_occ_log!=5, preca_nivdipl!=10, subj_risque_pauvrete!=4) %>%  
+  #28 individus sur 9076 enlevés
+  mutate(subj_diff_mini_vivre_signe=ifelse(subj_diff_mini_vivre>0,"P",ifelse(subj_diff_mini_vivre==0,"P","N"))) %>% #On dit 1 finalement
+  select(-c(1,2,3,18))
+
+for(nom_col in c(setdiff(indics, "subj_diff_mini_vivre"),"subj_diff_mini_vivre_signe")){
+  bdd_acm[,nom_col] <- paste0(nom_col,"_",bdd_acm[,nom_col])
+}
+
+res.mca <- MCA(bdd_acm, 
+               ncp=2,
+               #quanti.sup = 1:2, # Variables quantitatives supplémentaires
+               #quali.sup = c(2,3,4,8,9,11,12,13),  # Variables qualitatives supplémentaires
+               graph=FALSE)
+
+eig.val <- res.mca$eig
+barplot(eig.val[, 2], 
+        names.arg = 1:nrow(eig.val), 
+        main = "Variances Explained by Dimensions (%)",
+        xlab = "Principal Dimensions",
+        ylab = "Percentage of variances",
+        col ="steelblue")
+# Add connected line segments to the plot
+lines(x = 1:nrow(eig.val), eig.val[, 2], 
+      type = "b", pch = 19, col = "red")
+
+plotellipses(res.mca,
+             pch=NA,
+             cex=1,
+             keepnames = FALSE, 
+             magnify=2
+             )
+
+```
+
+# Modèles économétriques
+
+
+```{r}
+bdd_logit <- bdd %>%
+  filter(mat_salaire_menage!=3, mat_rev_financiers!=3, mat_rev_locatifs!=3, preca_salaire_indp_menage!=3, preca_RSA_menage!=3, preca_chom_menage!=3, preca_alloc_logement!=3, preca_bourse_etude!=3, preca_statut_occ_log!=5, preca_nivdipl!=10, subj_risque_pauvrete!=4) %>% 
+  mutate(sentiment_pauvrete=ifelse(subj_risque_pauvrete==3,1,0)) #%>% 
+#  mutate_at(vars(starts_with("mat")),factor) %>% 
+#  mutate_at(vars(starts_with("preca")),factor)
+
+library(labelled)
+var_label(bdd_logit$sentiment_pauvrete) <- "Sentiment de pauvreté"
+for(var in indics){
+ # var="mat_nivie"
+    if(var%in%indics[-c(15)]){
+    labs <- do.call(c,lapply(1:length(attr(bdd[,var],"labels")),function(i){
+  paste(strwrap(names(attr(bdd[,var],"labels"))[i],1000),collapse="\n")
+}))
+    bdd_logit[,var] <- factor(bdd_logit[,var],labels=labs[1:length(unique(bdd_logit[!is.na(bdd_logit[,var]),var]))]) #na pb
+  }else{
+    
+  }
+  var_label(bdd_logit[,var]) <- paste(strwrap(attr(bdd[,var],"label"),60),collapse="\n")
+
+}
+
+
+       
+ 
+reg <- glm(sentiment_pauvrete ~ mat_nivie + mat_salaire_menage +mat_rev_financiers  +  mat_rev_locatifs + preca_type_contrat + preca_salaire_indp_menage +preca_chom_menage+ preca_alloc_logement + preca_RSA_menage + preca_temps_partiel + preca_statut_occ_log+preca_nivdipl+   +preca_bourse_etude,
+           data = bdd_logit, family = binomial(logit))
+
+library(GGally)
+p1 <- ggcoef_model(reg, exponentiate = TRUE, 
+             include=c(indics_mat)
+)
+p1 
+             
+p2a <- ggcoef_model(reg, exponentiate = TRUE, 
+             include=indics_preca[1:5]) +  xlim(c(0,5)) #+
+p2b <- ggcoef_model(reg, exponentiate = TRUE, 
+             include=indics_preca[6:9]) +  xlim(c(0,5)) #+
+
+p2b
+```
+
+# Modèles SEM (Structural Equation Modeling)
+
+### Principes généraux
+
+Les modèles SEM permettent de réaliser des régressions à partir de variables latentes et observées. Ils visent généralement à identifier les effets causaux et peuvent être décompés en deux composantes : 
+
+* **les modèles de mesure** : ce sont les modèles à variables latentes (analyse factorielle) vus dans la partie précédente, l'idée étant de s'assurer dans un premier temps que le modèle de mesure tient la route avant d'aller plus loin dans l'analyse. 
+* **les modèles de structure** : ce sont des régressions utilisant des variables latentes et des variables observées qui ne servent pas d'indicateurs (typiquement dans notre cas le sexe, l'âge et la race). Ces modèles peuvent vite devenir compliqués \dots
+
+Les modèles SEM requièrent normalement de grandes bases de données car mobilisent un grand nombre de prédicteurs. Etant complexe, ils sont souvent mal spéficiés (certaines variables indispensables sont mises de côté).
+
+Pour s'assurer que les modèles SEM sont adaptés, il faut tout d'abord réaliser des statistiques descriptives univariées sur toutes les variables observées. Il faut ensuite analyser les corrélations, car les modèles SEM reproduisent les corrélations présentes dans les données et n'en inventent pas. 
+
+Pour considérer les variables de mesures, on procède en 2 temps :
+
+1. considérer les variables latentes une à une et voir si un modèle à un facteur tient bien la route. 
+2. Ensuite seulement considérer les corrélations.
+
+Après cette analyse préliminaire, on peut alors tester différents modèles
+1. Le premier à considérer doit être le plus simple : un modèle de régression standard incluant une ou plusieurs variables latentes et différents outcomes possibles (outcomes que l'on considère séparément dans un premier temps)
+2. Un second modèle alternatif qui est alors plus complexe. Il peut inclure des effets indirects et des corrélations complexes. Idéalement, il devrait s'appuyer sur une théorie sociologique précise à tester (approche confirmatoire). 
+3. Un dernier modèle, guidé par l'exploration préalable des données peut aussi être considéré. Les théories existantes sont intéressantes à tester mais parfois l'analyse exploratoire de notre base de donnée spécifique s'annonce encore plus intéressante. 
+
+
+```{r}
+model1 = '
+    #modèle de mesure
+    mat =~ mat_nivie + mat_salaire_menage + mat_rev_financiers + mat_rev_locatifs
+    preca=~ preca_salaire_indp_menage+preca_RSA_menage+preca_chom_menage+preca_alloc_logement+preca_bourse_etude+preca_type_contrat+preca_temps_partiel+preca_statut_occ_log+preca_nivdipl
+  subj =~ subj_risque_pauvrete 
+ '
+
+#+ subj_diff_mini_vivre_signe #bug bizarre
+
+fit1 <- sem(model1, data=bdd)
+summary(fit1, fit.measures = TRUE)
+```
+

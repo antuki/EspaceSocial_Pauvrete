@@ -1,0 +1,234 @@
+---
+title: |
+    | Fiche de modélisations n°2
+subtitle : "Statistique descriptive bivariée"
+author: |
+    | Kim Antunez
+automaticcontents: true
+output:
+  bookdown::pdf_document2:
+        toc: false
+        toc_depth: 2
+        number_sections: true
+        fig_caption: true
+        highlight: default
+        keep_tex: no
+        includes:
+          in_header: preamble.tex
+themeoptions: "coding=utf8,language=french"
+classoption: 'french'
+fontsize: 11pt
+geometry: margin=0.90in
+lang: "french"
+documentclass: "article"
+---
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+#library(rmdformats)
+
+## Global options
+#options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.width = 10,
+               fig.height = 6.5
+               )
+#opts_knit$set(width=75)
+```
+
+
+# Objectif
+
+L'objectif de cette deuxième série de modèles est de détecter les variables de l'enquête du Baromètre d'opinion de la DREES les plus corrélées avec la **pauvreté subjective**.
+
+Cette partie n'a **aucune visée explicative**. L'objectif est ici de réaliser des **statistiques descriptives** / défrichement de terrain,  pour permettre d'analyser les variables particulièrement liées à la pauvreté subjective. Les modèles qui suivront permettront certainement d'aller beaucoup plus en profondeur dans l'analyse des véritables **déterminants de la pauvreté subjective**. 
+
+# Analyses
+
+\begin{tcolorbox}
+En statistique bivariée, les mêmes variables que les modélisations de la fiche n°1 ressortent particulièrement significatives. Il s'agit le plus souvent de résidus positifs, il y a plus de variables corrélées positivement au sentiment de pauvreté que négativement. Cela veut dire qu'il existe plus de variables qui expliquent le fait d'être pauvre que le fait de ne pas indiquer être pauvre. 
+
+\bigskip
+
+On remarque qu'un grand nombre de variables sociodémographiques n'ont pas une influence majeure sur le sentiment de pauvreté (sexe, âge), en dehors bien sûr des variables socioprofessionnelles et aussi du fait d'être ou non en couple. 
+
+\bigskip
+
+Certaines variables qui ne ressortaient pas dans la fiche n°1 ressortent désormais ici (en gras ci-dessous) comme étant très corrélées aux sentiment de pauvreté. Ce sont des variables également corrélées\footnote{Se référer aux graphiques à la toute fin du document.} avec certaines autres variables retenues (colinéarité) dans les modèles économétriques qui ne sont donc pas utiles en termes de prévision. 
+\end{tcolorbox}
+
+\textbf{Résidu $>$ 17,5}
+
+- Situation actuelle jugée assez mauvaise ou très mauvaise
+- Pessimisme envers l'avenir
+- **Les gens qui occupent la même profession gagnent peu** (corrélé avec la profession occupée)
+- Locataire d'un logement social
+- Pas du tout prêt à épargner en prévision d'une situation de dépendance éventuelle
+- Reçoit des allocations logement
+- Revenus mensuels nets avant impôts inférieur à 1450 euros
+- Niveau de vie inférieur à 1000 euros / au premier quintile de niveau de vie
+
+\textbf{Résidu $\in$ [15 ; 17,5)}
+
+- Aucune activité professionnelle
+- Inactif
+- Personne de référence inactive
+- **Personne de référence chômeuse**
+- **Personne de référence retraitée** (corrélé avec le fait de recevoir le RSA, les APL et avec le niveau de revenu)
+- Artisan / commerçant
+- **Situation actuelle jugée moins "bien moins bonne" que celle des parents** (corrélé avec deux autres variables subjectives au fort effet : la qualification de la situation actuelle et le pessimisme envers le futur)
+- **Avoir besoin de se sentir davantage aidé par les pouvoirs publics** (assez corrélé avec le niveau de revenu et le fait d'avoir reçu des allocations logement, mais surtout disponible un an sur deux donc avait été retiré des modèles de régressions de la fiche 1)
+
+\textbf{Résidu $\in$ [-17,5 ; -15)}
+
+- Situation actuelle jugée assez bonne
+- Ne reçoit pas des allocations logement
+
+\textbf{Résidu $<$ 17,5}
+
+- **Être propriétaire de son logement** (corrélé avec le niveau de revenu, le fait de recevoir des revenus immobiliers, de ne pas recevoir d'APL et le fait d'être en couple)
+- Niveau de vie supérieur à 2250 euros / au dernier quintile de niveau de vie
+
+# Code et résultats
+
+
+Les *association plots* permettent d'analyser la corrélation entre deux variables catégorielles à partir d'un tableau de contingence. Les cases sont coloriées de manière à montrer les écarts par rapport à des fréquences attendues (résidus) d'un chi-2 de Pearson. L'intensité de la couleur représente l'importance du résidu : 
+
+- Le rouge indique des résidus négatifs significatifs (résidus inférieurs à ce qui est attendu)
+- Le bleu indique des résidus positifs significatifs (résidus supérieurs à ce qui est attendu)
+- Les cases en gris sont non significatives
+
+```{r}
+#chargement des packages
+library(knitr)
+library(dplyr) #manipuler les bases de données
+library(vcd)
+```
+
+```{r}
+#fonctions
+couper_string <- function(string,coupure){
+    string_sortie  <- gsub(paste0('(.{1,',round(coupure,0),'})(\\s|$)'), '\\1\n',string )
+    string_sortie <- sub("\n$", "", string_sortie)
+    return(string_sortie)
+}
+
+assoc_plot <- function(var1,var2,taille_phrases=50){
+  bdd$var1 <- bdd[[var1]]
+  bdd$var2 <- bdd[[var2]]
+  titre <- couper_string(attr(bdd$var2,"label"),100)
+  for(var in c("var1","var2")){
+    if(is.numeric(bdd[[var]])){
+      bdd[[var]] <- cut(bdd[[var]],unique(quantile(bdd[[var]],probs=seq(0,1,0.20), na.rm = TRUE)))
+    } else{
+      if(!is.null(attr(bdd[[var]],"labels"))){
+        labels = attr(bdd[[var]],"labels")[which(attr(bdd[[var]],"labels") %in%unique(bdd[[var]]))]
+        labels = couper_string(names(labels),taille_phrases)
+        bdd[[var]] <- factor(bdd[[var]],labels=labels)
+      } else{
+        bdd[[var]] <- factor(bdd[[var]])
+      }
+    }
+  }
+  assoc(Freq ~ var2 + var1,
+        data = bdd,
+        subset=NULL,
+        residuals_type="pearson",
+        shade = TRUE,
+        compress=TRUE,
+        split_vertical=FALSE,
+        margins=c(unit(3,"lines"),unit(3,"lines"),
+                  unit(3,"lines"),unit(15,"lines")),
+        gp_labels=gpar(fontsize=8),
+       spacing = spacing_dimequal(c(0.5,0,0,0)) ,
+       rot_labels=rep.int(0,4),
+       varnames=c(FALSE,FALSE),
+       just_labels=c("center","center","center","right"),
+       labeling=labeling_residuals,
+       main=titre,
+       xscale=0.9,
+       main_gp=gpar(fontsize=10)
+       )
+}
+
+
+
+
+### BDD
+bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
+  filter(annee%in%2016:2019) %>% #keep only the 3 last vagues of the barometre 
+  mutate(subj_diff_mini_vivre = as.numeric(sdrevcl_imput) - as.numeric(pe7)) %>% 
+  mutate(subj_risque_pauvrete = pe3) %>% 
+  mutate(subj_aide_pv_pub = pe15)
+
+indics <- setdiff(colnames(bdd),c("ident","poids"))
+
+
+### Nettoyer les variables
+
+bdd$subj_risque_pauvrete <- factor(bdd$subj_risque_pauvrete,
+                                   levels=c(3,1,2,4),
+                   labels=couper_string(names(attr(bdd$subj_risque_pauvrete,"labels")),20)[c(3,1,2,4)]
+                   )
+
+
+# on fixe l'éventuel aléa
+set.seed(1)
+```
+
+## Sentiment de pauvreté
+
+```{r, eval = TRUE}
+var1 = "subj_risque_pauvrete"
+for(var2 in setdiff(indics,var1)){
+    tryCatch({
+  assoc_plot(var1=var1,var2=var2,taille_phrases=50)
+  }, error=function(e){#cat("ERROR :",conditionMessage(e), "\n")
+    })
+
+}
+```
+
+## Etude de la colinéarité dans les précédentes régressions
+
+
+```{r, eval = TRUE, error = TRUE}
+assoc_plot(var1="in11_1",var2="sdpcs7",taille_phrases=50)
+assoc_plot(var1="in11_1",var2="sdprpcs7",taille_phrases=50)
+assoc_plot(var1="sdprpcs10",var2="sdproxim_2",taille_phrases=50)
+assoc_plot(var1="sdprpcs10",var2="sdproxim_7",taille_phrases=50)
+assoc_plot(var1="sdprpcs10",var2="sdres_3",taille_phrases=50)
+assoc_plot(var1="sdprpcs10",var2="sdres_9",taille_phrases=50)
+assoc_plot(var1="sdprpcs10",var2="sdrevtr",taille_phrases=50)
+assoc_plot(var1="og2",var2="og1",taille_phrases=50)
+assoc_plot(var1="og2",var2="og3_1",taille_phrases=50)
+assoc_plot(var1="pe15",var2="sdres_9",taille_phrases=50)
+assoc_plot(var1="pe15",var2="sdrevcl",taille_phrases=50)
+assoc_plot(var1="lo1",var2="sdcouple",taille_phrases=50)
+assoc_plot(var1="lo1",var2="sdprpcs7",taille_phrases=50)
+assoc_plot(var1="lo1",var2="sdres_7",taille_phrases=50)
+assoc_plot(var1="lo1",var2="sdres_9",taille_phrases=50)
+assoc_plot(var1="lo1",var2="sdrevcl",taille_phrases=50)
+
+
+```
+
+
+# Notes méthodologiques
+
+Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). 
+
+# Bibliographie {.unnumbered}
+
+https://jtr13.github.io/spring19/Community_Contribution_xs2291.html
+
+http://ddar.datavis.ca/pages/chapters/ch04/
+
+https://haleyjeppson.github.io/ggmosaic/articles/ggmosaic.html
+
