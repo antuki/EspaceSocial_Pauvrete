@@ -119,7 +119,7 @@ colnames_to_nomexplicite<- function(string,base_labels=bdd){
 ### BDD
 bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
   filter(annee%in%2016:2019) %>% 
-  mutate(subj_diff_mini_vivre = as.numeric(sdrevcl_imput) - as.numeric(pe7)) %>% 
+  mutate(subj_diff_mini_vivre = as.numeric(sdrevcl_imput) - as.numeric(pe16)) %>% 
   rename(subj_risque_pauvrete = pe3) %>% 
   rename(subj_aide_pv_pub = pe15)
 

@@ -1,6 +1,4 @@
 
-##### PROGRAMME POUR LIRE LES LIBELLES DES VARIABLES ET MODALITES (2019)
-
 rm(list=ls())
 
 library(Hmisc)
@@ -68,3 +66,27 @@ barometre2000_2019_diff <- barometre2000_2019_diff %>%
 
 # Export en RDS
 saveRDS(barometre2000_2019_diff, "data/2019/barometre2000_2019_diff.rds")
+
+
+#### Création de la base de 2017 pour reproduire l'étude de Duvoux et Papuchon
+
+barometre2000_2017_papuchon<-read.csv(file="data/2017/baro_drees_unif0017_queteletv2.csv", sep=";", colClasses = "character", na.strings="")
+
+# Transformation de certaines variables en numérique
+for(var in c("poids","sdage","sdageenf_1","sdageenf_2",
+             "sdageenf_3","sdageenf_4","sdageenf_5","sdageenf_6",
+             "sdageenf_7","sdageenf_8","sdageenf_9","sdageenf_10",
+             "sduc","in11_1","in11_2","pe7","pe16","re4", "re5", "re16",
+             "re6","sdrevcl")){ #"sdrevcl_imput","sdniviecl_imput"
+  barometre2000_2017_papuchon[[var]] <- as.numeric(gsub(",",".", barometre2000_2017_papuchon[[var]]))
+}
+
+# Ajout de la variable PE15
+bdd2016 <- read.csv(file="data/2016/baro_drees_unif0016_queteletv1.csv", sep=";", dec=",",colClasses = "character", na.strings="") %>% 
+  select(ident,pe15)
+
+barometre2000_2017_papuchon <-barometre2000_2017_papuchon %>%
+  left_join(bdd2016,by = "ident") 
+
+
+saveRDS(barometre2000_2017_papuchon, "data/2017/barometre2000_2017_papuchon.rds")
