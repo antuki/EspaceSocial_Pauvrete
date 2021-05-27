@@ -152,7 +152,8 @@ bdd <- bdd %>%
    mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
   mutate(subj_pauvrete = 
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
-  mutate(subj_besoin_aide_etat = ifelse(pe15==2, TRUE,FALSE)) %>% 
+  mutate(subj_besoin_aide_etat =
+                   ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
   mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
 ```
 

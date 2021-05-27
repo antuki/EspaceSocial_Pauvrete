@@ -208,3 +208,87 @@ table(bdd_logit$age_tranche,useNA="ifany") #0
 table(bdd_logit$vie_fam,useNA="ifany") #0
 table(bdd_logit$statut_occ,useNA="ifany") #1
 table(bdd_logit$annee_fac,useNA="ifany") #0
+
+
+
+###### automatisation fonctions
+bdd_logit
+y <- "subj_pauvrete"
+x <- c("quantile_nivie", "statact")
+
+run_regression <- function(x,y="subj_pauvrete"){
+  f <- as.formula(paste(y, paste0(x,collapse = " + "), sep="~"))
+  reg <- do.call("glm", list(formula=f,
+                             data = bdd_logit %>% select(c(y,x)) %>% tidyr::drop_na(),
+                             family=binomial(logit)))
+  results <- summary(reg)$coefficients
+  modalites <- c("(Intercept)")
+  noms <- c("-(Intercept)")
+  for(var in x){
+    if(is.factor(bdd_logit[,var])){
+      modalites <- c(modalites,gsub("-","",levels(bdd_logit[,var])))
+      noms <- c(noms, paste0(var,levels(bdd_logit[,var])[-1]))
+    }else{
+      modalites <- c(modalites,var)
+      noms <- c(noms,paste0("-",var))
+    }
+  }
+  
+  
+  df_model <- data.frame(noms= noms,
+                         valeur=round(results[,1],2),
+                         pvaleur=cut(results[,4], breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                     include.lowest = TRUE,
+                                     labels = c('***', '**', '*', '')),
+                         row.names=NULL
+  ) %>% mutate(noms = gsub("`","",noms)) %>%  
+    tidyr::separate(noms,c("variable","modalite"),sep="-") %>% 
+    mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(results[,1]),2))) %>% 
+    right_join(data.frame(modalite=modalites),by="modalite") %>% 
+    arrange(match(modalite, modalites))
+  
+  R2_ajuste <- with(summary(reg), 1 - deviance/null.deviance)
+  N <- length(summary(reg)$deviance.resid)
+  
+  
+  return(df_model %>% select(-variable) %>%
+           kable(format = 'latex', booktabs = TRUE, longtable = TRUE) %>%  
+           kableExtra::column_spec(1, width = "4cm") %>% 
+           kableExtra::column_spec(2:4, width = "2cm") %>% 
+           kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
+           kableExtra::footnote(paste0("Modèle logit (Variable dépendante = Se déclarer pauvre) / N = ",
+                                       N," / R2 ajusté = ",
+                                       round(100*R2_ajuste,1)," %")) )
+}
+
+run_regression(x= c("sdniviecl_imput"))
+str(bdd_logit$sdniviecl_imput)
+
+run_regression(x= c("quantile_nivie"))
+
+run_regression(x= c("aide_log"))
+run_regression(x= c("statut_occup"))
+run_regression(x= c("aide_log"))
+
+run_regression(x= c("aide_rsa"))
+
+
+
+reg1 <- glm(subj_pauvrete ~ quantile_nivie + statact + 
+              prof +
+              diplome + aide_log +
+              aide_rsa + aide_handi + sexe + age_tranche + vie_fam +
+              statut_occup + annee_fac,
+            data = bdd_logit %>% select(`subj_pauvrete`, `quantile_nivie`,
+                                        `statact`, `prof`,`diplome`, `aide_log`, `aide_rsa`,
+                                        `aide_handi`, `sexe`, `age_tranche`,
+                                        `vie_fam`, `statut_occup`, `annee_fac`
+            ) %>% tidyr::drop_na(),
+            family = binomial(logit))
+reg1
+
+table(bdd_logit$vie_fam)
+
+
+table(bdd$proxim_3,bdd$sdproxim_3)
+table(bdd_logit$revenus_locatifs,useNA="ifany")
