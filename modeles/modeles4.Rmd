@@ -46,18 +46,35 @@ options(knitr.kable.NA = '')
 
 # Objectif
 
-L'objectif de cette quatrième série de modèles est ....
+L'objectif de cette quatrième série de modèles est de voir ce qui se passe lorsque l'on propose des modèles alternatifs à ceux proposés par Duvoux et Papuchon (2018).
 
 # Analyses
 
-\begin{tcolorbox}
+::::{.tcolorbox data-latex= } 
+On construit des modèles permettant d’expliquer les 4 variables de pauvreté subjective : 
 
-TODO 
-\end{tcolorbox}
+1.	Le fait de se sentir pauvre (sentiment de pauvreté)
+2.	Le fait de juger que son revenu est inférieur au revenu minimal pour vivre.
+3.	Le fait de ne pas se sentir suffisamment aidé par les pouvoir publics
+4.	Le fait de ne pas se sentir pauvre mais penser risquer le dernier dans les 5 prochaines années (risque de pauvreté subjectif).
 
-- On a ajouté une catégorie indépendants
-- On considère aussi le revenu du référent ménage (La pauvreté s'évalue au niveau du ménage). D'ailleurs la profession de la personne référente explique mieux (meilleur R2) le sentiment de pauvreté. Idem pour le statut d'activité
--Statut d'activité n'explique pas autant que PCS en fait
+Si la quatrième variable à expliquer s’avère difficilement explicable par les différentes variables étudiées, les trois autres s’expliquent relativement bien avec des pseudo-$R^2$ montant jusqu’à 20-25 % en incluant différentes variables de contrôle. 
+
+
+Le niveau de vie est déterminant pour prévoir ces variables. Il explique à lui seul une bonne partie de la variance des modèles. La pauvreté institutionnelle (recevoir des prestations sociales) arrive ensuite, en particulier pour le sentiment de pauvreté, légèrement moins pour les deux indicateurs suivants.
+
+D’autres variables jouent un rôle sur le sentiment de pauvreté, en particulier le fait d’être locataire, de vivre seul, d’être peu diplômé ou avoir dans son entourage quelqu’un au RSA. Les 18-29 ans, inactifs (hors chômeurs et retraités) et ouvriers^[La PCS, prise seule ou non, explique de manière plus importante le sentiment de pauvreté que le statut d’activité et type de contrat] sont également particulièrement touchés. Moins de variables ressortent pour les deux autres indicateurs de pauvreté subjective : surtout la structure familiale demeure significative.
+
+::::
+
+
+
+
+
+**Petites remarques complémentaires**
+
+- Nous avons testé l’ajout dans nos modèles d’une variable permettant de renseigner si l’individu travail ou non en tant qu’indépendant. Cette variable est moins significative que de nombreux autres statuts d’emploi
+- Il y a une zone de flou dans les modèles dans le sens où la richesse s’établit en général au niveau du ménage. Les revenus (du salaire mais aussi les prestations sociales) sont appréciés au niveau du ménage mais pas les emplois. On remarque d’ailleurs à ce sujet que la profession et le statut d’activité de la personne référence expliquent mieux (meilleur pseudo-$R^2$) le sentiment de pauvreté que ces mêmes variables concernant l’enquêté. Il faudrait en théorie ajouter les deux professions mais ces variables étant très corrélées (homogamie), cela brouille l’interprétation des régressions.
 
 
 # Code et résultats
@@ -810,9 +827,23 @@ run_regression <- function(x,y="subj_pauvrete"){
 
 ## Pauvreté subjective
 
+::::{.tcolorbox data-latex= } 
+-	Les quintiles de niveau de vie ont un effet fort sur le sentiment de pauvreté. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est de 16,4 %. Lorsqu’on y ajoute les revenus d’actifs financiers et de biens locatifs, il monte à 17,5 %.
+-	Être bénéficiaire ou non des différentes prestations sociales permet d’obtenir un pseudo-$R^2$ de 11,9 %, ce qui est également important. La perception d’APL^[Bien que non considéré comme une vraie prestation sociale dans Duvoux et Papuchon.] joue un rôle important (pseudo-$R^2$ de 9,6 % pris tout seul), de même pour le RSA dans une moindre mesure. Sans variable de contrôle, la perception de ces prestations multiplie par 3 voire 4 les chances de se déclarer pauvre. 
+
+\faArrowCircleRight{} Prises ensemble, pauvretés monétaire et institutionnelle ont un pseudo-$R^2$ de 20,1 %.
+
+-	D’autres variables jouent un rôle important sur le fait de se déclarer pauvre, en particulier le fait d’être locataire, de vivre seul, d’être peu diplômé et de connaître parmi ses proches quelqu’un au RSA. 
+-	En ajoutant toutes les variables de contrôle choisies ici, le pseudo-$R^2$ passe à 26,5 %. Les variables significatives sont la tranche d’âge 18-29 ans (+), l’inactivité sur le marché du travail hors chômeurs et retraités (+) et la PCS ouvrier (+). 
+::::
+
+
+
+
+
 ### Quelques variables clefs prises une à une / groupe par groupe
 
-Grosso modo dans leur ordre d'importance (du plus fort R2 ajusté au plus faible)
+Grosso modo dans leur ordre d'importance (du plus fort R2 ajusté au plus faible). 
 
 ```{r}
 run_regression(x= c("quantile_nivie"), y="subj_pauvrete")
@@ -927,6 +958,15 @@ run_regression(y="subj_pauvrete",
 
 
 ## Niveau de vie jugé inférieur au minimum pour vivre
+
+::::{.tcolorbox data-latex= } 
+-	Les quintiles de niveau de vie ont un effet encore plus prédictif que précédemment sur le fait d'avoir un niveau de vie jugé inférieur au minimum pour vivre. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est de 25 %. C’est logique et provient d’un effet de structure, car les quintiles de niveau de vie permettent de construire en partie la variable à expliquer.
+
+-	Être bénéficiaire ou non des différentes prestations sociales permet d’obtenir un pseudo-$R^2$ de 5,7 %, soit inférieur à précédemment (11,9 %). Ces variables ne sont même plus significatives dans le modèle complet avec variables de contrôle. 
+
+-	Parmi les autres variables, cette fois-ci les variables sur la vie familiale ressortent davantage. Le fait de vivre seul a le même effet positif qu’avant mais cette fois-ci on a, étrangement, un effet négatif d’être chef d’une famille monoparentale ou enfant du foyer^[étrange, à expertiser ? Cela traduit-il le fait que la pauvreté monétaire pour des personnes vivant seule n’est pas bien traduite par le niveau de vie ? Ou le fait que les personnes dans ces situations jugent le niveau de vie minimum pour vivre plus bas que les autres ?].
+::::
+
 
 ### Quelques variables clefs prises une à une / groupe par groupe
 
@@ -1045,6 +1085,12 @@ run_regression(y="subj_inf_mini_decla",
 
 ## Considérer ne pas être suffisamment aidé par les pouvoirs publics
 
+::::{.tcolorbox data-latex= } 
+-	Les quintiles de niveau de vie ont un effet plus faible que précédemment sur le fait d’être demandeur de davantage d’intervention publique. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est de 14,3 %. 
+-	Être bénéficiaire ou non des différentes prestations sociales permet d’obtenir un pseudo-$R^2$ de 6,6 %, soit inférieur à la pauvreté subjective (11,9 %) mais supérieur au niveau de vie jugé inférieur au minimum pour vivre (5,7%). Ces variables ne sont plus non plus significatives dans le modèle complet avec variables de contrôle. 
+-	Parmi les autres variables, la structure familiale ressort une nouvelle fois. Cette fois-ci, être chef d’une famille monoparentale influe positivement et significativement dans tous les modèle sur le fait de considérer ne pas être suffisamment aidé par les pouvoirs publics. 
+::::
+
 ### Quelques variables clefs prises une à une / groupe par groupe
 
 Grosso modo dans leur ordre d'importance (du plus fort R2 ajusté au plus faible)
@@ -1161,6 +1207,12 @@ run_regression(y="subj_besoin_aide_etat",
 ```
 
 ## Risque de pauvreté subjectif
+
+::::{.tcolorbox data-latex= } 
+\faArrowCircleRight{}	Pour cette variable à expliquer (ne pas se sentir pauvre mais penser risquer le devenir dans les 5 prochaines années), les variables choisies sont toutes très peu prédictives ! Cette variable semble être très difficile à prévoir.
+
+-	Même les quintiles de niveau de vie ont un effet faible. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est seulement de 3 %. Il est de 1,1 % pour les prestations sociales. Même le modèle complet n’a un pseudo-$R^2$ que de 5,5 %^[Cela mériterait d’être davantage expertisé. En vérifiant bien pour commencer que la variable à expliquer est bien celle qu’on croit ! Il faudrait rejeter un coup d’œil aux statistiques descriptives bivariées pour voir à quelles variables celle-ci est corrélée. ].
+::::
 
 ### Quelques variables clefs prises une à une / groupe par groupe
 
@@ -1279,7 +1331,7 @@ run_regression(y="subj_risque_pauvrete",
 
 # Notes méthodologiques
 
-Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). 
+Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). Le nombre d'observations utilisées est différent dans chaque modèle, il s'agit uniquement des individus où toutes les variables utilisées dans les modèles sont renseignées (voir notes en bas des tableaux).
 
 # Bibliographie {.unnumbered}
 
