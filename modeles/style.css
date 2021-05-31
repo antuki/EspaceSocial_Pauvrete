@@ -1,0 +1,10 @@
+.encadre {
+  padding: 1em;
+  background: #F2F2F2;
+  color: black;
+  border: 3px solid #404040;
+  border-radius: 10px;
+}
+.center {
+  text-align: center;
+}
