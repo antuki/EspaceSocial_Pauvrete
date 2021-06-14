@@ -7,7 +7,7 @@ author: |
 automaticcontents: true
 output:
   bookdown::pdf_document2:
-        toc: false
+        toc: true
         toc_depth: 2
         number_sections: true
         fig_caption: true
@@ -51,19 +51,39 @@ L'objectif de cette quatrième série de modèles est de voir ce qui se passe lo
 # Analyses
 
 ::::{.tcolorbox data-latex= } 
-On construit des modèles permettant d’expliquer les 4 variables de pauvreté subjective : 
+On construit des modèles permettant d’expliquer les variables de pauvreté subjective : 
 
-1.	Le fait de se sentir pauvre (sentiment de pauvreté)
-2.	Le fait de juger que son revenu est inférieur au revenu minimal pour vivre.
-3.	Le fait de ne pas se sentir suffisamment aidé par les pouvoir publics
-4.	Le fait de ne pas se sentir pauvre mais penser risquer le dernier dans les 5 prochaines années (risque de pauvreté subjectif).
+1.	Le fait de se sentir pauvre (sentiment de pauvreté) [approche binaire cf. partie \@ref(pauvsub)] ou de penser le devenir (risque de pauvreté) [approche multinomiale cf. parties \@ref(multinom) et \@ref(ordinal) ]
+2.	Le fait de juger que son revenu est inférieur au revenu minimal jugé pour vivre [cf. partie \@ref(infminidecla)]
+3.	Le fait de ne pas se sentir suffisamment aidé par les pouvoir publics [cf. partie \@ref(pouvpub)]
 
-Si la quatrième variable à expliquer s’avère difficilement explicable par les différentes variables étudiées, les trois autres s’expliquent relativement bien avec des pseudo-$R^2$ montant jusqu’à 20-25 % en incluant différentes variables de contrôle. 
+Les différentes variables s’expliquent relativement bien avec des pseudo-$R^2$ montant jusqu’à 20-25 % en incluant différentes variables de contrôle. 
 
+\bigskip
 
 Le niveau de vie est déterminant pour prévoir ces variables. Il explique à lui seul une bonne partie de la variance des modèles. La pauvreté institutionnelle (recevoir des prestations sociales) arrive ensuite, en particulier pour le sentiment de pauvreté, légèrement moins pour les deux indicateurs suivants.
 
-D’autres variables jouent un rôle sur le sentiment de pauvreté, en particulier le fait d’être locataire, de vivre seul, d’être peu diplômé ou avoir dans son entourage quelqu’un au RSA. Les 18-29 ans, inactifs (hors chômeurs et retraités) et ouvriers^[La PCS, prise seule ou non, explique de manière plus importante le sentiment de pauvreté que le statut d’activité et type de contrat] sont également particulièrement touchés. Moins de variables ressortent pour les deux autres indicateurs de pauvreté subjective : surtout la structure familiale demeure significative.
+
+\bigskip
+
+D’autres variables jouent un rôle sur le sentiment de pauvreté (partie \@ref(pauvsub)), en particulier le fait d’être locataire, de vivre seul, d’être peu diplômé ou avoir dans son entourage quelqu’un au RSA. Les 18-29 ans, inactifs (hors chômeurs et retraités) et ouvriers^[La PCS, prise seule ou non, explique de manière plus importante le sentiment de pauvreté que le statut d’activité et type de contrat] sont également particulièrement touchés.
+
+
+\bigskip
+
+Moins de variables ressortent pour les deux autres indicateurs (parties \@ref(infminidecla) et \@ref(pouvpub)) de pauvreté subjective : surtout la structure familiale demeure significative.
+
+\bigskip
+
+La mise en place de **modèles multinomiaux** (partie \@ref(multinom)) permet de comparer les variables qui jouent sur le sentiment de pauvreté, versus celles qui jouent sur le fait de penser risquer devenir pauvre dans les 5 prochaines années. Dans la grande majorité des cas, ce sont les mêmes variables qui jouent^[ce qui peut aller dans le sens de la mise en place d’un modèle ordinal, fait en partie \@ref(ordinal)], avec une ampleur moins importante pour le risque de pauvreté par rapport au sentiment de pauvreté. C’est le cas pour le niveau de vie et autres revenus financiers et locatifs, le statut d’occupation du logement, le niveau de diplôme, la vie familiale. Quelques variables se distinguent par un effet légèrement différencié entre les deux modalités : 
+
+1. La pauvreté institutionnelle. Alors qu’être bénéficiaire du RSA joue un rôle plus fort sur le sentiment de pauvreté que de bénéficier d’une allocation chômage, pour le risque de pauvreté le chômage joue un rôle plus important que le RSA
+2. La CSP / statut d’occupation. La CSP d’ouvrier a un effet fort sur le risque de pauvreté, il passe devant les inactifs et au foyer qui ont un effet plus fort pour le sentiment de pauvreté. 
+
+
+\bigskip
+
+S’agissant des **modèles ordinaux** -- multinomiaux ordonnés (partie \@ref(ordinal)), ils ne permettent pas d’obtenir des interprétations supplémentaires de celles des modèles multinomiaux non ordonnés. Si ce n’est qu’ils permettent d’observer dans le modèle final que la constante de passage de la modalité « Non je ne suis pas pauvre » à « Non je ne suis pas pauvre mais risque de le devenir dans 5 ans » n’est pas significative alors que celle entre cette dernière et « Oui je suis pauvre » est forte et significative. En termes d’interprétation, cela voudrait dire que le gap est plus grand entre le passage d’une pauvreté probable dans 5 ans à la pauvreté est plus grand que celui du non-risque de pauvreté à celui de pauvreté potentielle dans 5 ans. 
 
 ::::
 
@@ -82,9 +102,13 @@ D’autres variables jouent un rôle sur le sentiment de pauvreté, en particuli
 ```{r}
 #chargement des packages
 library(knitr)
+library(nnet) #pour les regressions multinomiales
+library(MASS) #pour les regressions ordinales
 library(dplyr) #manipuler les bases de données
 library(tidyr) #pour pivot_longer
 library(ggplot2) #pour les graphiques
+library(naniar) #diagnostics valeurs manquantes
+
 ```
 
 ```{r, echo=FALSE}
@@ -120,6 +144,11 @@ bdd <- bdd %>%
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
   mutate(subj_risque_pauvrete = 
            ifelse(pe3==1, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
   mutate(subj_besoin_aide_etat =
            ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
   mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
@@ -314,13 +343,15 @@ bdd_logit <- bdd %>%
     )) %>% 
   mutate(
     statut_occup = factor(case_when(
-      lo1%in%c(2,3,4)  ~ 1,
-      lo1==1 ~ 2,
+      lo1%in%c(3,4)  ~ 1,
+      lo1==2  ~ 2,
+      lo1==1 ~ 3,
       lo1==5 ~ NA_real_
    ),
-    levels=c(1,2),
+    levels=c(1,2,3),
     labels=paste0("-",
-                  c("Locataire ou hébergé","Propriétaire")) 
+                  c("Locataire privé / hébergé",
+                    "Locataire HLM","Propriétaire")) 
     )) %>% 
   mutate(annee_fac = factor(annee,labels=paste0("-",2016:2019))) %>% 
   mutate(annee_fac_paires = factor(ifelse(annee%in%c(2016,2018),annee,NA),labels=paste0("-",c(2016,2018)))) %>% 
@@ -337,9 +368,7 @@ bdd_logit <- bdd %>%
                         "Pauvreté monétaire"))
   )
   )
-```
 
-```{r, eval=FALSE, echo=FALSE}
 # bdd_logit <- bdd_logit %>% mutate(sdniviecl_imput_quint = 
 # factor(
 #     cut(sdniviecl_imput, include.lowest=TRUE,
@@ -349,9 +378,6 @@ bdd_logit <- bdd %>%
 #     levels=c(2,1,3,4,5),
 #     labels=paste0("-Quintile ",c(2,1,3,4,5))))
 
-```
-
-```{r, echo=FALSE}
 #NEW depuis fiche 3
  bdd_logit <- bdd_logit %>% #chômeur indemnise 
   mutate(
@@ -770,40 +796,98 @@ bdd_logit <- bdd %>%
 ```
 
 ```{r, echo=FALSE}
-run_regression <- function(x,y="subj_pauvrete"){
-  f <- as.formula(paste(y, paste0(x,collapse = " + "), sep="~"))
+run_regression <- function(x,y="subj_pauvrete",type_mod="logit", bdd_log=bdd_logit){
+
+f <- as.formula(paste(y, paste0(x,collapse = " + "), sep="~"))
+
+if(type_mod=="logit"){
+  repetitions <- 1
   reg <- do.call("glm", list(formula=f,
-                             data = bdd_logit %>% select(c(y,x)) %>% tidyr::drop_na(),
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na(),
                              family=binomial(logit)))
-  results <- summary(reg)$coefficients
-  modalites <- c("(Intercept)")
-  noms <- c("-(Intercept)")
-  for(var in x){
-    if(is.factor(bdd_logit[,var])){
-      modalites <- c(modalites,gsub("-","",levels(bdd_logit[,var])))
-      noms <- c(noms, paste0(var,levels(bdd_logit[,var])[-1]))
-    }else{
-      modalites <- c(modalites,var)
-      noms <- c(noms,paste0("-",var))
-    }
+ coeffs <- summary(reg)$coefficients[,1]
+ p <- summary(reg)$coefficients[,4]
+} else if (type_mod=="multinomial"){
+repetitions <- length(levels(bdd_log[,y])[-1])
+reg <- do.call("multinom", list(formula=f,
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na(), trace = FALSE))
+  coeffs <- as.vector(t(summary(reg)$coefficients))
+  z <- summary(reg)$coefficients/summary(reg)$standard.errors
+  p <- as.vector((1 - pnorm(abs(t(z)), 0, 1)) * 2)
+} else if (type_mod=="ordinal"){ #NEW
+repetitions <- 1
+reg <- do.call("polr", list(formula=f,
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na()))
+  coeffs <- summary(reg)$coefficients[,1]
+  p <- as.vector((1 - pnorm(abs(summary(reg)$coefficients[,3]), 0, 1)) * 2)
+}
+
+
+  if(type_mod!="ordinal"){
+   modalites <- c("(Intercept)")
+   noms <- c("-(Intercept)")
+  } else{
+   modalites <- NULL
+   noms <- NULL
   }
+   for(var in x){
+     if(is.factor(bdd_log[,var])){
+       modalites <- c(modalites,gsub("-","",levels(bdd_log[,var])))
+       noms <- c(noms, paste0(var,levels(bdd_log[,var])[-1]))
+     }else{
+       modalites <- c(modalites,var)
+       noms <- c(noms,paste0("-",var))
+     }
+   }
+if(type_mod=="ordinal"){
+   modalites <- c(modalites,names(coeffs)[grep("\\|",names(coeffs))])
+   noms <- c(noms,paste0("(Intercept)-",names(coeffs)[grep("\\|",names(coeffs))]))
+   
+  }   
   
+   
+  df_model  <- data.frame(noms= noms,
+                          valeur=round(coeffs,2),
+                          pvaleur=cut(p, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+                          row.names=NULL
+   ) %>% mutate(noms = gsub("`","",noms)) %>%  
+     tidyr::separate(noms,c("variable","modalite"),sep="-") %>% 
+     mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(coeffs),2))) %>%  
+     mutate(modalite_y =
+              if(type_mod!="multinomial"){NA}else{rep(levels(bdd_log[,y])[-1],each=n()/repetitions)}) %>% 
+     right_join(
+       data.frame(
+         modalite_y=if(type_mod!="multinomial"){NA}else{rep(levels(bdd_log[,y])[-1],each=length(modalites))},
+         modalite=rep(modalites,repetitions)
+         )
+       ,by=c("modalite_y","modalite")
+       ) %>% 
+     arrange(match(modalite_y,levels(bdd_log[,y])[-1]),match(modalite, modalites))
+   
+   if(type_mod == "logit"){
+    R2_ajuste <- with(summary(reg), 1 - deviance/null.deviance)
+    N <- length(summary(reg)$deviance.resid)
+   } else {
+     if(type_mod=="multinomial"){
+        ref <- do.call("multinom",
+                   list(formula=paste0(y," ~ ", 1),
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na(), trace = FALSE))
   
-  df_model <- data.frame(noms= noms,
-                         valeur=round(results[,1],2),
-                         pvaleur=cut(results[,4], breaks = c(0, 0.001, 0.01, 0.05, 1),
-                                     include.lowest = TRUE,
-                                     labels = c('***', '**', '*', '')),
-                         row.names=NULL
-  ) %>% mutate(noms = gsub("`","",noms)) %>%  
-    tidyr::separate(noms,c("variable","modalite"),sep="-") %>% 
-    mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(results[,1]),2))) %>% 
-    right_join(data.frame(modalite=modalites),by="modalite") %>% 
-    arrange(match(modalite, modalites))
-  
-  R2_ajuste <- with(summary(reg), 1 - deviance/null.deviance)
-  N <- length(summary(reg)$deviance.resid)
-  
+     } else if (type_mod=="ordinal"){
+        ref <- do.call("polr",
+                   list(formula=paste0(y," ~ ", 1),
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na()))
+       
+     }
+     R2_ajuste <- nnet.mod.mfr2 <- as.numeric(1 -
+                                  nnet:::logLik.multinom(reg) /
+                                  nnet:::logLik.multinom(ref)
+    )
+    N <- length(summary(reg)$fitted.values[,1])
+   } 
+   
   if(y=="subj_pauvrete"){
     titre_y <- "Se déclarer pauvre"
   } else if(y=="subj_inf_mini_decla"){
@@ -812,20 +896,28 @@ run_regression <- function(x,y="subj_pauvrete"){
     titre_y <- "Penser avoir un risque de devenir pauvre dans 5 ans"
   } else if(y=="subj_besoin_aide_etat"){
     titre_y <- "Considérer ne pas être suffisamment aidé par les pouvoirs publics"
+  } else if(y=="subj_pauvrete_et_risque"){
+    titre_y <- "Réponse à la question sur le risque de devenir pauvre ou non dans 5 ans (Non, Oui, Non je le suis déjà)"
+  } else{
+    titre_y <- "Non répondants selon la variable indiquée en y"
   }
   
-  return(df_model %>% select(-variable) %>%
-           kable(format = 'latex', booktabs = TRUE, longtable = TRUE) %>%  
-           kableExtra::column_spec(1, width = "4cm") %>% 
-           kableExtra::column_spec(2:4, width = "2cm") %>% 
-           kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
-           kableExtra::footnote(c(paste0("Modèle logit (Variable dépendante = ",titre_y,")")), paste0("N = ",
-                                       N," / R2 ajusté = ",
-                                       round(100*R2_ajuste,1)," %")) )
+  tableau <- df_model %>% dplyr::select(modalite_y,modalite,valeur,pvaleur,odds) %>%
+    setNames(c("","Modalités","Coefficients","p-valeurs","Odds")) %>% 
+            kable(format = 'latex', booktabs = TRUE, longtable = TRUE) %>%  
+            kableExtra::column_spec(1, width = ifelse(type_mod=="multinomial","4cm","0cm")) %>% 
+            kableExtra::column_spec(2, width = "4cm") %>% 
+            kableExtra::column_spec(3:5, width = "2cm") %>% 
+            kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
+            kableExtra::footnote(c(paste0("Modèle logit (Variable dépendante = ",titre_y,")")), paste0("N = ",
+                                        N," / R2 ajusté = ",
+                                        round(100*R2_ajuste,1)," %")) 
+  
+  return(tableau)
 }
 ```
 
-## Pauvreté subjective
+## Pauvreté subjective {#pauvsub}
 
 ::::{.tcolorbox data-latex= } 
 -	Les quintiles de niveau de vie ont un effet fort sur le sentiment de pauvreté. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est de 16,4 %. Lorsqu’on y ajoute les revenus d’actifs financiers et de biens locatifs, il monte à 17,5 %.
@@ -928,6 +1020,10 @@ run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn
 run_regression(x= c("annee_fac"), y="subj_pauvrete")
 ```
 
+```{r}
+run_regression(x= c("sexe"), y="subj_pauvrete")
+```
+
 ### Modèles complets de régression
 
 #### Monétaire
@@ -952,12 +1048,12 @@ run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "p
 
 ```{r}
 run_regression(y="subj_pauvrete", 
-               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"
+               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe"
 ))
 ```
 
 
-## Niveau de vie jugé inférieur au minimum pour vivre
+## Niveau de vie jugé inférieur au minimum pour vivre {#infminidecla}
 
 ::::{.tcolorbox data-latex= } 
 -	Les quintiles de niveau de vie ont un effet encore plus prédictif que précédemment sur le fait d'avoir un niveau de vie jugé inférieur au minimum pour vivre. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est de 25 %. C’est logique et provient d’un effet de structure, car les quintiles de niveau de vie permettent de construire en partie la variable à expliquer.
@@ -1055,6 +1151,10 @@ run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn
 run_regression(x= c("annee_fac"), y="subj_inf_mini_decla")
 ```
 
+```{r}
+run_regression(x= c("sexe"), y="subj_inf_mini_decla")
+```
+
 ### Modèles complets de régression
 
 #### Monétaire
@@ -1079,11 +1179,11 @@ run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "p
 
 ```{r}
 run_regression(y="subj_inf_mini_decla", 
-               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"
+               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe"
 ))
 ```
 
-## Considérer ne pas être suffisamment aidé par les pouvoirs publics
+## Considérer ne pas être suffisamment aidé par les pouvoirs publics {#pouvpub}
 
 ::::{.tcolorbox data-latex= } 
 -	Les quintiles de niveau de vie ont un effet plus faible que précédemment sur le fait d’être demandeur de davantage d’intervention publique. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est de 14,3 %. 
@@ -1178,6 +1278,10 @@ run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn
 run_regression(x= c("annee_fac_paires"), y="subj_besoin_aide_etat")
 ```
 
+```{r}
+run_regression(x= c("sexe"), y="subj_besoin_aide_etat")
+```
+
 ### Modèles complets de régression
 
 #### Monétaire
@@ -1202,103 +1306,101 @@ run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "p
 
 ```{r}
 run_regression(y="subj_besoin_aide_etat", 
-               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac_paires", "prof_statut_act", "age_tranche","vie_fam"
+               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac_paires", "prof_statut_act", "age_tranche","vie_fam","sexe"
 ))
 ```
 
-## Risque de pauvreté subjectif
-
-::::{.tcolorbox data-latex= } 
-\faArrowCircleRight{}	Pour cette variable à expliquer (ne pas se sentir pauvre mais penser risquer le devenir dans les 5 prochaines années), les variables choisies sont toutes très peu prédictives ! Cette variable semble être très difficile à prévoir.
-
--	Même les quintiles de niveau de vie ont un effet faible. Quand on inclut uniquement ces variables dans le modèle, le pseudo-$R^2$ est seulement de 3 %. Il est de 1,1 % pour les prestations sociales. Même le modèle complet n’a un pseudo-$R^2$ que de 5,5 %^[Cela mériterait d’être davantage expertisé. En vérifiant bien pour commencer que la variable à expliquer est bien celle qu’on croit ! Il faudrait rejeter un coup d’œil aux statistiques descriptives bivariées pour voir à quelles variables celle-ci est corrélée. ].
-::::
+## Pauvreté ou Risque de pauvreté subjectifs (modèle multinomial) **[NEW]** {#multinom}
 
 ### Quelques variables clefs prises une à une / groupe par groupe
 
-Grosso modo dans leur ordre d'importance (du plus fort R2 ajusté au plus faible)
+Grosso modo dans leur ordre d'importance (du plus fort R2 ajusté au plus faible). 
 
 ```{r}
-run_regression(x= c("quantile_nivie"), y="subj_risque_pauvrete")
+run_regression(x= c("quantile_nivie"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 ```{r}
-run_regression(x= c("presta_rsa","presta_chomage","presta_fam","presta_apl","presta_handi","presta_etudes","presta_pensionalim"), y="subj_risque_pauvrete")
+run_regression(x= c("presta_rsa","presta_chomage","presta_fam","presta_apl","presta_handi","presta_etudes","presta_pensionalim"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
     
 
 ```{r}
-run_regression(x= c("presta_apl"), y="subj_risque_pauvrete")
+run_regression(x= c("presta_apl"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 ```{r}
-run_regression(x= c("statut_occup"), y="subj_risque_pauvrete")
+run_regression(x= c("statut_occup"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 
 
 ```{r}
-run_regression(x= c("prof_resp"), y="subj_risque_pauvrete")
-```
-
-
-```{r}
-run_regression(x= c("prof"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("prof_statut_act"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("prof_statut_act_resp"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("est_choindemnise", "est_chononindemnise","est_sdf","est_eleveseulsmic","est_pensionhandi","est_emploiprecaire","est_rsa","est_handijeune","est_dependant"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("statact"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("statut_activite"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("statut_activite_resp"), y="subj_risque_pauvrete")
-```
-
-```{r}
-run_regression(x= c("diplome"), y="subj_risque_pauvrete")
+run_regression(x= c("prof_resp"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 
 ```{r}
-run_regression(x= c("vie_fam"), y="subj_risque_pauvrete")
+run_regression(x= c("prof"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("prof_statut_act"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("prof_statut_act_resp"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("est_choindemnise", "est_chononindemnise","est_sdf","est_eleveseulsmic","est_pensionhandi","est_emploiprecaire","est_rsa","est_handijeune","est_dependant"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("statact"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("statut_activite"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("statut_activite_resp"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("diplome"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 
 ```{r}
-run_regression(x= c("presta_rsa"), y="subj_risque_pauvrete")
+run_regression(x= c("vie_fam"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 
 ```{r}
-run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn_eleveseulsmic","conn_pensionhandi","conn_emploiprecaire","conn_rsa","conn_handijeune","conn_dependant"), y="subj_risque_pauvrete")
+run_regression(x= c("presta_rsa"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+
+```{r}
+run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn_eleveseulsmic","conn_pensionhandi","conn_emploiprecaire","conn_rsa","conn_handijeune","conn_dependant"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 ```{r}
-run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn_eleveseulsmic","conn_pensionhandi","conn_emploiprecaire","conn_rsa","conn_handijeune","conn_dependant"), y="subj_risque_pauvrete")
+run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn_eleveseulsmic","conn_pensionhandi","conn_emploiprecaire","conn_rsa","conn_handijeune","conn_dependant"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 ```{r}
-run_regression(x= c("annee_fac"), y="subj_risque_pauvrete")
+run_regression(x= c("annee_fac"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
+```
+
+```{r}
+run_regression(x= c("sexe"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 ### Modèles complets de régression
@@ -1306,28 +1408,376 @@ run_regression(x= c("annee_fac"), y="subj_risque_pauvrete")
 #### Monétaire
 
 ```{r}
-run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs"), y="subj_risque_pauvrete")
+run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 #### Monétaire + institutionnel
 
 ```{r}
-run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi"), y="subj_risque_pauvrete")
+run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 #### Monétaire + institutionnel + précarité
 
 ```{r}
-run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "vie_fam", "conn_rsa"), y="subj_risque_pauvrete")
+run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "vie_fam", "conn_rsa"), y="subj_pauvrete_et_risque", type_mod = "multinomial")
 ```
 
 #### Monétaire + institutionnel + précarité + contrôles
 
 ```{r}
-run_regression(y="subj_risque_pauvrete", 
-               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"
+run_regression(y="subj_pauvrete_et_risque", type_mod = "multinomial", 
+               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe"
 ))
 ```
+
+
+
+
+
+```{r, eval=FALSE,echo=FALSE}
+# BROUILLON A SUPPR
+y <- "subj_pauvrete_et_risque"
+x <- "quantile_nivie"
+type_mod = "ordinal"
+f <- as.formula(paste(y, paste0(x,collapse = " + "), sep="~"))
+
+if(type_mod=="logit"){
+  repetitions <- 1
+  reg <- do.call("glm", list(formula=f,
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na(),
+                             family=binomial(logit)))
+ coeffs <- summary(reg)$coefficients[,1]
+ p <- summary(reg)$coefficients[,4]
+} else if (type_mod=="multinomial"){
+repetitions <- length(levels(bdd_log[,y])[-1])
+reg <- do.call("multinom", list(formula=f,
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na()))
+  coeffs <- as.vector(summary(reg)$coefficients)
+  z <- summary(reg)$coefficients/summary(reg)$standard.errors
+  p <- as.vector((1 - pnorm(abs(z), 0, 1)) * 2)
+} else if (type_mod=="ordinal"){ #NEW
+repetitions <- 1
+reg <- do.call("polr", list(formula=f,
+                             data = bdd_log %>% dplyr::select(c(y,x)) %>% tidyr::drop_na()))
+  coeffs <- summary(reg)$coefficients[,1]
+  p <- as.vector((1 - pnorm(abs(summary(reg)$coefficients[,3]), 0, 1)) * 2)
+}
+ 
+  if(type_mod!="ordinal"){
+   modalites <- c("(Intercept)")
+   noms <- c("-(Intercept)")
+  } else{
+   modalites <- NULL
+   noms <- NULL
+  }
+   for(var in x){
+     if(is.factor(bdd_log[,var])){
+       modalites <- c(modalites,gsub("-","",levels(bdd_log[,var])))
+       noms <- c(noms, paste0(var,levels(bdd_log[,var])[-1]))
+     }else{
+       modalites <- c(modalites,var)
+       noms <- c(noms,paste0("-",var))
+     }
+   }
+if(type_mod=="ordinal"){
+   modalites <- c(modalites,names(coeffs)[grep("\\|",names(coeffs))])
+   noms <- c(noms,paste0("(Intercept)-",names(coeffs)[grep("\\|",names(coeffs))]))
+   
+  }   
+
+  df_model  <- data.frame(noms= noms,
+                          valeur=round(coeffs,2),
+                          pvaleur=cut(p, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+                          row.names=NULL
+   ) %>% mutate(noms = gsub("`","",noms)) %>%  
+     tidyr::separate(noms,c("variable","modalite"),sep="-") %>% 
+     mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(coeffs),2))) %>%  
+     mutate(modalite_y =
+              if(type_mod!="multinomial"){NA}else{rep(levels(bdd_log[,y])[-1],each=n()/repetitions)}) %>% 
+     right_join(
+       data.frame(
+         modalite_y=if(type_mod!="multinomial"){NA}else{rep(levels(bdd_log[,y])[-1],each=length(modalites))},
+         modalite=rep(modalites,repetitions)
+         )
+       ,by=c("modalite_y","modalite")
+       ) %>% 
+     arrange(match(modalite_y,levels(bdd_log[,y])[-1]),match(modalite, modalites))
+   
+   if(type_mod == "logit"){
+    R2_ajuste <- with(summary(reg), 1 - deviance/null.deviance)
+    N <- length(summary(reg)$deviance.resid)
+   } else {
+     if(type_mod=="multinomial"){
+        ref <- do.call("multinom",
+                   list(formula=paste0(y," ~ ", 1),
+                             data = bdd_logit %>% dplyr::select(c(y,x)) %>% tidyr::drop_na(), trace = FALSE))
+  
+     } else if (type_mod=="ordinal"){
+        ref <- do.call("polr",
+                   list(formula=paste0(y," ~ ", 1),
+                             data = bdd_logit %>% dplyr::select(c(y,x)) %>% tidyr::drop_na()))
+       
+     }
+     R2_ajuste <- nnet.mod.mfr2 <- as.numeric(1 -
+                                  nnet:::logLik.multinom(reg) /
+                                  nnet:::logLik.multinom(ref)
+    )
+    N <- length(summary(reg)$fitted.values[,1])
+   } 
+  
+  if(y=="subj_pauvrete"){
+    titre_y <- "Se déclarer pauvre"
+  } else if(y=="subj_inf_mini_decla"){
+    titre_y <- "Revenu inférieur au minimum déclaré"
+  } else if(y=="subj_risque_pauvrete"){
+    titre_y <- "Penser avoir un risque de devenir pauvre dans 5 ans"
+  } else if(y=="subj_besoin_aide_etat"){
+    titre_y <- "Considérer ne pas être suffisamment aidé par les pouvoirs publics"
+  } else if(y=="subj_pauvrete_et_risque"){
+    titre_y <- "Considérer ne pas être suffisamment aidé par les pouvoirs publics"
+  }
+  
+   
+  df_model %>% dplyr::select(modalite_y,modalite,valeur,pvaleur,odds) %>%
+            kable(format = 'latex', booktabs = TRUE, longtable = TRUE) %>%  
+            kableExtra::column_spec(1, width = ifelse(type_mod=="logit","0cm","4cm")) %>% 
+            kableExtra::column_spec(2, width = "4cm") %>% 
+            kableExtra::column_spec(3:5, width = "2cm") %>% 
+            kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
+            kableExtra::footnote(c(paste0("Modèle logit (Variable dépendante = ",titre_y,")")), paste0("N = ",
+                                        N," / R2 ajusté = ",
+                                        round(100*R2_ajuste,1)," %")) 
+
+```
+
+## Pauvreté ou Risque de pauvreté subjectifs (modèle ordinal) **[NEW]** {#ordinal}
+
+### Quelques variables clefs prises une à une / groupe par groupe
+
+Grosso modo dans leur ordre d'importance (du plus fort R2 ajusté au plus faible). 
+
+```{r}
+run_regression(x= c("quantile_nivie"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("presta_rsa","presta_chomage","presta_fam","presta_apl","presta_handi","presta_etudes","presta_pensionalim"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+    
+
+```{r}
+run_regression(x= c("presta_apl"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("statut_occup"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+
+
+```{r}
+run_regression(x= c("prof_resp"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+
+```{r}
+run_regression(x= c("prof"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("prof_statut_act"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("prof_statut_act_resp"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("est_choindemnise", "est_chononindemnise","est_sdf","est_eleveseulsmic","est_pensionhandi","est_emploiprecaire","est_rsa","est_handijeune","est_dependant"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("statact"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("statut_activite"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("statut_activite_resp"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("diplome"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+
+```{r}
+run_regression(x= c("vie_fam"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+
+```{r}
+run_regression(x= c("presta_rsa"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+
+```{r}
+run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn_eleveseulsmic","conn_pensionhandi","conn_emploiprecaire","conn_rsa","conn_handijeune","conn_dependant"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("conn_choindemnise", "conn_chononindemnise","conn_sdf","conn_eleveseulsmic","conn_pensionhandi","conn_emploiprecaire","conn_rsa","conn_handijeune","conn_dependant"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("annee_fac"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+```{r}
+run_regression(x= c("sexe"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+### Modèles complets de régression
+
+#### Monétaire
+
+```{r}
+run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+#### Monétaire + institutionnel
+
+```{r}
+run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+#### Monétaire + institutionnel + précarité
+
+```{r}
+run_regression(x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "vie_fam", "conn_rsa"), y="subj_pauvrete_et_risque", type_mod = "ordinal")
+```
+
+#### Monétaire + institutionnel + précarité + contrôles
+
+```{r}
+run_regression(y="subj_pauvrete_et_risque", type_mod = "ordinal", 
+               x= c("quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe"
+))
+```
+
+## Caractéristiques des valeurs manquantes **[NEW]**
+
+
+::::{.tcolorbox data-latex= } 
+Les valeurs manquantes concernent en particulier 4 variables : 
+
+1. Le **niveau de vie** (phénomène très important)
+
+Comme classiquement s'agissant du niveau de revenu, les non-réponses concernent en particulier les personnes aisées^[variables qui ressortent significatives : ne pas recevoir d'APL, ne pas être locataire de HLM, ne pas être peu diplômé, ne pas connaître quelqu'un au RSA], celles qui ne vivent pas seules, et les enfants des familles quand ce sont les répondants. 
+
+2. Le **risque ou sentiment de pauvreté** (phénomène assez important)
+
+A l'inverse du niveau de vie objectif, les non-répondants au sentiment de pauvreté sont des populations plus populaires^[deux variables ressortent : ne pas être propriétaire et ne pas être diplômé d'au-dessus d'un bac+3]
+
+3. Le **minimum déclaré pour vivre** (phénomène assez important). 
+
+Le fait de ne pas connaître quelqu'un au RSA, d'être l'enfant de la famille et d'être artisan / commerçant augmente les chances de non-réponse à cette question. Il est à noter que pour la variable `subj_inf_mini_decla` la non-réponse du minimum déclaré pour vivre se cumule avec celle du niveau de vie (décrit ci-dessus). 
+
+4. Le **niveau de diplôme** (phénomène peu important)
+
+Le phénomène de non-réponse est apparemment trop peu pregnant pour que certaines variables ressortent significatives.
+
+::::
+```{r, echo=FALSE}
+gg_miss_var(
+bdd_logit %>% 
+   mutate(pe16 = ifelse(pe16==999999999,NA,pe16)) %>% 
+  dplyr::select( 
+c("pe16", "subj_pauvrete_et_risque","quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe")
+)
+)
+```
+
+```{r, echo=FALSE}
+bdd_vm <- bdd_logit %>% 
+  mutate(pe16 = ifelse(pe16==999999999,NA,pe16)) %>% 
+  dplyr::select( 
+c("subj_pauvrete_et_risque","pe16","quantile_nivie","revenus_financiers","revenus_locatifs", "presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe")
+) %>%
+  mutate(non_rep_minidecla=factor(ifelse(is.na(pe16),1,0)),
+         non_rep_nivie=factor(ifelse(is.na(quantile_nivie),1,0)),
+         non_rep_subjpauv=factor(ifelse(is.na(subj_pauvrete_et_risque),1,0)),
+         non_rep_dipl=factor(ifelse(is.na(diplome),1,0)),
+         non_rep=factor(ifelse(is.na(subj_pauvrete_et_risque) |
+                               is.na(pe16) |                                                           is.na(quantile_nivie) |
+                               is.na(revenus_financiers) |
+                               is.na(revenus_locatifs) |
+                               is.na(presta_rsa) |
+                               is.na(presta_chomage) |
+                               is.na(presta_apl) |
+                               is.na(presta_handi) |
+                               is.na(statut_occup) |
+                               is.na(diplome) |
+                               is.na(conn_rsa) |
+                               is.na(annee_fac) |
+                               is.na(prof_statut_act) |
+                               is.na(age_tranche) |
+                               is.na(vie_fam) |
+                               is.na(sexe) 
+                                 ,
+                        1,0))
+         ) %>% 
+  mutate(
+  pe16 = factor(replace_na(as.numeric(pe16),99),labels=c(levels(bdd_logit$pe16), paste0("NSP"," mini_decla"))), 
+  subj_pauvrete_et_risque = factor(replace_na(as.numeric(subj_pauvrete_et_risque),99),labels=c(levels(bdd_logit$subj_pauvrete_et_risque), paste0("NSP"," subj_pauvrete_et_risque"))), 
+  quantile_nivie = factor(replace_na(as.numeric(quantile_nivie),99),labels=c(levels(bdd_logit$quantile_nivie), paste0("NSP"," quantile_nivie"))), 
+  revenus_financiers = factor(replace_na(as.numeric(revenus_financiers),99),labels=c(levels(bdd_logit$revenus_financiers), paste0("NSP"," revenus_fin"))), 
+  revenus_locatifs = factor(replace_na(as.numeric(revenus_locatifs),99),labels=c(levels(bdd_logit$revenus_locatifs), paste0("NSP"," revenus_loc"))), 
+  presta_rsa = factor(replace_na(as.numeric(presta_rsa),99),labels=c(levels(bdd_logit$presta_rsa), paste0("NSP"," presta_rsa"))), 
+    presta_chomage = factor(replace_na(as.numeric(presta_chomage),99),labels=c(levels(bdd_logit$presta_chomage), paste0("NSP"," presta_cho"))), 
+  presta_apl = factor(replace_na(as.numeric(presta_apl),99),labels=c(levels(bdd_logit$presta_apl), paste0("NSP"," presta_apl"))), 
+  presta_handi = factor(replace_na(as.numeric(presta_handi),99),labels=c(levels(bdd_logit$presta_handi), paste0("NSP"," presta_handi"))), 
+  statut_occup = factor(replace_na(as.numeric(statut_occup),99),labels=c(levels(bdd_logit$statut_occup), paste0("NSP"," statut_occup"))), 
+  conn_rsa = factor(replace_na(as.numeric(conn_rsa),99),labels=c(levels(bdd_logit$conn_rsa), paste0("NSP"," conn_rsa")))#, 
+  # annee_fac = factor(replace_na(as.numeric(annee_fac),99),labels=c(levels(bdd_logit$annee_fac), "NSP")), 
+  # prof_statut_act = factor(replace_na(as.numeric(prof_statut_act),99),labels=c(levels(bdd_logit$prof_statut_act), "NSP")), 
+  # age_tranche = factor(replace_na(as.numeric(age_tranche),99),labels=c(levels(bdd_logit$age_tranche), "NSP")), 
+    # vie_fam = factor(replace_na(as.numeric(vie_fam),99),labels=c(levels(bdd_logit$vie_fam), "NSP")), 
+  # sexe = factor(replace_na(as.numeric(sexe),99),labels=c(levels(bdd_logit$sexe), "NSP"))
+  ) 
+```
+
+```{r}
+run_regression(y="non_rep_nivie", 
+               x= c("subj_pauvrete_et_risque","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe" #"subj_pauvrete_et_risque",
+               ),
+               bdd_log=bdd_vm)
+
+run_regression(y="non_rep_subjpauv", 
+               x= c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe" #"subj_pauvrete_et_risque",
+               ),
+               bdd_log=bdd_vm)
+
+run_regression(y="non_rep_minidecla", 
+               x= c("subj_pauvrete_et_risque","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe" #"subj_pauvrete_et_risque",
+               ),
+               bdd_log=bdd_vm)
+
+run_regression(y="non_rep_dipl", 
+               x= c("quantile_nivie","subj_pauvrete_et_risque","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","statut_occup", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam", "sexe"
+               ),
+               bdd_log=bdd_vm)
+```
+
 
 # Notes méthodologiques
 
@@ -1335,4 +1785,11 @@ Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 
 
 # Bibliographie {.unnumbered}
 
-- Rien de particulier
+- http://larmarange.github.io/analyse-R/regression-logistique.html : pour aller plus loin dans la mise en forme des sorties de régression
+- https://stats.idre.ucla.edu/r/dae/multinomial-logistic-regression/ multinomial regression
+- https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwi_rruYtI_xAhUPLBoKHbXfBnYQFnoECAIQAA&url=https%3A%2F%2Fatm.amegroups.com%2Farticle%2Fdownload%2F42812%2Fpdf&usg=AOvVaw3r_pG34FuohTLVbkEBdKZJ multinomial versus ordinal regression
+- https://www.analyticsvidhya.com/blog/2016/02/multinomial-ordinal-logistic-regression/ multinomial versus ordinal regression
+- https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/ interprétation régression logistique ordinale
+- https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html et https://naniar.njtierney.com/articles/naniar-visualisation.html package naniar pour les données manquantes
+ 
+ 
