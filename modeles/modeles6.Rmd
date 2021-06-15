@@ -1,0 +1,995 @@
+---
+title: |
+    | Fiche de modélisations n°6
+subtitle : "Variables et classes latentes"
+author: |
+    | Kim Antunez
+automaticcontents: true
+output:
+  bookdown::pdf_document2:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_caption: true
+        highlight: default
+        keep_tex: no
+        includes:
+          in_header: preamble.tex
+themeoptions: "coding=utf8,language=french"
+classoption: 'french'
+fontsize: 11pt
+geometry: margin=0.90in
+lang: "french"
+documentclass: "article"
+---
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+#library(rmdformats)
+
+## Global options
+#options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.width = 5,
+               fig.height = 3
+               )
+options(knitr.kable.NA = '')
+#opts_knit$set(width=75)
+```
+
+
+# Objectif
+
+L'objectif de cette sixième série de modèles est de ...
+
+# Analyses
+
+::::{.tcolorbox data-latex= } 
+TODO
+::::
+
+
+
+# Code et résultats
+
+```{r}
+#chargement des packages
+library(knitr)
+library(dplyr) #manipuler les bases de données
+library(psych) #EFA
+library(MPsychoR) #pour le dataset RMotivation (à suppr)
+library("lavaan") #CFA et SEM
+library("semPlot") #path draw CFA SEM
+```
+
+```{r, echo=FALSE}
+bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
+  filter(annee%in%2016:2019)
+
+revenus_a_imputer <- bdd %>%
+mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
+group_by(sdrevtr) %>% 
+summarise(sdrevcl = mean(sdrevcl,na.rm=TRUE))
+
+bdd <- bdd %>%   mutate(
+    sdrevcl_imput_moy = case_when(
+      sdrevcl!=999999999 ~ sdrevcl,
+      sdrevcl==999999999 & sdrevtr==1 ~ revenus_a_imputer$sdrevcl[1],
+      sdrevcl==999999999 & sdrevtr==2 ~ revenus_a_imputer$sdrevcl[2],
+      sdrevcl==999999999 & sdrevtr==3 ~ revenus_a_imputer$sdrevcl[3],
+      sdrevcl==999999999 & sdrevtr==4 ~ revenus_a_imputer$sdrevcl[4],
+      sdrevcl==999999999 & sdrevtr==5 ~ revenus_a_imputer$sdrevcl[5],
+      sdrevcl==999999999 & sdrevtr==6 ~ revenus_a_imputer$sdrevcl[6],
+      sdrevcl==999999999 & sdrevtr==7 ~ revenus_a_imputer$sdrevcl[7]
+             )
+  )
+
+bdd <- bdd %>% 
+   mutate(seuil_pauvrete = do.call(c,lapply(annee,function(annee_selec){
+0.6*median(bdd[bdd$annee==annee_selec,"sdrevcl_imput_moy"]/bdd[bdd$annee==annee_selec,"sduc"],
+           na.rm=TRUE)
+}
+))) %>% 
+   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+  mutate(subj_pauvrete = 
+           ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_risque_pauvrete = 
+           ifelse(pe3==1, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
+  mutate(subj_besoin_aide_etat =
+           ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
+  mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
+
+bdd <- bdd %>% 
+  mutate(
+    prof_exercee_ou_derniere = case_when(
+      sdpcs7%in%c(1,2) ~ "Agriculteurs, artisans et commerçants",
+      sdpcs7%in%c(3) ~ "Cadre supérieur, profession libérale",
+      sdpcs7%in%c(4) ~ "Profession intermédiaire",
+      sdpcs7%in%c(5) ~ "Employé",
+      sdpcs7%in%c(6) ~ "Ouvrier",
+      sdpcs7%in%c(7) ~ "Autres (n'ayant jamais travaillé)"
+    )
+  ) %>% 
+  mutate(
+    activite_actuelle = case_when(
+      sdsitua==4 ~ "Chômeur",
+      sdsitua==6 ~ "Retraité",
+      (sdsitua==1 & sdstatemp!=1) | sdsitua%in%c(2,3) ~
+        "Emploi précaire/temps partiel",
+      TRUE #sdsitua%in%c(5,7) | (sdsitua==1 & sdstatemp==1) incomplet
+      ~
+        "Autres (CDI à temps plein, étudiants en formations et personnes n'ayant jamais travaillé)"
+    )
+  )%>% 
+  mutate(
+    PCS_recode = case_when(
+      prof_exercee_ou_derniere%in%c("Employé","Ouvrier") & activite_actuelle=="Emploi précaire/temps partiel" ~
+        "Employés et ouvriers\nprécaires ou\ntemps partiels",
+      prof_exercee_ou_derniere%in%c("Employé","Ouvrier") & activite_actuelle=="Retraité" ~
+        "Employés et ouvriers\nà la retraite", #sdsitua==6
+      prof_exercee_ou_derniere%in%c("Employé","Ouvrier") & activite_actuelle=="Chômeur"  ~
+        "Employés et ouvriers\nau chômage",
+      sdsitua==1 & !(prof_exercee_ou_derniere%in%c("Employé","Ouvrier") & activite_actuelle=="Emploi précaire/temps partiel") ~ "En emploi à temps plein",
+      sdsitua%in%c(7)  ~ "Sans activité\nprofessionnelle",
+      TRUE                      ~  "Autres"
+    )
+  ) %>% 
+  mutate(
+    sitfam = case_when(
+      sdsitfam==2 ~ "Membre du couple",
+      sdsitfam==1 ~ "Vie seule",
+      sdsitfam==3 ~ "Famille monoparentale",
+      sdsitfam%in%c(4,5,6,7) ~ "Autre situation (enfant de la famille,\nami ou parent hébergé, colocataire)" 
+      #pas précisé si prise compte de 7 mais très peu d'individus
+    )
+  ) %>% 
+  mutate(
+    crois_pauvrete_obj_subj = case_when(
+      !subj_pauvrete & !obj_pauvrete & !is.na(subj_pauvrete) & !is.na(obj_pauvrete)  ~
+        "Au-dessus du seuil\net ne se sent pas pauvre",
+      !subj_pauvrete & obj_pauvrete & !is.na(subj_pauvrete) & !is.na(obj_pauvrete) ~
+        "Sous le seuil\nmais ne se sent pas pauvre",
+      subj_pauvrete & !obj_pauvrete & !is.na(subj_pauvrete) & !is.na(obj_pauvrete) ~
+        "Au-dessus du seuil\nmais se sent pauvre",
+      subj_pauvrete & obj_pauvrete & !is.na(subj_pauvrete) & !is.na(obj_pauvrete)~
+        "Pauvreté monétaire\net ressentie"
+    )
+  ) %>% 
+#sdres_3 : RSA, sdres_4 : chômage, sdres_10 : handicap dépdce.
+  mutate(
+    assistance = case_when(
+      sdres_3==1 | sdres_4==1 | sdres_10==1 ~ TRUE,
+      sdres_3==2 & sdres_4==2 & sdres_10==2 ~ FALSE,
+      TRUE ~ NA
+      )
+  ) %>% 
+  mutate(
+    pessimisme = case_when(
+      og3_1%in%c(1,2) ~ FALSE,
+      og3_1%in%c(3,4) ~ TRUE,
+      og3_1%in%c(5) ~ NA
+      )
+  ) %>% 
+  mutate(
+    declassement = case_when(
+      #og2_ab%in%c(1,2) | og2_cd%in%c(4,5)  ~ TRUE,
+      #og2_ab%in%c(3,4,5) | og2_cd%in%c(1,2,3) ~ FALSE,
+      #og2_ab%in%c(6) | og2_cd%in%c(6) ~ NA
+      og2%in%c(1,2) ~ TRUE,
+      og2%in%c(3,4,5) ~ FALSE,
+      og2%in%c(6) ~ NA
+      )
+  )  %>% 
+  mutate(
+    proprietaire = case_when(
+      lo1==1 ~ TRUE,
+      lo1%in%c(2,3,4) ~ FALSE,
+      lo1==5 ~ NA
+      )
+  ) %>% 
+  mutate(
+    retraite = case_when(
+      sdsitua==6 ~ TRUE,
+       TRUE ~ FALSE
+    )
+  )
+
+
+```
+
+
+```{r, echo=FALSE}
+bdd_logit <- bdd %>% 
+  mutate(quantile_nivie = factor(
+    cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
+        breaks=quantile(sdrevcl_imput_moy/sduc,
+                        probs=seq(0,1,0.2),na.rm=TRUE),
+        labels=1:5),
+    levels=c(2,1,3,4,5),
+    labels=paste0("-Quintile ",c(2,1,3,4,5)))
+  ) %>% 
+  mutate(
+    statact = factor(case_when(
+      sdsitua==1 & sdstatemp%in%c(1)   ~ 1,
+      sdsitua%in%c(2,3) | (sdsitua==1 & sdstatemp%in%c(NA,2,3,4,5)) ~ 2,
+      sdsitua==4 ~ 3,
+      sdsitua==5 ~ 4,
+      sdsitua==6 ~ 5,
+      sdsitua==7 ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=1:6,
+    labels=paste0("-",
+                  c("CDI temps plein",
+                    "Emploi précaire ou à temps partiel",
+                    "Recherche d’emploi",
+                    "Étudiant",
+                    "Retraité",
+                    "Aucune activité professionnelle"))
+    )) %>%
+  # fastDummies::dummy_cols(select_columns = 'prof') %>% 
+  mutate(
+    diplome = factor(case_when(
+      sddipl%in%c(1,2,3,4) ~ 1,
+      sddipl%in%c(5,6) ~ 2,
+      sddipl%in%c(7) ~ 3,
+      sddipl%in%c(8) ~ 4,
+      TRUE ~ NA_real_
+    ),
+    levels=c(2,1,3,4),
+    labels=paste0("-",c("Baccalauréat","CAP, BEP ou moins","Bac + 2","Bac + 3 ou plus"))
+    )) %>% 
+  mutate(aide_log = factor(
+    ifelse(sdres_9!=3,sdres_9,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas d'aide au logement","Aide au logement reçue"))
+  )) %>% 
+  mutate(aide_rsa = factor(
+    ifelse(sdres_3!=3,sdres_3,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas de RSA","RSA reçu"))
+  )) %>% 
+  mutate(aide_handi = factor(
+    ifelse(sdres_10!=3,sdres_10,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas d'alloc. hand./invalid./dépend.",
+                        "Alloc. hand./invalid./dépend. reçu"))
+  )) %>% 
+  mutate(sexe = factor(
+    ifelse(sdsexe!=3,sdsexe,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Femme","Homme"))
+  )) %>% 
+  mutate(age_tranche = factor(
+    cut(sdage,
+        breaks=c(18,30,40,50,60,70,120),
+        include.lowest=TRUE,
+        labels=1:6),
+    levels=c(2,1,3,4,5,6),
+    labels=paste0("-",c("30 à 39 ans","18 à 29 ans","40 à 49 ans",
+                        "50 à 59 ans","60 à 69 ans", "70 ans et plus")))
+  ) %>% 
+  mutate(
+    vie_fam = factor(case_when(
+      sdsitfam==1 ~ 1,
+      #sdsitfam==2 & sdnbenf==0 ~ 2,
+      #sdsitfam==2 & sdnbenf!=0 ~ 3,
+      sdsitfam==2 & sdnbenf==1 ~ 2,
+      sdsitfam==2 & sdnbenf!=1 ~ 3,
+      sdsitfam==3 ~ 4,
+      sdsitfam==4 ~ 5,
+      sdsitfam%in%c(5,6,7) ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=c(2,1,3,4,5,6),
+    labels=paste0("-",
+                  c("Membre du couple (pas d’enfants à charge)","Vit seul",
+                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
+                    "Enfant","Autre situation familiale"))
+    )) %>% 
+  mutate(
+    statut_occup = factor(case_when(
+      lo1%in%c(3,4)  ~ 1,
+      lo1==2  ~ 2,
+      lo1==1 ~ 3,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2,3),
+    labels=paste0("-",
+                  c("Locataire privé / hébergé",
+                    "Locataire HLM","Propriétaire")) 
+    )) %>% 
+  mutate(annee_fac = factor(annee,labels=paste0("-",2016:2019))) %>% 
+  mutate(annee_fac_paires = factor(ifelse(annee%in%c(2016,2018),annee,NA),labels=paste0("-",c(2016,2018)))) %>% 
+  mutate(pauvrete_mon_rel= factor(
+    ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
+                                  ifelse(sdrevcl_imput_moy/sduc>=1.2*seuil_pauvrete,1,
+                                         ifelse(sdrevcl_imput_moy/sduc<1.2*seuil_pauvrete &
+                                                  sdrevcl_imput_moy/sduc>=seuil_pauvrete ,
+                                                2,NA)
+                                  )),
+    levels=c(1,2,3),
+    labels=paste0("-",c("Revenus > 20 pourcents seuil pauvreté",
+                        "Entre le seuil et 20 pourcents au dessus",
+                        "Pauvreté monétaire"))
+  )
+  )
+
+# bdd_logit <- bdd_logit %>% mutate(sdniviecl_imput_quint = 
+# factor(
+#     cut(sdniviecl_imput, include.lowest=TRUE,
+#         breaks=quantile(sdniviecl_imput,
+#                         probs=seq(0,1,0.2),na.rm=TRUE),
+#         labels=1:5),
+#     levels=c(2,1,3,4,5),
+#     labels=paste0("-Quintile ",c(2,1,3,4,5))))
+
+#NEW depuis fiche 3
+ bdd_logit <- bdd_logit %>% #chômeur indemnise 
+  mutate(
+    conn_choindemnise = factor(case_when(
+      sdproxim_1%in%c(1,4)  ~ 1,
+      sdproxim_1%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_1==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de chômeur indemnisé",
+                    "Connait un chômeur indemnisé")) 
+    )) %>% 
+  mutate(
+    est_choindemnise = factor(case_when(
+      sdproxim_1%in%c(4,6,7,8)  ~ 2,
+      sdproxim_1%in%c(1,2,3,5)  ~ 1,
+      sdproxim_1==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas chômeur indemnisé",
+                    "est chômeur indemnisé")) 
+    )) %>%
+  mutate(
+    conn_chononindemnise = factor(case_when(
+      sdproxim_2%in%c(1,4)  ~ 1,
+      sdproxim_2%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_2==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de chômeur non indemnisé",
+                    "Connait un chômeur non indemnisé")) 
+    )) %>% 
+  mutate(
+    est_chononindemnise = factor(case_when(
+      sdproxim_2%in%c(4,6,7,8)  ~ 2,
+      sdproxim_2%in%c(1,2,3,5)  ~ 1,
+      sdproxim_2==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas chômeur non indemnisé",
+                    "est chômeur non indemnisé")) 
+    )) %>% #SDF
+  mutate(
+    conn_sdf = factor(case_when(
+      sdproxim_3%in%c(1,4)  ~ 1,
+      sdproxim_3%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_3==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de SDF",
+                    "Connait un SDF")) 
+    )) %>% 
+  mutate(
+    est_sdf = factor(case_when(
+      sdproxim_3%in%c(4,6,7,8)  ~ 2,
+      sdproxim_3%in%c(1,2,3,5)  ~ 1,
+      sdproxim_3==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas SDF",
+                    "est SDF")) 
+    )) %>% #personne élevant seul ses enfants avec moins du SMIC 
+  mutate(
+    conn_eleveseulsmic = factor(case_when(
+      sdproxim_4%in%c(1,4)  ~ 1,
+      sdproxim_4%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_4==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne élevant seul ses enfants avec moins du SMIC",
+                    "Connait une personne élevant seul ses enfants avec moins du SMIC")) 
+    )) %>% 
+  mutate(
+    est_eleveseulsmic = factor(case_when(
+      sdproxim_4%in%c(4,6,7,8)  ~ 2,
+      sdproxim_4%in%c(1,2,3,5)  ~ 1,
+      sdproxim_4==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne élevant seul ses enfants avec moins du SMIC",
+                    "est personne élevant seul ses enfants avec moins du SMIC")) 
+    )) %>% #pensionné invalide indicapé ne pouvant pas travailler 
+  mutate(
+    conn_pensionhandi = factor(case_when(
+      sdproxim_5%in%c(1,4)  ~ 1,
+      sdproxim_5%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_5==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de pensionné invalide indicapé ne pouvant pas travailler",
+                    "Connait un pensionné invalide indicapé ne pouvant pas travailler")) 
+    )) %>% 
+  mutate(
+    est_pensionhandi = factor(case_when(
+      sdproxim_5%in%c(4,6,7,8)  ~ 2,
+      sdproxim_5%in%c(1,2,3,5)  ~ 1,
+      sdproxim_5==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas pensionné invalide indicapé ne pouvant pas travailler",
+                    "est pensionné invalide indicapé ne pouvant pas travailler")) 
+    )) %>% #personne en emploi précaire 
+  mutate(
+    conn_emploiprecaire = factor(case_when(
+      sdproxim_6%in%c(1,4)  ~ 1,
+      sdproxim_6%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_6==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne en emploi précaire",
+                    "Connait une personne en emploi précaire")) 
+    )) %>% 
+  mutate(
+    est_emploiprecaire = factor(case_when(
+      sdproxim_6%in%c(4,6,7,8)  ~ 2,
+      sdproxim_6%in%c(1,2,3,5)  ~ 1,
+      sdproxim_6==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne en emploi précaire",
+                    "est personne en emploi précaire")) 
+    )) %>% #personne au RSA 
+  mutate(
+    conn_rsa = factor(case_when(
+      sdproxim_7%in%c(1,4)  ~ 1,
+      sdproxim_7%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne au RSA",
+                    "Connait une personne au RSA")) 
+    )) %>% 
+  mutate(
+    est_rsa = factor(case_when(
+      sdproxim_7%in%c(4,6,7,8)  ~ 2,
+      sdproxim_7%in%c(1,2,3,5)  ~ 1,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne au RSA",
+                    "est personne au RSA")) 
+    )) %>% #personne handicapée de moins de 60 ans
+  mutate(
+    conn_handijeune = factor(case_when(
+      sdproxim_8%in%c(1,4)  ~ 1,
+      sdproxim_8%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_8==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne handicapée de moins de 60 ans",
+                    "Connait une personne handicapée de moins de 60 ans")) 
+    )) %>% 
+  mutate(
+    est_handijeune = factor(case_when(
+      sdproxim_8%in%c(4,6,7,8)  ~ 2,
+      sdproxim_8%in%c(1,2,3,5)  ~ 1,
+      sdproxim_8==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne handicapée de moins de 60 ans",
+                    "est personne handicapée de moins de 60 ans")) 
+    )) %>% #personne âgée dépendante
+  mutate(
+    conn_dependant = factor(case_when(
+      sdproxim_9%in%c(1,4)  ~ 1,
+      sdproxim_9%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_9==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne âgée dépendante",
+                    "Connait une personne âgée dépendante")) 
+    )) %>% 
+  mutate(
+    est_dependant = factor(case_when(
+      sdproxim_9%in%c(4,6,7,8)  ~ 2,
+      sdproxim_9%in%c(1,2,3,5)  ~ 1,
+      sdproxim_9==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne âgée dépendante",
+                    "est personne âgée dépendante")) 
+    )) %>% 
+  mutate(
+    revenus_salaires = factor(case_when(
+      sdres_1%in%c(2)  ~ 1,
+      sdres_1%in%c(1)  ~ 2,
+      sdres_1==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus de salaires",
+                    "Revenus de salaires")) 
+    )) %>% 
+  mutate(
+    revenus_independant = factor(case_when(
+      sdres_2%in%c(2)  ~ 1,
+      sdres_2%in%c(1)  ~ 2,
+      sdres_2==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus d'activité indépendante",
+                    "Revenus d'activité indépendante")) 
+    )) %>%  
+  mutate(
+    presta_rsa = factor(case_when(
+      sdres_3%in%c(2)  ~ 1,
+      sdres_3%in%c(1)  ~ 2,
+      sdres_3==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de RSA",
+                    "RSA")) 
+    )) %>% 
+  mutate(
+    presta_chomage = factor(case_when(
+      sdres_4%in%c(2)  ~ 1,
+      sdres_4%in%c(1)  ~ 2,
+      sdres_4==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas d'allocation chômage",
+                    "Allocation chômage")) 
+    )) %>% 
+  mutate(
+    revenus_retraite = factor(case_when(
+      sdres_5%in%c(2)  ~ 1,
+      sdres_5%in%c(1)  ~ 2,
+      sdres_5==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus de retraite",
+                    "Revenus de retraite")) 
+    )) %>%
+  mutate(
+    revenus_financiers = factor(case_when(
+      sdres_6%in%c(2)  ~ 1,
+      sdres_6%in%c(1)  ~ 2,
+      sdres_6==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus d'actifs financiers",
+                    "Revenus d'actifs financiers")) 
+    )) %>% 
+  mutate(
+    revenus_locatifs = factor(case_when(
+      sdres_7%in%c(2)  ~ 1,
+      sdres_7%in%c(1)  ~ 2,
+      sdres_7==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus de locations",
+                    "Revenus de locations")) 
+    )) %>% 
+  mutate(
+    presta_fam = factor(case_when(
+      sdres_8%in%c(2)  ~ 1,
+      sdres_8%in%c(1)  ~ 2,
+      sdres_8==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de prestations familiales",
+                    "Prestations familiales")) 
+    )) %>% 
+  mutate(
+    presta_apl = factor(case_when(
+      sdres_9%in%c(2)  ~ 1,
+      sdres_9%in%c(1)  ~ 2,
+      sdres_9==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas d'APL",
+                    "APL")) 
+    )) %>% 
+  mutate(
+    presta_handi = factor(case_when(
+      sdres_10%in%c(2)  ~ 1,
+      sdres_10%in%c(1)  ~ 2,
+      sdres_10==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas d'AAH, APA, PCH (handicap)",
+                    "AAH, APA, PCH (handicap)")) 
+    )) %>% 
+  mutate(
+    presta_etudes = factor(case_when(
+      sdres_11%in%c(2)  ~ 1,
+      sdres_11%in%c(1)  ~ 2,
+      sdres_11==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de bourse d'étude",
+                    "bourse d'étude")) 
+    )) %>% 
+  mutate(
+    presta_pensionalim = factor(case_when(
+      sdres_12%in%c(2)  ~ 1,
+      sdres_12%in%c(1)  ~ 2,
+      sdres_12==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de pension alimentaire",
+                    "pension alimentaire")) 
+    )) %>% 
+  mutate(
+    statut_activite = factor(case_when(
+      sdstat==2 & (sdsitua==1 & sdstatemp==1) ~ 1,
+      sdstat==2 & !(sdsitua==1 & sdstatemp==1) ~ 2,
+      sdstat==1 & (sdsitua==1 & sdstatemp==1) ~ 3,
+      sdstat==1 & !(sdsitua==1 & sdstatemp==1) ~ 4,
+      sdstat==3 ~ 5,
+      sdstat==4 ~ 6,
+      sdstat==5 ~ 7,
+      sdstat==6 ~ 8,
+      sdstat==7 ~ 9,
+      sdstat==8 ~ NA_real_
+   ),
+    levels=1:9,
+    labels=paste0("-",
+                  c("Salarié du secteur privé (en CDI à temps plein)",
+"Salarié du secteur privé (précaire ou à temps partiel)",
+"Salarié du secteur public (en CDI à temps plein)",
+"Salarié du secteur public (précaire ou à temps partiel)",
+"Indépendant sans salarié",
+"Employeur",
+"Chômeur",
+"Inactif",
+"Autre statut d'activité")
+) 
+    )) %>% 
+  mutate(prof = factor(
+    sdpcs7,
+    levels=c(4,1,2,3,5,6,7),
+    labels=paste0("-",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Autre inactif"))
+  ))  %>% 
+  mutate(prof_statut_act = factor(
+    sdpcs10,
+    levels=c(4,1,2,3,5,6,7,8,9,10),
+    labels=paste0("-",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Chômeur",
+                        "Retraité","Au foyer","Autre inactif"))
+  )) %>%
+  mutate(
+    statut_activite_resp = factor(case_when(
+      sdprstat==2 & (sdprsitua==1) ~ 1,
+      sdprstat==2 & !(sdprsitua==1) ~ 2,
+      sdprstat==1 & (sdprsitua==1) ~ 3,
+      sdprstat==1 & !(sdprsitua==1) ~ 4,
+      sdprstat==3 ~ 5,
+      sdprstat==4 ~ 6,
+      sdprstat==5 ~ 7,
+      sdprstat==6 ~ 8,
+      sdprstat==7 ~ 9,
+      sdprstat==8 ~ NA_real_
+   ),
+    levels=1:9,
+    labels=paste0("-Pers. réf. ",
+                  c("Salarié du secteur privé (à temps plein)",
+"Salarié du secteur privé (à temps partiel)",
+"Salarié du secteur public (à temps plein)",
+"Salarié du secteur public (à temps partiel)",
+"Indépendant sans salarié",
+"Employeur",
+"Chômeur",
+"Inactif",
+"Autre statut d'activité")
+) 
+    )) %>% 
+  mutate(prof_resp = factor(
+    sdprpcs7,
+    levels=c(4,1,2,3,5,6,7),
+    labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Autre inactif"))
+  )) %>% 
+  mutate(prof_statut_act_resp = factor(
+    sdprpcs10,
+    levels=c(4,1,2,3,5,6,7,8,9,10),
+    labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Chômeur",
+                        "Retraité","Au foyer","Autre inactif"))
+  ))
+
+```
+
+```{r, echo=FALSE}
+# 3 dimensions
+# s : pauvreté subjective
+# m : pauvreté monétaire
+# i : pauvreté institutionnelle
+bdd_fa <- bdd_logit %>% 
+  mutate(s_sentpauv = subj_pauvrete + 0,
+         s_risqpauv = subj_risque_pauvrete + 0,
+         s_infminidecla = subj_inf_mini_decla + 0,
+         m_nivie1 = ifelse(quantile_nivie=="-Quintile 1",1,0),
+         m_nivie2 = ifelse(quantile_nivie=="-Quintile 2",1,0),
+         m_nivie3 = ifelse(quantile_nivie=="-Quintile 3",1,0),
+         m_nivie4 = ifelse(quantile_nivie=="-Quintile 4",1,0),
+         m_nivie5 = ifelse(quantile_nivie=="-Quintile 5",1,0),
+          m_locatif = ifelse(revenus_locatifs=="-Revenus de locations",1,0),
+          m_financier = ifelse(revenus_financiers=="-Revenus d'actifs financiers",1,0),
+         i_log = ifelse(aide_log=="-Aide au logement reçue",1,0),
+         i_rsa = ifelse(aide_rsa=="-RSA reçu",1,0),
+         i_handi = ifelse(aide_handi=="-Alloc. hand./invalid./dépend. reçu",1,0)
+  ) #%>% 
+#  select(s_sentpauv, s_risqpauv, s_infminidecla,
+#m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
+#i_log, i_rsa, i_handi)
+
+```
+
+## Correlation coefficients
+
+A correlation coefficient suited for dichotomous data and based on this underlying normal strategy is the tetrachoric correlation. It gives us a single number describing the degree of dependence in the table above with the extreme values of 1 if the off-diagonals are 0 and −1 if the diagonals are 0. In addition, we get estimates for the thresholds τ1 and τ2. polycholoric existe aussi pour deux items polytomous. 
+
+We print out the last six eigenvalues and see that the last eigenvalue is negative. Thus, this matrix does not fulfill the properties of a correlation matrix. The trick is now to apply some smoothing on the correlations.
+
+The final criterion is interpretability
+
+```{r, echo=FALSE}
+bdd_fa_small <- bdd_fa %>% 
+  select(s_sentpauv, s_risqpauv, s_infminidecla,
+m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5,
+i_log, i_rsa, i_handi)
+
+bdd_fa_tetra <- tetrachoric(bdd_fa_small, smooth = TRUE)
+# Matrice de corrélation
+bdd_fa_tetra$rho
+# Valeurs propres
+vp <- eigen(bdd_fa_tetra$rho)$values
+# Conservation de la variance. 
+round((vp/sum(vp)*100),2)
+scree(bdd_fa_tetra$rho, factors = FALSE)
+resnf <- nfactors(bdd_fa_tetra$rho, n = 8, fm = "ml", cor = "tet")
+# Nombre de facteurs : 2 ou 3.
+
+```
+
+
+## Exploratory Factor Analysis (EFA)
+
+However, in order to get an even clearer picture, in EFA we typically apply a rotation on the loadings matrix. Such a rotation does not change the fit of the model; it is only done for interpretation purposes by transforming the loadings. We distinguish between two basic types of rotations: orthogonal (qui implique que les facteurs sont indépendants) and nonorthogonal rotation (comme oblimin).
+
+In practice,
+EFA with oblique rotation is often used prior to a CFA in order to explore whether
+the underlying latent structure theory is reflected by the data.
+
+
+**Différences entre EFA et ACP**
+-	Les ACP reposent sur des estimations bien plus simples que les EFA (ML, LS). 
+-	L’EFA se concentrent sur l’explication des termes en dehors de la diagonales des éléments de grand sigma (explique les covariances) alors que l’ACP se concentre sur la diagonale (explique principalement la variance, même si pas totalement aveugle aux covariances). 
+-	Les scores des facteurs sont calculés post hoc alors que ceux de l’ACP est une conséquence directe du SVD. 
+-	En EFA, on fixe p avant de faire tourner le modèle, dans l’ACP on choisit le nombre d’axes a posteriori. 
+-	En EFA, les rotations peuvent aider à mieux interpréter sans changer la solution, contrairement à la PCA pour laquelle la solution est changée. 
+
+
+
+PCA et EFA sont deux techniques de réduction de dimensions mais elles ont des différences. 
+
+On utilise la PCA quand les variables sont très corrélées cela permet de réduire le nombre de variables observées en un plus petit nombre de composantes principales qui résument un maximum de variances des variables observées
+On utilise l’EFA pour identifier le nombre de variables latentes (non mesurée directement) et la structure des facteurs qui découlent d’un ensemble de variables. Elle permet d’estimer les facteurs qui influencent les réponses des variables observées. 
+
+Unlike factor analysis, principal components analysis or PCA makes the assumption that there is no unique variance, the total variance is equal to common variance. Recall that variance can be partitioned into common and unique variance. If there is no unique variance then common variance takes up total variance (see figure below). Additionally, if the total variance is 1, then the common variance is equal to the communality.
+
+
+
+-	PCA suppose l’absence d’outliers. L’EFA suppose une distribution normale multivariée quand la méthode de ML est utilisée
+-	Les axes de la PCA tiennent compte de la variance maximale des variables observées alors que les facteurs de l’EFA tiennent compte de la variance commune
+-	La PCA utilise une matrice de corrélation alors que l’EFA utilise une matrice de corrélation ajustée
+-	Dans une PCA il y a des 1 sur la diagonale de la matrice de corrélation alors que dans l’EFA la diagonale est ajustée avec les facteurs uniques. 
+-	La PCA minimise la somme des carrés perpendiculaire à la distance aux axes des composantes. L’EFA estime des facteurs qui influencent la réponse à des variables observées. 
+-	Les scores des composantes de la PCA est une combinaison linéaire des variables observées pondérées par les vecteurs propres. Les variables observées de l’EFA sont une combinaison linéaire des facteurs uniques
+
+
+```{r, echo=FALSE}
+
+pauvFA <- fa(bdd_fa_tetra$rho, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
+summary(pauvFA)
+fa.plot(pauvFA$loadings[,1:2], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,5),rep(3,3)))
+fa.plot(pauvFA$loadings[,2:3], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,5),rep(3,3)))
+fa.plot(pauvFA$loadings[,c(1,3)], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,5),rep(3,3)))
+
+print(pauvFA$loadings, cutoff = 0.2)
+round(pauvFA$communality, 2)
+
+
+```
+
+## Confirmatory factor analysis (CFA)
+
+EFA and CFA are mathematically very similar, since we have the same fundamental
+equation in both cases. In EFA we assumed uncorrelated factors by setting
+
+### 3 dimensions de la pauvreté
+
+```{r, echo=FALSE}
+bdd_fa_naomit <- na.omit(bdd_fa %>%
+  select(s_sentpauv, s_risqpauv, s_infminidecla,
+m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
+i_log, i_rsa, i_handi))
+pauv_model <- '
+s =~ s_sentpauv + s_risqpauv + s_infminidecla
+m =~ m_nivie1 + m_nivie5 + m_locatif + m_financier
+i =~ i_log + i_rsa + i_handi
+'
+fit <- lavaan::cfa(pauv_model, data = bdd_fa_naomit,
+ordered = names(bdd_fa_naomit))
+
+semPaths(fit, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+# Error variance of indicators
+diag(inspect(fitMot, what = "est")$theta)
+# Loadings and standardized loadings
+inspect(fit, what = "est")$lambda
+inspect(fit, what = "std")$lambda
+# Latent variable covariance matrix
+inspect(fit, what = "est")$psi
+inspect(fit, what = "std")$psi
+# Covariance matrix
+parameterEstimates(fit, standardized = TRUE)
+# Summary
+summary(fit, standardized = TRUE, fit.measures = TRUE)
+```
+- p-valeur du test du chi-2 de 0, très mauvais car un résultat non significatif veut dire que le modèle "fits" mais il ne faut pas faire très attention à cette statistique car elle est très souvent significative quand l'échantillon est grand. 
+- Le CFI doit être supérieur à 0,95. Ici 0,98 OK
+- Le RMSEA doit être dans l'intervalle [0.05,0.10]. Ici [0,03, 0.04] pas tout à fait le cas donc. 
+- Le SRMR doit être inférieur à 0.08, pas du tout le cas ici 0,24.
+
+### Améliorer le modèle
+
+```{r, echo=FALSE}
+parameterEstimates(fit)
+# Quels résidus sont supérieurs à 0.1 ?
+#residuals(fit, type = "cor")$cor
+# Ou  expected vs. observed counts in each level instead pour variables catégorielles
+lavTables(fit)
+# modification Indices (mais garder en tête généralisation et non over-fitting)
+modificationIndices(fit, sort.=TRUE, minimum.value=3)
+
+```
+### CFA hiérarchique 
+
+```{r, echo=FALSE}
+pauv_model_hier <- '
+s =~ s_sentpauv + s_risqpauv + s_infminidecla
+m =~ m_nivie1 + m_nivie5 + m_locatif + m_financier
+i =~ i_log + i_rsa + i_handi
+pauvrete =~ s + m + i
+'
+
+fit_hier <- lavaan::cfa(pauv_model_hier, data = bdd_fa_naomit,
+ordered = names(bdd_fa_naomit))
+
+
+semPaths(fit_hier, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+summary(fit_hier, standardized = TRUE, fit.measures = TRUE)
+```
+
+## CFA avec des covariables (MIMIC)
+
+MIMIC stands for multiple indicators multiple independent causes (Jöreskog and Goldberger, 1975) and is a general structural latent variable concept where CFA is extended in terms of linking covariates with latent variables. MIMIC models can be used to control for sociodemographic or other types of covariates in CFA and more
+general SEM specifications.
+
+Remarque : ne marche qu'avec les covariates exogènes de moins de 2 facteurs (à transformer en indicatrices j'imagine)
+
+```{r, echo=FALSE}
+pauv_model_mimic <- '
+s =~ s_sentpauv + s_risqpauv + s_infminidecla
+m =~ m_nivie1 + m_nivie5 + m_locatif + m_financier
+i =~ i_log + i_rsa + i_handi
+pauvrete =~ s + m + i
+pauvrete ~ sexe
+'
+
+fit_mimic <- lavaan::cfa(pauv_model_mimic, data = bdd_fa)
+
+semPaths(fit_mimic, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+
+```
+##  Structural equation models (SEM)
+
+Structural equation models (SEM) integrate confirmatory factor analysis (CFA) into a larger path analytic framework. Formally, we extend the basic CFA expression (measurement model) by an additional linear specification reflecting dependencies among the latent variables (structural model). 
+
+
+Remarque : ne marche pas pour les facteurs non ordonnés (en gros, considère les facteurs comme des variables numériques)
+
+```{r, echo=FALSE}
+pauv_model_sem <- '
+s =~ s_sentpauv + s_risqpauv + s_infminidecla
+m =~ m_nivie1 + m_nivie5 + m_locatif + m_financier
+i =~ i_log + i_rsa + i_handi
+pauvrete ~ s + m + i
+pauvrete =~ sexe
+'
+
+fit_sem <- lavaan::sem(pauv_model_sem,
+                       data = bdd_fa %>% 
+                         mutate(sexe=as.numeric(sexe)),
+                       estimator = "MLR")
+
+semPaths(fit_sem, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+```
+
+# Notes méthodologiques
+
+Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). Le nombre d'observations utilisées est différent dans chaque modèle, il s'agit uniquement des individus où toutes les variables utilisées dans les modèles sont renseignées (voir notes en bas des tableaux).
+
+# Bibliographie {.unnumbered}
+
+- https://stats.idre.ucla.edu/spss/seminars/efa-spss/  https://support.sas.com/resources/papers/proceedings/proceedings/sugi30/203-30.pdf https://community.jmp.com/t5/JMP-Blog/Principal-components-or-factor-analysis/ba-p/38347 bases de l'EFA
+- En bouquins : https://books.google.es/books?hl=fr&lr=&id=qKrumJ4CsboC&oi=fnd&pg=PT180&ots=TDmmzvQP5X&sig=7gFjzxbPC49Tz7IkGT-4gXMzx8U&redir_esc=y#v=onepage&q&f=false et slides https://slideplayer.com/slide/5080/
