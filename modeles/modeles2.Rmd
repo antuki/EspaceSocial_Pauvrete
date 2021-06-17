@@ -161,20 +161,59 @@ assoc_plot <- function(var1,var2,taille_phrases=50){
 
 
 ### BDD
+
 bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
-  filter(annee%in%2016:2019) %>% #keep only the 3 last vagues of the barometre 
-  mutate(subj_diff_mini_vivre = as.numeric(sdrevcl_imput) - as.numeric(pe16)) %>% 
-  mutate(subj_risque_pauvrete = pe3) %>% 
-  mutate(subj_aide_pv_pub = pe15)
+  filter(annee%in%2016:2019) #4 dernières vagues du baro
+
+revenus_a_imputer <- bdd %>%
+mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
+group_by(sdrevtr) %>% 
+summarise(sdrevcl = mean(sdrevcl,na.rm=TRUE))
+
+bdd <- bdd %>% 
+  mutate(
+    sdrevcl_imput_moy = case_when(
+      sdrevcl!=999999999 ~ sdrevcl,
+      sdrevcl==999999999 & sdrevtr==1 ~ revenus_a_imputer$sdrevcl[1],
+      sdrevcl==999999999 & sdrevtr==2 ~ revenus_a_imputer$sdrevcl[2],
+      sdrevcl==999999999 & sdrevtr==3 ~ revenus_a_imputer$sdrevcl[3],
+      sdrevcl==999999999 & sdrevtr==4 ~ revenus_a_imputer$sdrevcl[4],
+      sdrevcl==999999999 & sdrevtr==5 ~ revenus_a_imputer$sdrevcl[5],
+      sdrevcl==999999999 & sdrevtr==6 ~ revenus_a_imputer$sdrevcl[6],
+      sdrevcl==999999999 & sdrevtr==7 ~ revenus_a_imputer$sdrevcl[7]
+             ))  %>% 
+   mutate(seuil_pauvrete = do.call(c,lapply(annee,function(annee_selec){
+0.6*median(bdd[bdd$annee==annee_selec,"sdrevcl_imput_moy"]/bdd[bdd$annee==annee_selec,"sduc"],
+           na.rm=TRUE)
+}
+))) %>% 
+   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+  mutate(subj_pauvrete = 
+           ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_risque_pauvrete = 
+           ifelse(pe3==1, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
+  mutate(subj_besoin_aide_etat =
+           ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
+  mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
+
 
 indics <- setdiff(colnames(bdd),c("ident","poids"))
 
 
-### Nettoyer les variables
+### Ajouter des labels à certaines variables
 
-bdd$subj_risque_pauvrete <- factor(bdd$subj_risque_pauvrete,
-                                   levels=c(3,1,2,4),
-                   labels=couper_string(names(attr(bdd$subj_risque_pauvrete,"labels")),20)[c(3,1,2,4)]
+bdd$subj_inf_mini_decla <- factor(bdd$subj_inf_mini_decla,
+                                   levels=c(FALSE,TRUE),
+                   labels=couper_string(c("Revenus SUPERIEURS au minimum décaré pour vivre","Revenus INFERIEURS au minimum décaré pour vivre"),40)
+                   )
+bdd$subj_besoin_aide_etat<- factor(bdd$subj_besoin_aide_etat,
+                                   levels=c(FALSE,TRUE),
+                   labels=couper_string(c("Se déclarer SUFFISAMMENT aidé par les pouvoirs publics","Se déclarer PAS ASSEZ aidé par les pouvoirs publics"),40)
                    )
 
 
@@ -185,13 +224,16 @@ set.seed(1)
 ## Sentiment de pauvreté
 
 ```{r, eval = TRUE}
-var1 = "subj_risque_pauvrete"
-for(var2 in setdiff(indics,var1)){
-    tryCatch({
-  assoc_plot(var1=var1,var2=var2,taille_phrases=50)
-  }, error=function(e){#cat("ERROR :",conditionMessage(e), "\n")
-    })
-
+for(var2 in indics){
+  for(var1 in c("subj_pauvrete_et_risque","subj_inf_mini_decla",
+                "subj_besoin_aide_etat")){
+    if(var2!=var1){
+      tryCatch({
+        assoc_plot(var1=var1,var2=var2,taille_phrases=50)
+      }, error=function(e){
+      })
+    }
+  }
 }
 ```
 
