@@ -1,0 +1,163 @@
+---
+################
+#### Output ####
+################
+knit: bookdown::render_book
+site: bookdown::bookdown_site
+output:
+  thesisdown::thesis_pdf: default 
+  thesisdown::thesis_gitbook: 
+    anchor_sections: false
+  bookdown::gitbook:
+    css: style.css
+    config:
+      toc:
+        before: |
+          <center><p><img src="logos/saclay.png" alt="université paris-saclay" style="height:50px;margin:20px 30px 0px 0px"><a href="http://github.com/antuki/stage_3A"><img src="logos/logo_blanc.png" alt="ENSAE" style="height:50px;margin:20px 0px 0px 0px"></p><img src="logos/avatar_antuki_v2_small.png" alt="antuki" style="height:80px;margin:20px 0px 10px 0px"></a><li><a href="./"><b>Construire l'espace social</br>de la pauvreté avec un</br>Baromètre d'opinion</b></a></li></center>
+      edit: null
+      fontsettings:
+        family: sans
+        size: 2
+      sharing:
+        github: no
+        facebook: no
+        twitter: no
+        all: ['facebook', 'twitter', 'linkedin','github']
+      info: no
+      toc_depth: 2
+    fig_caption: yes
+    fig_height: 5.3
+    fig_width: 8.5
+lang: "french"
+classoption: "french"
+themeoptions: "language=french"
+author: "Kim Antunez"
+address: "test"
+github-repo: antuki/stage_3A
+description: "Mémoire de Master 2"
+twitter-handle: antuki13
+#########################
+#### Infos générales ####
+#########################
+prenom: "Kim"
+nom: "ANTUNEZ"
+lieu: "Paris"
+date: "version du 18/06/2021"
+date_jma: "septembre 2021"
+title: "Construire l'espace social de la pauvreté avec un Baromètre d'opinion"
+subtitle: "Mémoire de Master 2  --- Sociologie Quantitative & Démographie"
+titre_francais: "Construire l'espace social de la pauvreté avec un Baromètre d'opinion"
+titre_anglais: "Titre anglais"
+nnt: "2020-2021"
+######################
+#### Affiliations ####
+######################
+logo_cotutelle: "logos/logo.png"
+taille_logo_cotutelle: "3cm"
+ecole_doctotrale: ""
+specialite: ""
+unite: ""
+referent: ""
+##############
+#### Jury ####
+##############
+## Par rôle puis ordre alphabétique
+## Ne mettre le président qu'après la soutenance 
+## Séparer les membres qui participent aux délibarétion des autres
+## À adapter si besoin dans le fichier template.tex 
+jur1_nom: "Ivaylo Petev"
+jur1_qualite: "Enseignant-chercheur en sociologie (CREST, ENSAE)"
+jur2_nom: "Nicolas Robette"
+jur2_qualite: "Enseignant-chercheur en sociologie (CREST, ENSAE)"
+#################################
+#### Quatrième de couverture ####
+#################################
+mots_clefs_francais: "Mots-clefs en français."
+mots_clefs_anglais: "Keywords in English."
+resume_francais: "Résumé en français"
+resume_anglais: "Abstract in English"
+
+# This will automatically install the {remotes} package and {thesisdown}
+# Change this to FALSE if you'd like to install them manually on your own.
+params:
+  'Install needed packages for {thesisdown}': False
+# Remove the hashtag to specify which version of output you would like.
+# Can only choose one at a time.
+
+# If you are creating a PDF you'll need to write your preliminary content 
+# (e.g., abstract, acknowledgements) below or use code similar to line 25-26 
+# for the .RMD files. If you are NOT producing a PDF, delete or silence
+# lines 25-39 in this YAML header.
+abstract: '`r if(knitr:::is_latex_output()) paste(readLines(here::here("prelims", "00-abstract.Rmd")), collapse = "\n  ")`'
+acknowledgements: '`r if(knitr:::is_latex_output()) paste(readLines(here::here("prelims", "00--prelim.Rmd")), collapse = "\n  ")`'
+# Specify the location of the bibliography below
+bibliography: bib/thesis.bib
+# Download your specific csl file and refer to it in the line below.
+csl: csl/apa.csl
+lot: false
+lof: false
+---
+
+<!--
+Above is the YAML (YAML Ain't Markup Language) header that includes a lot of 
+metadata used to produce the document.  Be careful with spacing in this header!
+
+If you'd prefer to not include a Dedication, for example, simply delete the section entirely, or silence them (add # before each line). 
+
+If you have other LaTeX packages you would like to include, delete the # before header-includes and list the packages after hyphens on new lines.
+
+If you'd like to include a comment that won't be produced in your resulting file enclose it in a block like this.
+
+If you receive a duplicate label error after knitting, make sure to delete the index.Rmd file and then knit again.
+-->
+
+```{r include_packages, include=FALSE}
+# This chunk ensures that the thesisdown package is
+# installed and loaded. This thesisdown package includes
+# the template files for the thesis.
+if (!require(remotes)) {
+  if (params$`Install needed packages for {thesisdown}`) {
+    install.packages("remotes", repos = "https://cran.rstudio.com")
+  } else {
+    stop(
+      paste('You need to run install.packages("remotes")",
+            "first in the Console.')
+    )
+  }
+}
+if (!require(thesisdown)) {
+  if (params$`Install needed packages for {thesisdown}`) {
+    remotes::install_github("ismayc/thesisdown")
+  } else {
+    stop(
+      paste(
+        "You need to run",
+        'remotes::install_github("ismayc/thesisdown")',
+        "first in the Console."
+      )
+    )
+  }
+}
+library(thesisdown)
+# Set how wide the R output will go
+options(width = 70)
+```
+
+<!--
+The ackowledgements, preface, dedication, and abstract are added into the PDF
+version automatically by inputing them in the YAML at the top of this file.
+Alternatively, you can put that content in files like 00--prelim.Rmd and
+00-abstract.Rmd like done below.
+-->
+
+
+<!-- The {.unnumbered} option here means that the introduction will be 
+"Chapter 0." You can also use {-} for no numbers on chapters.
+-->
+
+# Introduction {.unnumbered}
+
+
+Introduction... Introduction...
+
+Intro !
