@@ -1,4 +1,69 @@
-# Titre {#rmd-basics}
+# Dimensions de la pauvreté : perspectives théoriques {#chap1}
 
-Début du chapitre 1.
+## La multidimensionnalité de la pauvreté soulignée dans la littérature
+
+<!-- Reprendre les éléments du rendu de projet de mémoire -->
+
+### Pauvreté monétaire
+
+### Pauvreté instititionnelle
+
+### Le halo de la pauvreté
+
+## L'apport de la dimension subjective dans l'étude de la pauvreté
+
+### Pauvreté subjective
+
+### L'approche de Duvoux et Papuchon
+<!-- Introduction des travaux de Duvoux et Papuchon (cf. rendus projet de mémoire) : Examen des trois définitions de la pauvreté dont la pauvreté est définie de manière inductive via la pauvreté subjective sans pour autant oublier l'objectivation de la pauvreté par l'analyse statistique.-->
+<!-- Mon point de vue par rapport aux recherches antérieures -->
+<!-- Les débats sur l'étude de Papuchon pour nuancer le propos et justifier le prolongement  -->
+
+### Les limites identifiées d'une telle approche
+
+## Etudier les interactions entre les dimensions de la pauvreté
+
+### Problématique 
+
+<!-- - Problématique -->
+<!-- - Questions ou hypothèses de recherche.  -->
+
+### Base de données : Le Baromètre d’opinion de la Drees 
+
+#### Un outil de suivi conjoncturel depuis 2000
+
+#### Appréhender l’opinion sur dix thématiques
+
+#### Précautions d’interprétation des enquêtes d’opinion
+
+#### Accéder aux données
+
+### Méthodologie
+
+#### Stratégie empirique et mesures
+
+#### Méthodes statistiques utilisées
+<!-- A décrire avec précision -->
+
+# La pauvreté comme Espace social
+
+## Le sentiment de pauvreté ne se réduit pas au niveau de vie
+
+<!-- Repartir des travaux de Duvoux et Papuchon pour aller plus loin dans l'identification des "causes" du sentiment de pauvreté -->
+
+## L'importante prise en compte du risque de pauvreté subjectif
+
+### Espace social des pauvretés monétaire institutionelle et subjective par Analyse des Correspondances Multiples
+
+<!-- Résultat de l'ACM -->
+
+### La pauvreté subjective en trois modalités : absence, présence et risque à venir
+
+<!-- Résultat des modèles multinomiaux -->
+
+## La pauvreté comme dimension latente
+
+### Comment modéliser des variables latentes ? 
+
+### Construction d'un espace social par analyse factorielle
 

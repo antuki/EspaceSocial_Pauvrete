@@ -3,6 +3,6 @@
 `r if(!knitr:::is_latex_output()) '# (APPENDIX) Annexes {-}'` 
 
 
-# Titre
+# Extraits du questionnaire du Baromètre d'opinion
 
 <!-- # Nom annexe 2 -->

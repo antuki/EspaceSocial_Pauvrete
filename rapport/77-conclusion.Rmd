@@ -1,2 +1,7 @@
-# Conclusion {-}
+# Conclusion / Discussion {-}
 
+<!-- - restructuration des hypothèses -->
+<!-- - difficultés rencontrées -->
+<!-- - pistes laissées en plan -->
+<!-- - limites des données, de la méthodologie, des concepts utilisés -->
+<!-- - prolongements -->

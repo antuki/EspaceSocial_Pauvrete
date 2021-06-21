@@ -67,6 +67,7 @@ referent: ""
 ## À adapter si besoin dans le fichier template.tex 
 jur1_nom: "Ivaylo Petev"
 jur1_qualite: "Enseignant-chercheur en sociologie (CREST, ENSAE)"
+jur1_titre: "Directeur de mémoire"
 jur2_nom: "Nicolas Robette"
 jur2_qualite: "Enseignant-chercheur en sociologie (CREST, ENSAE)"
 #################################
@@ -157,7 +158,8 @@ Alternatively, you can put that content in files like 00--prelim.Rmd and
 
 # Introduction {.unnumbered}
 
+<!-- - Objet de recherche -->
+<!-- - Problématique -->
+<!-- - Méthodologie -->
+<!-- - Plan (qui spoile les résultats) -->
 
-Introduction... Introduction...
-
-Intro !
