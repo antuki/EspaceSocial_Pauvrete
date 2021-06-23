@@ -7,8 +7,8 @@ download: [
 delete_merged_file: true
 language:
   label:
-    fig: 'Figure '
-    tab: 'Table '
+    fig: "Figure "
+    tab: 'Tableau '
     eq: 'Équation '
     thm: 'Théoreme '
     lem: 'Lemme '

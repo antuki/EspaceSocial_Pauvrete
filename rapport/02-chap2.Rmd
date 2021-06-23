@@ -1,0 +1,83 @@
+# La pauvreté comme Espace social
+
+## Le sentiment de pauvreté ne se réduit pas au niveau de vie
+
+<!-- Repartir des travaux de Duvoux et Papuchon pour aller plus loin dans l'identification des "causes" du sentiment de pauvreté -->
+
+<!-- Faire une régression aussi avec le sentiment de déclassement.  -->
+
+
+```{r tabcompa}
+
+tab_compa <- readRDS("figures/tab_compa.RDS")  %>% 
+   kable(caption="Réactualisation du modèle 1 de Duvoux & Papuchon (2018)",
+        booktabs = TRUE, longtable = TRUE) %>%  
+   kableExtra::column_spec(1, width = "4cm") %>%
+   kableExtra::column_spec(2, width = "6cm") %>%
+   kableExtra::column_spec(3:4, width = "2cm") %>%
+kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+     kableExtra::footnote(general = c(paste0("Modèle 2015-2017 : N = ",
+                                 "8460"," et $R^2$ ajusté = ","24,8"," %",
+                                 " / Modèle 2016-2019 : N = ",
+                                 "10759"," et $R^2$ ajusté = ","25,9"," %."), 
+                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                          ))
+
+tab_compa
+
+```
+
+
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+*Lecture : Entre 2015 et 2017 (période d'étude de @duvoux2018qui), toutes les autres variables de cette régression étant égales par ailleurs, le risque pour une personne appartenant au premier quintile de niveau de vie de se déclarer pauvre plutôt que le contraire est 1,65 fois celui d'une personne du deuxième quintile. Ce rapport est de 1,48 sur la période 2016-2019 (période de référence pour ce mémoire).* 
+
+*Note : Les résultats sont numériquement légèrement différents (mais les messages sont les mêmes) que dans @duvoux2018qui car nous avons ajouté la catégorie professionnelle "Autre inactif" pour être exhaustif dans l'ensemble des modalités.*
+
+<!-- *Note : Modèle 2015-2017 : N = 8460 et $R^2$ ajusté = 24,8 % / Modèle 2016-2019 : N = 10759 et $R^2$ ajusté = 25,9 %.* -->
+
+:::
+
+
+```{r figchap1compa20152019, fig.cap="Différents indicateurs de pauvreté (2015 à 2019)", fig.height=3}
+fig_chap1_compa20152019 <- readRDS("figures/fig_chap1_compa20152019.RDS")
+fig_chap1_compa20152019
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+:::
+
+
+
+
+
+
+
+## L'importante prise en compte du risque de pauvreté subjectif
+
+### Espace social des pauvretés monétaire institutionelle et subjective par Analyse des Correspondances Multiples
+
+<!-- Résultat de l'ACM -->
+<!-- Notes : Pour cette étude, X individus sur les 12XXX individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées.  -->
+
+### La pauvreté subjective en trois modalités : absence, présence et risque à venir
+
+<!-- Résultat des modèles multinomiaux -->
+
+## La pauvreté comme dimension latente
+
+### Comment modéliser des variables latentes ? 
+
+### Construction d'un espace social par analyse factorielle
+

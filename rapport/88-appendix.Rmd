@@ -3,6 +3,445 @@
 `r if(!knitr:::is_latex_output()) '# (APPENDIX) Annexes {-}'` 
 
 
-# Extraits du questionnaire du Baromètre d'opinion
+# Extraits du questionnaire du Baromètre d'opinion {#annexequestio}
 
-<!-- # Nom annexe 2 -->
+
+## Pauvreté monétaire
+
+
+**SDREVCL** *filtre : non*  SOCLE 2012 -  
+
+Nous désirons analyser les résultats de cette étude en fonction des revenus familiaux des personnes que nous avons interrogées.
+Nous désirons savoir à quel niveau de revenus MENSUELS NETS AVANT IMPOTS se situe votre foyer en comptant  [réponses en SDRES].
+
+*CODAGE : DONNER ICI DANS LE CORPS DE LA QUESTION LA LISTE DU TYPE DE RESSOURCES QUE LES PERSONNES ONT DIT PERCEVOIR EN SDRES.* 
+
+/_ _ _ _ _ _ _ /
+
+*ENQUETEUR : NOTER EN CLAIR - SI BESOIN PRECISER : NOUS NOUS INTERESSONS A L'ENSEMBLE DES RESSOURCES DU MENAGE, Y COMPRIS CELLES DE VOTRE CONJOINT, DE VOS ENFANTS, ETC. SI REFUS DE REPONDRE NOTER 999 999 999 EUROS NETS PAR MOIS*
+
+*Remarque : avant 2012, les enquêtés ne sont interrogés que sur des tranches de revenu.*
+
+--- 
+
+**SDREVTR** *filtre : si refus de répondre à SDREVCL*  SOCLE 2000 -  
+
+A défaut de me préciser un montant, pourriez-vous me dire dans quelle tranche vous vous situez dans l'échelle de revenus MENSUELS NETS AVANT IMPOTS DE L’ENSEMBLE DE VOTRE FOYER que je vais vous citer ? Je vous parle bien des revenus de toute la famille.
+
+1. A. Moins de 1000 euros par mois                         
+2. B. De 1000 à moins de 1400 euros par mois       
+3. C. De 1400 à moins de 1900 euros par mois 
+4. D. De 1900 à moins de 2400 euros par mois       
+5. E. De 2400 à moins de 3800 euros par mois 
+6. F. De 3800 à moins de 5300 euros par mois 
+7. G. Plus de 5300 euros par mois 
+8. [NSP/refus de réponse]
+
+*ENQUETEUR : MONTRER LA CARTE REPONSE OBLIGATOIREMENT – DEMANDER LA LETTRE QUI CORRESPOND A LA TRANCHE DE REVENUS*
+
+## Pauvreté institutionnelle / monétaire
+
+
+**SDRES** *filtre : non*  SOCLE 2000 -  
+
+Au cours des douze derniers mois, votre ménage a-t-il perçu des ressources provenant de...
+
+1. Oui
+2. Non
+3. [NSP]
+
+
+- _1 Salaires, traitements et primes
+- _2 Revenus d'une activité professionnelle indépendante
+- _3 RSA (Revenu de solidarité active)
+- _4 Allocations de chômage
+- _5 Préretraite, retraites
+- _6 Revenus d'actifs financiers
+- _7 Revenus de locations
+- _8 Prestations familiales (allocations familiales, complément familial, prestation d'accueil du jeune enfant (PAJE)...) 2013 -
+- _9 Allocations de logement (APL, …)
+- _10 Prestations liées au handicap, à l'invalidité ou à la dépendance (AAH, APA, PCH…) 2013 - 
+- _11 Bourses d’études 2015 -
+- _12 Pensions alimentaires ou argent reçu tous les mois de la part de proches (familles, amis…) 2015 -
+Remarque : en 2013, les AL ont été séparées des prestations familiales
+
+
+
+## Pauvreté subjective
+
+**PE3** *filtre : non*  SOCLE 2014 -
+
+Et vous personnellement, pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ?
+
+1. Oui, plutôt 
+2. Non, plutôt pas
+3. Je me considère déjà comme pauvre
+4. [NSP] 
+
+*ENQUETEUR : ENUMERER - UNE SEULE REPONSE*
+
+--- 
+
+**PE16**  *filtre : non* SOCLE 2014 -
+
+Selon vous, pour vivre, quel est le montant dont doit disposer AU MINIMUM un foyer comme le vôtre, par mois (en euros) ? 
+
+*ENQUETEUR : SI BESOIN, PRECISER, EN EUROS NETS. SI NSP OU REFUS DE REPONDRE CODER 999 999 999.*
+
+*CODAGE : QUANTITE*
+
+--- 
+
+**PE15**  *filtre : non* MODULE ANNEES PAIRES 2014 -
+
+Actuellement, compte tenu de votre situation globale, du montant des aides publiques (RSA, allocations familiales, aides au logement), et du montant de vos impôts, vous considérez que :
+
+1. Vous êtes suffisamment aidé.e par les pouvoirs publics, ou n’avez pas besoin d’être aidé.e
+2. Vous auriez besoin d’être aidé.e davantage par les pouvoir publics 
+3. [Non concerné.e]
+4. [NSP]
+
+*ENQUETEUR : MONTRER ECRAN ET ENUMERER - UNE SEULE REPONSE*
+
+## Sociodémographie
+
+**SDSEXE** *filtre : non*  SOCLE 2000-  
+
+Sexe de l’enquêté.e
+
+*ENQUETEUR : L'INTERVIEWE EST UN HOMME OU UNE FEMME ?*
+
+1. Un homme
+2. Une femme
+
+--- 
+
+**SDANNAIS** *filtre : non*  SOCLE 2000-  
+
+Tout d’abord, pouvez-vous m’indiquer votre année de naissance :
+
+*Remarque : âge minimum de 18 ans.*
+
+--- 
+
+**SDAGE** *filtre : non*  SOCLE 2000-  
+
+*RECODAGE DE SDANNAIS*
+
+--- 
+
+**SDSITUA** *filtre : non*  SOCLE 2000-  
+
+Quelle est votre situation actuellement ?
+
+1. Vous travaillez à temps plein
+2. Vous travaillez à temps partiel
+3. Vous travaillez de façon intermittente
+4. Vous êtes à la recherche d'un emploi (y compris au chômage)
+5. Vous êtes étudiant.e
+6. Vous êtes retraité.e ou préretraité.e
+7. Vous n'exercez aucune activité professionnelle 
+
+*Remarque : avant 2014, l’ensemble des inactifs (étudiant, retraité, aucune activité professionnelle) était regroupé dans une seule modalité, la modalité 8.*
+
+--- 
+
+**SDACT** *filtre : non*  SOCLE 2014 -  
+
+Quelle est (était) votre activité principale : 
+
+1. Salarié.e du secteur privé 
+2. Salarié.e du secteur public
+3. Indépendant.e sans salarié
+4. Indépendant.e employeur.euse
+5. A la recherche d'un premier emploi 
+6. Élève, étudiant.e, en formation, ou en stage non rémunéré
+7. Apprenti.e sous contrat ou stagiaire rémunéré.e
+8. Au foyer
+9. Autre inactif
+
+*CODAGE : SI SDSITUA = 4 OU 6, POSER LA QUESTION SDACT AVEC « ETAIT » AU LIEU DE « EST ».*
+
+--- 
+
+**SDSTAT**  *filtre : non*  SOCLE 2000 - 
+
+Question non posée, recodage du statut d’activité de la personne interrogée
+
+1. Salarié.e du secteur public
+2. Salarié.e du secteur privé
+3. Indépendant.e sans salarié
+4. Employeur.euse
+5. Chômeur.euse
+6. Inactif.ive
+7. Autre
+8. [NSP] 
+	
+*RECODAGE : A PARTIR DE SDSITUA ET SDACT*
+
+*Remarque : jusqu’en 2013, cette question était posée directement aux enquêtés.*
+
+--- 
+
+**SDPROF** *filtre : filtrer si SDSITUA = 7*   SOCLE 2000-  
+
+Quelle est (était) votre profession ?
+
+*ENQUETEUR : NOTER EN CLAIR - NOTER LE MAXIMUM DE PRECISIONS*
+
+*CODAGE : EN PRINCIPE SDSITUA PERMET DE REPÉRER LES ACTIFS OCCUPÉS (1 À 3), LES CHÔMEURS (4) ET LES RETRAITÉS (6). SI SDSITUA = 4 OU 6, POSER LA QUESTION AVEC « ETAIT » AU LIEU DE « EST ».*
+
+*VARIABLE NON DIFFUSEE*
+
+--- 
+
+**SDPCS7** *filtre : non*  SOCLE 2000 -  
+
+*ENQUETEUR : CODER LA PROFESSION DE L’INTERVIEWE (SUR LES 7 CATEGORIES SOCIO-PROFESSIONNELLES QUI SUIVENT), SI CHOMEUR OU RETRAITE CODER SON ANCIENNE PROFESSION (C’EST LA REPONSE EN CLAIR A SDPROF DANS SON INTEGRALITE QUI EST RECUPEREE).*
+
+1. Agriculteur.trice
+2. Artisan.e ou commerçant.e
+3. Profession libérale, cadre supérieur.e
+4. Profession intermédiaire
+5. Employé.e
+6. Ouvrier.ère
+7. Autre inactif.ive
+
+--- 
+
+**SDPCS10** *filtre : non*  SOCLE 2000 -  
+
+*ENQUETEUR : CODER LA PROFESSION DE L’INTERVIEWE (SUR LES 10 CATEGORIES SOCIO-PROFESSIONNELLES QUI SUIVENT) A PARTIR DES QUESTIONS SDACT ET SDPROF*
+
+1. Agriculteur.trice
+2. Artisan.e ou commerçant.e
+3. Profession libérale, cadre supérieur
+4. Profession intermédiaire
+5. Employé.e
+6. Ouvrier.ère	
+7. Chômeur.euse
+8. Retraité.e
+9. Au foyer
+10. Autre inactif.ive
+
+*Remarque : SDPCS7 et SDPCS10 sont recodées à partir de la réponse à SDSTAT et SDPROF. Cette question ne comportait pas exactement les mêmes modalités entre 2007 et 2009.*
+
+--- 
+
+**SDSTATEMP**  *filtre : si SDACT = 1 ou 2*  SOCLE 2014 - 
+
+Travaillez-vous en ...
+
+1. CDI (ou fonctionnaire titulaire, y compris fonctionnaire stagiaire)
+2. CDD
+3. intérim
+4. sans contrat
+5. [NSP] 
+
+*ENQUETEUR : SI UNE PERSONNE OCCUPE PLUSIEURS EMPLOIS, DONNER CELUI QUI OCCUPE LE PLUS DE TEMPS DANS LA SEMAINE. SI UNE PERSONNE EST INTERIMAIRE EN CDI (NOUVEAU TYPE DE CONTRAT), CODER CDI.*
+
+*ENQUETEUR : POUR LES RETRAITES ET LES CHÔMEURS, POSER LA QUESTION AU PASSE ET PRECISER QUE L’ON PARLE DU DERNIER EMPLOI*
+
+--- 
+
+**SDSITFAM** *filtre : non*  SOCLE 2013 -  
+
+Quelle est votre situation familiale dans le foyer ?
+
+1. vous vivez seul.e
+2. vous êtes un membre du couple
+3. vous êtes l'unique parent du foyer
+4. vous êtes un enfant de la famille
+5. vous êtes un.e ami.e ou un.e parent.e hébergé.e par la famille
+6. vous êtes un.e colocataire
+7. autres (personnel de maison, ...)
+
+*ENQUÊTEUR : L’ITEM « UNIQUE PARENT DU FOYER » S’APPLIQUE AUX FAMILLES MONOPARENTALES. SI L’ENQUETE APPARTIENT A UNE FAMILLE RECOMPOSÉE OU L’AUTRE MEMBRE DU COUPLE N’EST PAS PARENT DES ENFANTS, ON CONSIDERE L’ENQUETE COMME « MEMBRE DU COUPLE » ET PAS « UNIQUE PARENT ».*
+
+--- 
+
+**SDPR** *filtre : en fonction de SDSITFAM*  SOCLE 2013 - 
+
+Personne de référence du ménage
+
+*RECODAGE AUTOMATIQUE A PARTIR DE LA REPONSE A LA QUESTION SDSITFAM ET A LA QUESTION SDSEXE, RECODER DANS LES MODALITES CI-DESSOUS. LA PERSONNE DE REFERENCE EST :*
+
+1. votre conjoint.e
+2. votre père (ou votre mère si votre père ne vit pas au foyer)
+3. Autre : désignée par « La personne de référence »
+4. [Vous-même]
+
+*CODAGE : SI LA PERSONNE DE REFERENCE EST L’INTERVIEWE ALORS CODER AUTOMATIQUEMENT SDPR=4. SI SDSEXE=2 ET SDSITFAM=2 ALORS SDPR=1 : INTERVIEWE EST LE CONJOINT. SI SDSITFAM=4 ALORS SDPR =2 : INTERVIEWE EST L’ENFANT. SI SDSITFAM=5 OU 6 OU 7 ALORS SDPR =3 : INTERVIEWE EST UNE AUTRE PERSONNE. PARLER DE « LA PERSONNE DE REFERENCE »*
+
+*Remarque : si la personne de référence est l’interviewé.e alors SDPR était non renseigné en 2013 (codé 4 à partir de 2014) et on ne pose pas les questions SDPRSITUA à SDPRPROF. *
+
+*Cette question est utilisée pour filtrer les questions portant sur le personne de référence si celle-ci n’est pas l’interviewé.e (cf. b). Si la personne interviewée est la personne de référence, il faut alors renseigner les variables SDPRSITUA à SDPRPCS10 à partir des variables SDSITUA à SDPCS10. *
+
+--- 
+
+**SDNBPERS** *filtre : SDSITFAM $\neq$ 1*  SOCLE 2000 - 
+
+De combien de personnes se compose votre foyer y compris vous-même ?
+
+1. 1 personne
+2. 2 personnes
+3. 3 personnes
+4. 4 personnes
+5. 5 personnes
+6. 6 personnes
+7. 7 personnes
+8. 8 personnes
+9. 9 personnes 
+10. 10 personnes et plus 
+
+*ENQUETEUR : NOUS PARLONS DU DOMICILE DE L'INTERVIEWE.E*
+
+*Remarque : si SDSITFAM = 1 alors SDNBPERS= 1.* 
+
+--- 
+
+**SDNBENF** *filtre : si SDNBPERS > 1 personne et SDSITFAM $\neq$ 1*  SOCLE 2002 -  
+
+Combien y-a-t-il d'enfants à charge dans votre foyer .... ?
+
+1. Aucun enfant
+2. 1 enfant
+3. 2 enfants
+4. 3 enfants
+5. 4 enfants
+6. 5 enfants
+7. 6 enfants
+8. 7 enfants
+9. 8 enfants
+10. 9 enfants 
+11. 10 enfants et plus 
+
+*Remarque : les numéros de modalité ont été changés en 2014 pour que « 1 »= 1 enfant, « 2 »= 2 enfants, etc.*
+
+--- 
+
+**SDAGEENF** *filtre : si SDNBENF > 0*  SOCLE 2013 -  
+
+Quel est l'âge de chaque enfant à charge dans votre foyer .... ?
+
+- _1	1er enfant
+- _2	2e enfant
+- _3	3e enfant
+- _4	4e enfant
+- _5	5e enfant
+- _6	6e enfant
+- _7	7e enfant
+- _8	8e enfant
+- _9	9e enfant
+- _10	10e enfant
+
+*ENQUETEUR : NOTER EN CLAIR. S’IL Y A PLUS DE 10 ENFANTS ON NE NOTE QUE L’AGE DES 10 PREMIERS.*
+
+*ENQUETEUR : INSCRIRE EN AGE REVOLU (EX : 18 MOIS, METTRE 1 AN)*
+
+*VARIABLE NON DIFFUSEE*
+
+--- 
+
+**SDNBADU** *filtre : non*  SOCLE 2013 -  
+
+Il y a donc [CALCUL AUTOMATIQUE EN FONCTION DES DECLARATIONS] adultes vivant au foyer.
+
+*CODAGE : CODAGE AUTOMATIQUE DU NOMBRE TOTAL D’ADULTES DANS LE FOYER A PARTIR DES QUESTIONS PRECEDENTES.*
+
+--- 
+
+**SDUC** *filtre : non*  SOCLE 2013 -  
+
+Nombre d’unités de consommation dans le ménage
+
+*CODAGE AUTOMATIQUE DU NOMBRE D’UNITES DE CONSOMMATION A PARTIR DES QUESTIONS PRECEDENTES :  LE PREMIER ADULTE A UN POIDS DE 1, LE DEUXIEME ADULTE DE 0,5. UN ENFANT DE 14 ANS OU PLUS A UN POIDS 0,5, UN ENFANT DE MOINS DE 14 ANS A UN POIDS DE 0,3.  AINSI, UN COUPLE AVEC DEUX ENFANTS DE MOINS DE 14 ANS AURA UN POIDS DE 2,1 (1 + 0,5 + 2 X 0,3).*
+
+--- 
+
+**LO1** *filtre : non*  SOCLE 2000 - 
+
+Concernant votre résidence principale, êtes-vous...
+
+1. Propriétaire
+2. Locataire d’un logement social (y compris HLM) 2012 - 
+3. Locataire hors logement social, c’est-à-dire dans le parc privé 2012 - 
+4. Logé.e gratuitement
+5. [NSP]
+
+*Remarque : avant 2012, on ne distingue pas les locataires d’un logement social de ceux du parc privé.*
+
+--- 
+
+**SDPROXIM_DET.** *filtre : non*  SOCLE 2000 -
+
+Dans votre famille ou en dehors de votre famille, connaissez-vous quelqu'un ... ? 
+
+1. Dans votre famille 
+2. Hors famille 
+3. Vous-même 
+4. Non 
+5. [NSP] 
+
+*ENQUETEUR : ENUMERER – ORDRE ALEATOIRE – PLUSIEURS REPONSES POSSIBLES*
+
+*VARIABLE NON DIFFUSEE*
+
+- _1 Au chômage, indemnisé 
+- _2 Au chômage, non indemnisé 
+- _3 SDF (sans domicile fixe) 
+- _4 Élevant seul.e ses enfants avec un revenu inférieur au SMIC 
+- _5 Pensionné.e (invalide / handicapé.e) sans pouvoir travailler 
+- _6 Occupant un emploi précaire (CDD, Interim, intermittent)
+- _7 Au RSA (revenu de solidarité active) 
+- _8 Une personne handicapée de moins de 60 ans (qu'il s'agisse d'un handicap moteur, sensoriel, mental ou psychique) 2008 –
+- _9 Une personne âgée dépendante (c'est-à-dire ne pouvant vivre seule, sans aide) 2008 -
+
+--- 
+
+**SDPROXIM.** *filtre : non*  SOCLE 2000 -
+
+*RECODAGE DE SDPROXIM_DET*
+
+1. Non 
+2. Oui, dans votre famille 
+3. Oui, hors famille 
+4. Oui, vous-même 
+5. Oui, dans votre famille et hors famille
+6. Oui, vous-même et dans votre famille
+7. Oui, vous-même et hors famille
+8. Oui, vous-même, dans votre famille et hors famille
+9. [NSP]
+	
+- _1 Au chômage, indemnisé.e 
+- _2 Au chômage, non indemnisé.e 
+- _3 SDF (sans domicile fixe) 
+- _4 Élevant seul.e ses enfants avec un revenu inférieur au SMIC 
+- _5 Pensionné.e (invalide / handicapé.e) sans pouvoir travailler 
+- _6 Occupant un emploi précaire (CDD, Interim, intermittent)
+- _7 Au RSA (revenu de solidarité active) 
+- _8 Une personne handicapée de moins de 60 ans (qu'il s'agisse d'un handicap moteur, sensoriel, mental ou psychique) 2008 -
+- _9 Une personne âgée dépendante (c'est-à-dire ne pouvant vivre seule, sans aide) 2008 –
+
+--- 
+
+**SDDIPL** *filtre : non*  SOCLE 2000 -  
+
+Parmi les situations suivantes, quelle est celle qui correspond à la vôtre ?
+
+1. Vous n'avez pas de diplôme
+2. Vous avez un certificat d'études primaires
+3. Vous avez un ancien brevet, BEPC, ou brevet des collèges
+4. Vous avez un certificat d'aptitude professionnelle (CAP), un brevet d'enseignement  professionnel (BEP)
+5. Vous avez un bac d'enseignement général
+6. Vous avez un bac d'enseignement technologique ou professionnel
+7. Vous avez un bac + 2 ans ou niveau bac + 2 ans (DUT, BTS, DEUG, L2)
+8. Vous avez un diplôme supérieur (2ème, 3ème cycle, grande école, L3, M1, M2)
+9. [Autre situation - préciser]
+10. [NSP]
+
+*ENQUETEUR : MONTRER L’ECRAN ET ENUMERER - UNE SEULE REPONSE*
+
+*ENQUETEUR : SI L’ENQUETE.E A PLUSIEURS DIPLOMES, CODER LE PLUS ELEVE*
+
+

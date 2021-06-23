@@ -22,12 +22,13 @@ To create a hanging indent and spacing between entries.  These three lines may n
 \setlength{\leftskip}{0.20in}
 \setlength{\parskip}{8pt}
 
+\bibliography{}
 
 <!--
 This is just for testing with more citations for the bibliography at the end.  Add other entries into the list here if you'd like them to appear in the bibliography even if they weren't explicitly cited in the document.
 -->
 
 ---
-nocite: | 
-  @angel2001, @angel2000, @angel2002a
+nocite: |
+  @grusky2013measuring, @angel2000, @angel2002a
 ...

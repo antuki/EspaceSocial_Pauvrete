@@ -4,6 +4,10 @@ html{
   font-size:70%;
 }
 
+body {
+  text-align: justify;
+}
+
 .book .book header h1 {
   opacity: 1;
   text-align: left;
@@ -86,10 +90,11 @@ html{
 }
 
 .book-body p.caption {
-  color: #333333;
-  background-color: #eeeeee;
+  color: #63003c;
+  background-color: #e9c8e1;
   padding-left: 20px;
   font-size: 14pt;
+  padding-bottom: 6px;
   /*font-family: "Fira Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;*/
 }
 
@@ -126,7 +131,7 @@ dd {
 }
 
 .book .book-body .page-wrapper .page-inner section.normal table td, .book .book-body .page-wrapper .page-inner section.normal table th {
-  color: #333333;
+  /*color: #000000;*/
   border: 1px;
   font-size: 11pt;
   height: 15px;
@@ -135,6 +140,11 @@ dd {
   cellspacing="0";
   text-shadow: none;
 }
+
+section.normal table th {
+background-color: blue
+}
+
 
 .book.color-theme-2 .book-body .page-wrapper .page-inner section.normal table td {
   color: #ddd;
@@ -145,8 +155,9 @@ dd {
 }
 
 .book .book-body .page-wrapper .page-inner section.normal th {
-  background: #b2c2d2;
+  background: #63003c; /*NEW KIM*/
   font-weight: bold;
+  color:white;
 }
 
 .book .book-body .page-wrapper .page-inner section.normal blockquote {
@@ -245,6 +256,7 @@ ol {
 
 .book .book-summary ul.summary li a, .book .book-summary ul.summary li span{
  color:#fff;
+ text-align: left; /*Kim : sommaire non justifié*/
 }
 
 /* KIM */
@@ -285,3 +297,50 @@ border-color:#e9c8e1;
 .book .book-body .page-wrapper .page-inner section{
   margin-top:10px;
 }
+
+.encadre {
+  padding: 0.5em;
+  background: #e9c8e1;
+  color: #63003c;
+  border: 2px solid #63003c;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.center {
+  text-align: center;
+}
+
+.note {
+  color: #63003c;
+  background-color: #e9c8e1;
+  padding-left: 20px;
+  font-size: 12pt;
+  padding-bottom:10px;
+  padding-top:10px;
+}
+
+p.note{
+  line-height:1em;
+}
+
+div.note{
+  margin-top: -20px;
+}
+
+/* enlever le white-space : nowrap du sommaire à droite*/
+.book .book-summary ul.summary li a, .book .book-summary ul.summary li span {
+    white-space: normal;
+}
+
+/*pareil que pour les graphiques mais pour les tableaux*/
+caption {
+  color: #63003c;
+  background-color: #e9c8e1;
+  padding-left: 20px;
+  font-size: 14pt;
+  padding-bottom: 0px;
+  margin-bottom: 5px;
+  /*font-family: "Fira Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;*/
+}
+

@@ -44,12 +44,13 @@
 \floatplacement{figure}{H}
 % End of CII addition
 \usepackage{rotating}
-
+\usepackage{tcolorbox} %New Kim
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{fancyhdr}
 \usepackage{xcolor}
 \definecolor{Prune}{RGB}{99,0,60}
+\definecolor{Pink}{RGB}{233,200,225} %new Kim
 \usepackage{mdframed}
 \usepackage{multirow} %% Pour mettre un texte sur plusieurs rangées
 \usepackage{multicol} %% Pour mettre un texte sur plusieurs colonnes
@@ -62,6 +63,7 @@
 %\geometry{textheight=100ex,textwidth=40em,top=30pt,headheight=30pt,headsep=30pt,inner=80pt}
 \usepackage{geometry}
 \usepackage{hyperref}
+%\usepackage[pagebackref=true]{hyperref}
 
 % Next line commented out by CII
 %%% \usepackage{natbib}
@@ -71,10 +73,41 @@
 %\usepackage{biblatex-chicago}
 %\bibliography{thesis}
 
+% New Kim
+\newenvironment{note}{
+{\setstretch{0.5} %new pour changer le linespace des sources
+\vspace{-0.5cm}
+\footnotesize
+}
+}
 
+% new tcolorbox environment Kim
+\newtcolorbox{encadre}{
+  colback=Pink,
+  colframe=Prune,
+  coltext=Prune,
+  boxsep=5pt,
+  arc=4pt
+}
+
+% Enlever les sous-titres des annexes dans le toc Kim
+% \newcommand{\stoptocwriting}{%
+%   \addtocontents{toc}{\protect\setcounter{tocdepth}{-5}}}
+% \newcommand{\resumetocwriting}{%
+%   \addtocontents{toc}{\protect\setcounter{tocdepth}{\arabic{tocdepth}}}}
+\usepackage{etoolbox}
+\appto\appendix{\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}}
+% reinstate the correct level for list of tables and figures
+\appto\listoffigures{\addtocontents{lof}{\protect\setcounter{tocdepth}{1}}}
+\appto\listoftables{\addtocontents{lot}{\protect\setcounter{tocdepth}{1}}}
+
+\usepackage[french]{babel}
+
+
+  
 % Added by CII (Thanks, Hadley!)
 % Use ref for internal links
-\renewcommand{\hyperref}[2][???]{\autoref{#1}}
+%\renewcommand{\hyperref}[2][???]{\autoref{#1}}
 \def\chapterautorefname{Chapitre}
 \def\sectionautorefname{Section}
 \def\subsectionautorefname{Sous-section}
@@ -147,6 +180,10 @@ $endfor$
 %%
 %
 
+% ajouts Kim
+% Paragraphe avec saut de ligne et sans indentation
+\usepackage[parfill]{parskip}
+
 \begin{document}
 
 \begin{titlepage}
@@ -193,13 +230,9 @@ $endif$
 \fontfamily{fvs}\fontseries{m}\fontsize{22}{26}\selectfont
 
   
-Construire l'espace social 
+Construire l'espace social
 
-\medskip
-
-de la pauvreté avec un 
-
-\medskip
+de la pauvreté avec un
 
 Baromètre d'opinion
 
@@ -209,7 +242,7 @@ Baromètre d'opinion
 %\fontfamily{fvs}\fontseries{m}\fontsize{8}{12}\selectfont
 \normalsize
 % \vspace{15mm}
-\vspace{10mm}
+\vspace{5mm}
 
 \color{black}
 \large
@@ -231,12 +264,7 @@ Baromètre d'opinion
 
 \textbf{Mémoire présenté et soutenu à $lieu$}
 
-\medskip
-
 \textbf{En $date_jma$, par}
-
-\bigskip
-\bigskip
 
 \Large {\color{Prune} \textbf{$prenom$ $nom$}}
 
