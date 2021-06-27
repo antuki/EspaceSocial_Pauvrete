@@ -56,6 +56,8 @@ On voit nettement que le **sentiment de pauvreté se situe à droite** et le **s
 
 Voir les résultats statistiques plus bas.
 
+Mais attention, tout cela est surtout le signe d'un effet Guttman
+
 :::
 
 # Code et résultats
@@ -554,6 +556,16 @@ bdd_logit <- bdd %>%
     labels=paste0("-",
                   c("Pas de revenus d'activité indépendante",
                     "Revenus d'activité indépendante")) 
+    )) %>%
+  mutate(
+    presta_hlm = factor(case_when(
+      lo1%in%c(1,3,4) ~ 1,
+      lo1==2  ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire privé / hébergé, Propriétaire","Locataire HLM")) 
     )) %>%  
   mutate(
     presta_rsa = factor(case_when(
@@ -782,7 +794,7 @@ afficher_tableau <- function(tab){
 
 
 
-## Pauvreté monétaire, institutionnelle et subjective **[NEW]**
+## Pauvreté monétaire, institutionnelle et subjective
 
 ### Variables actives
 
@@ -1014,7 +1026,7 @@ explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("
 
 ```
 
-### CAH 
+## CAH 
 
 ```{r, echo=FALSE}
 bdd_poLCA <- bdd_logit %>% 
@@ -1066,7 +1078,7 @@ poLCA:::poLCA.makeplot.poly(x$probs,r,x$y,K.j,paste("Classe ",noms_classes[r]," 
 ```
 
 
-#### Sur les deux premiers axes factoriels
+### Sur les deux premiers axes factoriels
 
 ```{r}
 donnees <- res.mca$ind$coord[,c(1,2)]
@@ -1089,7 +1101,7 @@ for(i in 1:length(unique(typo))){
 
 ```
 
-#### Sur tous les axes factoriels
+### Sur tous les axes factoriels
 
 ```{r}
 donnees <- res.mca$ind$coord
@@ -1106,12 +1118,61 @@ rect.hclust(arbre, 6, border = "yellow3")
 
 typo <- cutree(arbre,6)
 s.class(res.mca$ind$coord[,c(1,2)], as.factor(typo), col = brewer.pal(7, "Set1"), sub = "Axes 1 et 2")
-for(i in 1:length(unique(typo))){
+for(i in c(1,3,4,5,2)){ #1:length(unique(typo))
   poLCA.makeplot.poly.oneclass(creer_x(typo),i)
 }
 
 
 ```
+
+## Essai avec davantage de variables actives
+
+=> Effet Guttman criant. 
+
+"Il ne faut pas s'extasier" (Cf. biblio Cibois) devant cet effet Guttmann qui indique simplement une forte liaison entre les différentes réponses de l'enquête. En quelques sortes, toutes les modalités sont prises par les mêmes individus typiques à droite et à gauche. Finalement, c'est le bas de l'effet Guttmann qu'il est souvent intéressant d'analyser, c'est-à-dire ici le risque de pauvreté future qui concernent les gens avec niveaux de vie intermédiaires. 
+
+Cet effet oppose traditionnellement deux axes : 
+
+- Axe 1 : Les très riches versus les très pauvres
+- Axe 2 (artificiel) : les situations extrêmes versus moyennes. 
+
+```{r, echo=FALSE}
+#actives_autres <- c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_chomage","presta_apl")
+# Non car sinon actifs versus non actifs
+#actives_autres <- c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
+actives_autres <- c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
+actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
+actives <- c(actives_subj,actives_autres)
+passives <- c("statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"#,"presta_handi",
+              )
+
+bdd_acm <- bdd_logit %>% 
+  dplyr::select(c(all_of(actives),all_of(passives))) %>% 
+  tidyr::drop_na()
+res.mca <- MCA(bdd_acm,
+               quali.sup=(length(actives)+1):(ncol(bdd_acm)),
+               graph=FALSE) 
+#explor(res.mca)
+#saveRDS(res.mca,"../data/res.mca2.RDS")
+res <- explor::prepare_results(res.mca)
+
+
+explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = FALSE, var_sup_choice = ,
+    var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
+    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
+    labels_positions = NULL, labels_prepend_var = FALSE, xlim = c(-2, 2),
+    ylim = c(-1, 2))
+
+explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("statut_occup",
+    "diplome", "conn_rsa", "annee_fac", "prof_statut_act", "age_tranche", "vie_fam"),
+    var_lab_min_contrib = 0, col_var = "Type", symbol_var = "Variable", size_var = NULL,
+    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
+    labels_positions = NULL, labels_prepend_var = FALSE, xlim = c(-1.16, 1.32),
+    ylim = c(-0.974, 1.5))
+
+```
+
+
 # Notes méthodologiques
 
 Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations) mais seules 10 555 observations sont conservées (celles qui n'ont aucune variable manquante pour l'ensemble des variables utilisées, actives comme supplémentaires).
@@ -1120,3 +1181,4 @@ Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 
 
 - https://quanti.hypotheses.org/1871
 - http://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html
+- https://books.openedition.org/enseditions/1462?lang=fr belle illustration de l'effet guttman et des précautions et conclusions à en tirer.
