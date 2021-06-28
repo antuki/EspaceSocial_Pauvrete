@@ -313,16 +313,17 @@ border-color:#e9c8e1;
 
 .note {
   color: #63003c;
-  background-color: #e9c8e1;
+  background-color: #fff; /*e9c8e1*/
   padding-left: 20px;
   font-size: 12pt;
   padding-bottom:10px;
   padding-top:10px;
+  line-height:1;
 }
 
-p.note{
+/*p.note{
   line-height:1em;
-}
+}*/
 
 div.note{
   margin-top: -20px;
