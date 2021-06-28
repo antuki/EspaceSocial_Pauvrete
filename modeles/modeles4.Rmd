@@ -342,6 +342,16 @@ bdd_logit <- bdd %>%
                     "Enfant","Autre situation familiale"))
     )) %>% 
   mutate(
+    statut_occup0 = factor(case_when(
+      lo1%in%c(2,3,4)  ~ 1,
+      lo1==1 ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire ou hébergé","Propriétaire")) 
+    )) %>% 
+  mutate(
     statut_occup = factor(case_when(
       lo1%in%c(3,4)  ~ 1,
       lo1==2  ~ 2,
@@ -511,6 +521,27 @@ bdd_logit <- bdd %>%
     labels=paste0("-",
                   c("N'est pas personne en emploi précaire",
                     "est personne en emploi précaire")) 
+    )) %>%  mutate(
+    conn_rsa_fam = factor(case_when(
+      sdproxim_7%in%c(1,3,4,7)  ~ 1,
+      sdproxim_7%in%c(2,5,6,8)  ~ 2,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne dans sa famille au RSA",
+                    "Connait une personne dans sa famille au RSA")) 
+    )) %>%
+   mutate(
+    conn_rsa_horsfam = factor(case_when(
+      sdproxim_7%in%c(1,2,4,6)  ~ 1,
+      sdproxim_7%in%c(3,5,7,8)  ~ 2,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne hors de sa famille au RSA",
+                    "Connait une personne hors de sa famille au RSA")) 
     )) %>% #personne au RSA 
   mutate(
     conn_rsa = factor(case_when(
@@ -599,7 +630,17 @@ bdd_logit <- bdd %>%
     labels=paste0("-",
                   c("Pas de revenus d'activité indépendante",
                     "Revenus d'activité indépendante")) 
-    )) %>%  
+    )) %>%
+  mutate(
+    presta_hlm = factor(case_when(
+      lo1%in%c(1,3,4) ~ 1,
+      lo1==2  ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire privé / hébergé, Propriétaire","Locataire HLM")) 
+    )) %>% 
   mutate(
     presta_rsa = factor(case_when(
       sdres_3%in%c(2)  ~ 1,
@@ -697,7 +738,7 @@ bdd_logit <- bdd %>%
     levels=c(1,2),
     labels=paste0("-",
                   c("Pas de bourse d'étude",
-                    "bourse d'étude")) 
+                    "Bourse d'étude")) 
     )) %>% 
   mutate(
     presta_pensionalim = factor(case_when(
@@ -741,7 +782,7 @@ bdd_logit <- bdd %>%
     levels=c(4,1,2,3,5,6,7),
     labels=paste0("-",c("Profession intermédiaire","Agriculteur",
                         "Artisan commerçant","Cadre supérieur, profession libérale",
-                        "Employé","Ouvrier","Autre inactif"))
+                        "Employé","Ouvrier","Aucune"))
   ))  %>% 
   mutate(prof_statut_act = factor(
     sdpcs10,
@@ -782,7 +823,7 @@ bdd_logit <- bdd %>%
     levels=c(4,1,2,3,5,6,7),
     labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
                         "Artisan commerçant","Cadre supérieur, profession libérale",
-                        "Employé","Ouvrier","Autre inactif"))
+                        "Employé","Ouvrier","Aucune"))
   )) %>% 
   mutate(prof_statut_act_resp = factor(
     sdprpcs10,
@@ -796,7 +837,7 @@ bdd_logit <- bdd %>%
 ```
 
 ```{r, echo=FALSE}
-run_regression <- function(x,y="subj_pauvrete",type_mod="logit", bdd_log=bdd_logit){
+run_regression <- function(x,y="subj_pauvrete",type_mod="logit", bdd_log=bdd_logit, kable=TRUE){
 
 f <- as.formula(paste(y, paste0(x,collapse = " + "), sep="~"))
 
@@ -854,7 +895,8 @@ if(type_mod=="ordinal"){
                           row.names=NULL
    ) %>% mutate(noms = gsub("`","",noms)) %>%  
      tidyr::separate(noms,c("variable","modalite"),sep="-") %>% 
-     mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(coeffs),2))) %>%  
+   #  mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(coeffs),2))) %>%  
+      mutate(odds=round(exp(coeffs),2)) %>% 
      mutate(modalite_y =
               if(type_mod!="multinomial"){NA}else{rep(levels(bdd_log[,y])[-1],each=n()/repetitions)}) %>% 
      right_join(
@@ -902,8 +944,10 @@ if(type_mod=="ordinal"){
     titre_y <- "Non répondants selon la variable indiquée en y"
   }
   
-  tableau <- df_model %>% dplyr::select(modalite_y,modalite,valeur,pvaleur,odds) %>%
-    setNames(c("","Modalités","Coefficients","p-valeurs","Odds")) %>% 
+  tableau <- df_model %>% dplyr::select(modalite_y,modalite,valeur,pvaleur,odds)
+    
+if(kable){
+  tableau <- tableau %>% setNames(c("","Modalités","Coefficients","p-valeurs","Odds")) %>% 
             kable(format = 'latex', booktabs = TRUE, longtable = TRUE) %>%  
             kableExtra::column_spec(1, width = ifelse(type_mod=="multinomial","4cm","0cm")) %>% 
             kableExtra::column_spec(2, width = "4cm") %>% 
@@ -912,7 +956,8 @@ if(type_mod=="ordinal"){
             kableExtra::footnote(c(paste0("Modèle logit (Variable dépendante = ",titre_y,")")), paste0("N = ",
                                         N," / R2 ajusté = ",
                                         round(100*R2_ajuste,1)," %")) 
-  
+}
+    
   return(tableau)
 }
 ```
@@ -1494,7 +1539,8 @@ if(type_mod=="ordinal"){
                           row.names=NULL
    ) %>% mutate(noms = gsub("`","",noms)) %>%  
      tidyr::separate(noms,c("variable","modalite"),sep="-") %>% 
-     mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(coeffs),2))) %>%  
+    # mutate(odds=ifelse(is.na(pvaleur) | pvaleur=='',NA,round(exp(coeffs),2))) %>% 
+     mutate(odds=round(exp(coeffs),2)) %>% 
      mutate(modalite_y =
               if(type_mod!="multinomial"){NA}else{rep(levels(bdd_log[,y])[-1],each=n()/repetitions)}) %>% 
      right_join(
@@ -1779,6 +1825,155 @@ run_regression(y="non_rep_dipl",
 ```
 
 
+## Figures rapport **[NEW]**
+
+
+```{r, echo=FALSE}
+# run_regression(y="subj_pauvrete",
+#                #x= c("est_rsa","presta_rsa","conn_rsa"),
+#                x= c("est_rsa","presta_rsa","conn_rsa_fam",
+#                     "conn_rsa_horsfam"),
+#                kable=TRUE)
+
+tab_rsa <- run_regression(y="subj_pauvrete", 
+                       #x= c("est_rsa","presta_rsa","conn_rsa"),
+                       x= c("est_rsa","presta_rsa","conn_rsa_fam",
+                    "conn_rsa_horsfam"),
+               kable=FALSE)  %>%
+  mutate(odds_ratio = ifelse(
+    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+  )) %>% 
+  select(modalite,odds_ratio) %>% 
+  slice(-1) %>%
+  mutate(modalite = c("N'est pas une personne au RSA", "Est une personne au RSA", "N'a personne dans son ménage au RSA", "A quelqu'un dans son ménage au RSA", "Ne connaît personne dans sa famille au RSA", "Connaît quelqu'un dans sa famille au RSA", "Ne connaît personne hors famille au RSA", "Connaît quelqu'un hors famille au RSA")
+         ) %>% 
+  setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio")) 
+
+#saveRDS(tab_rsa,"../rapport/figures/tab_rsa.RDS")
+
+
+tab_rsa %>% 
+  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, ménage et entourage) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+  kableExtra::column_spec(1, width = "6cm") %>% 
+  kableExtra::column_spec(2, width = "2cm") %>%
+  kableExtra::footnote(c(paste0("N = ",
+                              "11628"," et $R^2$ ajusté = ",
+                              "5,9"," %."), 
+                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+                         ) %>% 
+  kableExtra::kable_paper("striped", full_width = F) %>%
+  kableExtra::pack_rows("Individu", 1, 2) %>%
+kableExtra::pack_rows("Ménage", 3, 4) %>% 
+  kableExtra::pack_rows("Famille", 5, 6) %>% 
+  kableExtra::pack_rows("Hors famille", 7, 8) 
+
+```
+
+
+Pauvreté monétaire
+
+```{r, echo=FALSE}
+# run_regression(x= c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_pauvrete",kable=TRUE)
+
+tab_mon <- run_regression(x= c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_pauvrete",kable=FALSE) %>% 
+  mutate(odds_ratio = ifelse(
+    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+  )) %>% 
+  select(modalite,odds_ratio) %>% 
+  slice(-1) %>% 
+  arrange(match(modalite, c(modalite[2],modalite[-2]))) %>% 
+ setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio")) 
+
+#saveRDS(tab_mon,"../rapport/figures/tab_mon.RDS")
+
+
+tab_mon %>% 
+  kable(caption="Mesure de l'effet de la pauvreté monétaire sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+  kableExtra::column_spec(1, width = "6cm") %>% 
+  kableExtra::column_spec(2, width = "2cm") %>%
+  kableExtra::footnote(c(paste0("N = ",
+                              "10817"," et $R^2$ ajusté = ",
+                              "18,5"," %."), 
+                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+                         ) 
+```
+
+Pauvreté institutionnelle
+
+```{r, echo=FALSE}
+# run_regression(x= c("presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm"), y="subj_pauvrete",kable=TRUE)
+
+
+tab_inst <- run_regression(x= c("presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm"), y="subj_pauvrete",kable=FALSE) %>% 
+  mutate(odds_ratio = ifelse(
+    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+  )) %>% 
+  select(modalite,odds_ratio) %>% 
+  slice(-1) %>% 
+  #arrange(match(modalite, c(modalites[2],modalite[-2]))) %>% 
+ setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio")) 
+
+#saveRDS(tab_inst,"../rapport/figures/tab_inst.RDS")
+
+
+tab_inst %>% 
+  kable(caption="Mesure de l'effet de la pauvreté institutionnelle sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+  kableExtra::column_spec(1, width = "6cm") %>% 
+  kableExtra::column_spec(2, width = "2cm") %>%
+  kableExtra::footnote(c(paste0("N = ",
+                              "11630"," et $R^2$ ajusté = ",
+                              "12,5"," %."), 
+                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+                         ) 
+```
+
+ 
+```{r, echo=FALSE}
+# run_regression(y="subj_pauvrete", 
+#                x= c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_apl","presta_chomage","presta_handi","statut_occup", "prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", "conn_rsa", "annee_fac"
+# ), kable = TRUE)
+
+tab_final21 <- run_regression(y="subj_pauvrete", 
+               x= c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_apl","presta_chomage","presta_handi","statut_occup", "prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", "conn_rsa", "annee_fac"
+), kable = FALSE) %>% 
+  mutate(odds_ratio = ifelse(
+    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+  )) %>% 
+  select(modalite_y,modalite,odds_ratio) %>% 
+  slice(-1) %>% 
+  arrange(match(modalite, c(modalite[2],modalite[-2]))) %>% 
+  arrange(match(modalite, c(modalite[1:17],modalite[19],modalite[18],modalite[20:57]))) %>% 
+  arrange(match(modalite, c(modalite[1:20],modalite[22:24],modalite[21],modalite[25:57])))  %>% 
+  arrange(match(modalite, c(modalite[1:32],modalite[34],modalite[33],modalite[35:57]))) %>% 
+  arrange(match(modalite, c(modalite[1:36],modalite[38],modalite[37],modalite[39:57]))) %>% 
+  arrange(match(modalite, c(modalite[1:42],modalite[44],modalite[43],modalite[45:57]))) %>% 
+  mutate(modalite_y = c("Niveau de vie",rep("",4),"Types de ressources ","perçues par le ménage ","(12 mois)",rep("",9),"Logement",rep("",2), "Situation professionnelle",rep("",9),"Précarité de l'emploi","(subjective)","Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1),"Entourage au RSA",rep("",1),"Année",rep("",3))) %>% setNames(c("Modèle logit", "Variable dépendante : se déclarer pauvre", "Odds ratio")) 
+
+#saveRDS(tab_final21,"../rapport/figures/tab_final21.RDS")
+
+tab_final21 %>% 
+  kable(caption="Modèle de synthèse des effets sur le sentiment de pauvreté", booktabs = TRUE, longtable = TRUE) %>%  
+   kableExtra::column_spec(1, width = "4cm") %>%
+   kableExtra::column_spec(2, width = "6cm") %>%
+   kableExtra::column_spec(3, width = "4cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::pack_rows("Pauvreté monétaire", 1, 9) %>%
+  kableExtra::pack_rows("Pauvreté institutionnelle", 10, 18) %>%
+  kableExtra::pack_rows("Contrôles", 19, 56) %>%
+  kableExtra::footnote(c(paste0("N = ",
+                              "10726"," et $R^2$ ajusté = ",
+                              "26,6"," %."), 
+                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+                         ) 
+
+
+```
+
+ 
 # Notes méthodologiques
 
 Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). Le nombre d'observations utilisées est différent dans chaque modèle, il s'agit uniquement des individus où toutes les variables utilisées dans les modèles sont renseignées (voir notes en bas des tableaux).
@@ -1791,5 +1986,4 @@ Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 
 - https://www.analyticsvidhya.com/blog/2016/02/multinomial-ordinal-logistic-regression/ multinomial versus ordinal regression
 - https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/ interprétation régression logistique ordinale
 - https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html et https://naniar.njtierney.com/articles/naniar-visualisation.html package naniar pour les données manquantes
- 
  
