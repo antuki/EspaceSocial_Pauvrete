@@ -44,19 +44,19 @@ L'objectif de cette cinquième série de modèles est de commencer à approcher 
 
 ::: {.encadre width="100%"}
 
-L'espace social des pauvretés **monétaire**, **institutionnelle** et **subjective** des données du Baromètre se structure en deux principaux axes dont l'interprétation (délicate) pourrait être la suivante :
+L'espace social des pauvretés **monétaire**, **institutionnelle** et **subjective** des données du Baromètre se structure en deux principaux axes avec un **effet Guttmann** très clair qui signifie simplement une forte liaison entre les différentes réponses de l'enquête. En quelques sortes, toutes les modalités sont prises par les mêmes individus typiques à droite et à gauche. 
+
+Cet effet oppose traditionnellement deux axes avec un premier axe de niveau et un second qui oppose les situations médianes et extrêmes : 
+
 
 |       | Gauche / Bas                           | Droite / Haut                                 |
 |-------|----------------------------------------|-----------------------------------------------|
 | **Axe 1** | Richesse  (objective et ressentie) | Pauvreté (objective et ressentie)       |
-| **Axe 2** |   Vulnérabilité vis à vis de la pauvreté / halo / risque ressenti de devenir pauvre  | Ancrage dans la richesse / pauvreté
+| **Axe 2** (artificiel) |   Situation médiane en termes de pauvreté  | Situation extrême
 
-
-On voit nettement que le **sentiment de pauvreté se situe à droite** et le **sentiment de risque de pauvreté se situe en bas**, arguments qui permettent de conforter un peu l'interprétation faite de ces axes.
+On voit nettement que le **sentiment de pauvreté se situe à droite** et le **sentiment de risque de pauvreté se situe en bas**, arguments qui permettent de conforter l'interprétation faite de ces axes. Finalement, c'est le bas de l'effet Guttmann qu'il est souvent intéressant d'analyser, c'est-à-dire ici le risque de pauvreté future qui concernent les gens avec niveaux de vie intermédiaires, situés entre richesse et pauvreté.
 
 Voir les résultats statistiques plus bas.
-
-Mais attention, tout cela est surtout le signe d'un effet Guttman
 
 :::
 
@@ -102,7 +102,11 @@ bdd <- bdd %>%
            na.rm=TRUE)
 }
 ))) %>% 
-   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+  mutate(subj_inf_mini_decla = factor(
+     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
+     levels=c(TRUE,FALSE),
+     labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
+     ) %>% 
   mutate(subj_pauvrete = 
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
   mutate(subj_risque_pauvrete = 
@@ -305,6 +309,16 @@ bdd_logit <- bdd %>%
                     "Enfant","Autre situation familiale"))
     )) %>% 
   mutate(
+    statut_occup0 = factor(case_when(
+      lo1%in%c(2,3,4)  ~ 1,
+      lo1==1 ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire ou hébergé","Propriétaire")) 
+    )) %>% 
+  mutate(
     statut_occup = factor(case_when(
       lo1%in%c(3,4)  ~ 1,
       lo1==2  ~ 2,
@@ -331,10 +345,7 @@ bdd_logit <- bdd %>%
                         "Pauvreté monétaire"))
   )
   )
-```
 
-
-```{r, echo=FALSE}
 #NEW depuis fiche 3
  bdd_logit <- bdd_logit %>% #chômeur indemnise 
   mutate(
@@ -664,7 +675,7 @@ bdd_logit <- bdd %>%
     levels=c(1,2),
     labels=paste0("-",
                   c("Pas de bourse d'étude",
-                    "bourse d'étude")) 
+                    "Bourse d'étude")) 
     )) %>% 
   mutate(
     presta_pensionalim = factor(case_when(
@@ -793,13 +804,24 @@ afficher_tableau <- function(tab){
 ```
 
 
-
 ## Pauvreté monétaire, institutionnelle et subjective
 
 ### Variables actives
 
+
+```{r, echo=FALSE}
+#actives_autres <- c("quantile_nivie", "presta_rsa","presta_chomage","presta_apl")
+#actives_autres <- c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_chomage","presta_apl")
+# Non car sinon actifs versus non actifs
+#actives_autres <- c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
+```
+
 ```{r}
-actives_autres <- c("quantile_nivie", "presta_rsa","presta_chomage","presta_apl")
+actives_autres <- c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
+actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
+actives <- c(actives_subj,actives_autres)
+passives <- c("statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"#,"presta_handi",
+              )
 actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
 actives <- c(actives_subj,actives_autres)
 passives <- c("revenus_financiers","revenus_locatifs","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam")
@@ -807,24 +829,26 @@ passives <- c("revenus_financiers","revenus_locatifs","presta_handi","statut_occ
 bdd_acm <- bdd_logit %>% 
   dplyr::select(c(all_of(actives),all_of(passives))) %>% 
   tidyr::drop_na()
-res.mca <- MCA(bdd_acm,quali.sup=(length(actives)+1):(ncol(bdd_acm)),
+res.mca <- MCA(bdd_acm,
+               quali.sup=(length(actives)+1):(ncol(bdd_acm)),
                graph=FALSE) 
 #explor(res.mca)
+#saveRDS(res.mca,"../data/res.mca.RDS")
 res <- explor::prepare_results(res.mca)
 
 ```
 
-Les trois premiers axes de l'ACM (qui conservent respectivement 24,7, 12,4 et 10,8 % de l'inertie) sont les suivants. Le saut d'inertie entre les axes 2 et 3 est faible et les résultats de l'axe 3 nous invitent à **structurer l'espace uniquement selon les deux premières dimensions**.
+Les trois premiers axes de l'ACM (qui conservent respectivement **19,9 %**, **9,7 %** et **7,3 %** de l'inertie) sont les suivants. Le saut d'inertie entre les axes 2 et 3 est faible et les résultats de l'axe 3 nous invitent à **structurer l'espace uniquement selon les deux premières dimensions**.
+- Le **premier axe** (horizontal figure 1) oppose clairement à droite les personnes pauvres monétairement (premier quintile de niveau de vie), institutionnellement (RSA en particulier, APL, bourses d’études, locataie HLM) et subjectivement (sentiment de pauvreté et revenu inférieur au minimum déclaré et « déjà pauvre ») et à gauche les personnes plus riches (Q5 non pauvre, non inférieur au minimum déclaré, actifs financiers et de location).
 
-- Le **premier axe** (horizontal figure 1) oppose clairement à droite les personnes pauvres monétairement (premier quintile de niveau de vie), institutionnellement (RSA en particulier et APL et allocation chômage dans une moins mesure) et subjectivement (sentiment de pauvreté et revenu inférieur au minimum déclaré) et à gauche les personnes plus riches (Q5,Q4, non pauvre, non inférieur au minimum déclaré, et dans une moindre mesure n'étant pas bénéficiaires de prestations sociales).
+- Le **deuxième axe** (vertical) peut paraître étrange à interpréter. Avec les Q1 et Q5 qui sont au même niveau en haut et s'opposent aux Q2, Q3 et Q4 en bas. C’est en fait un résultat très classique en ACM, un effet Guttmann qui oppose les situations extrêmes en termes de richesse (Q5, Actifs financiers et de locations) ou de pauvreté (Q1, « Déjà pauvre », APL, RSA, bourses d’études) en haut de l'axe à des personnes pouvant éventuellement basculer dans la pauvreté en bas (Q2, Q3, risque ressenti de pauvreté dans 5 ans, au chômage).
 
-- Le **deuxième axe** (vertical) est assez original à interpréter. Avec les Q1 et Q5 qui sont au même niveau en haut et s'opposent aux Q2 et Q3 en bas. Une interprétation probable est que cet axe semble opposer les personnes très riches (Q5) ou très pauvre (Q1, RSA, sentiment de pauvreté) en haut de l'axe à des personnes légèrement moins pauvres mais vulnérables, pouvant basculer dans la pauvreté en bas (Q2, Q3, risque ressenti de pauvreté dans 5 ans, au chômage).
-
-- [*Le troisième axe (horizontal figure 2) ne se structure que par rapport aux quintiles de niveau de vie mais oppose Q2 + Q5 (à droite) à Q3 + Q4 (à gauche). Son interprétation en est rendu difficile et brouillerait le message des deux premiers axes.*]
+- [*Le troisième axe (horizontal figure 2) a une structure qui s’interprète difficilement : Q2, APA, Revenus de locations et d’actifs (à droite) et Q4, Q1 et RSA (à gauche). Son interprétation brouillerait le message des deux premiers axes.*]
 
 ```{r}
-xlim <- c(-1.61, 2.74)
-ylim <- c(-2.28, 2.07)
+xlim <- c(-2, 2)
+ylim <- c(-1, 2)
+
 explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = NULL,
     var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
     size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
@@ -870,14 +894,15 @@ res$vars %>%
 ```
 
 
-Ci-dessous quelques nuages des +11 000 individus colorés selon certaines variables catégorielles actives. On voit sur ce nuage uniquement quelques centaines d'individus car nombre d'entre eux se ressemblent selon les variables actives (peu de variables et donc souvent mêmes modalités répondues). 
+Ci-dessous quelques nuages des +11 000 individus colorés selon certaines variables catégorielles actives. On voit sur ce nuage uniquement quelques centaines d'individus car nombre d'entre eux se ressemblent selon les variables actives (variables avec peu de modalités, donc souvent mêmes combinaisons de modalités répondues). 
 
-- Pour les quintiles de niveau de vie, rien de plus à ajouter que ce qui a été dit au-dessus, avec un positionnement en "cuvette" permettant de distinguer les deux dimensions de pauvreté et vulnérabilité potentielle
-- Pour le RSA, l'opposition se fait entre droite et gauche de l'ACM (pauvreté versus richesse). 
-- Même remarque pour les APL, avec une distinction moins nette que pour le RSA. 
-- Pour les allocations chômage, l'opposition est davantage entre haut et bas de l'ACM (vulnérabilité potentielle versus situation de richesse / pauvreté ancrée).
-- L'indicateur `subj_pauvrete_et_risque` qui rassemble sentiment de pauvreté (indiquer se sentir pauvre, à droite) et risque de pauvreté (indiquer ne pas se sentir pauvre mais penser risquer l'être dans les 5 prochaines années, en bas) a un positionnement en triangle qui illustre l'importance fondamentale que cette variable a dans la constitutions des deux axes
-- L'indicateur du niveau de vie inférieur à un niveau de vie minimum pour vivre déclaré se différencie selon les deux aspects et fait probablement la synthèse / l'entre-deux entre les modalités de l'indicateur précédent. 
+- Pour les quintiles de niveau de vie, rien de plus à ajouter que ce qui a été dit au-dessus, avec un positionnement en "cuvette".
+- Pour les revenus d’actifs et de location, un positionnement sur la diagonale du haut à gauche vers le bas au milieu. Opposition entre situation médiane et très riche. 
+- Pour le RSA, l'opposition se fait entre haut à droite et reste de l'ACM (opposition des très pauvres aux autres). 
+- Même remarque pour APL, avec une distinction moins nette que pour le RSA (se rapproche du centre de l’ACM). Idem pour location de HLM et bourses d’études.
+- Pour les allocations chômage et la prestation handicap, la localisation est plutôt au centre du nuage, décalé légèrement sur la droite (pauvreté) ce qui veut dire que ces prestations peuvent concerner des personnes qui sont à la limite entre pauvreté et richesse.
+- L'indicateur `subj_pauvrete_et_risque` qui rassemble sentiment de pauvreté (indiquer se sentir pauvre, à droite) et risque de pauvreté (indiquer ne pas se sentir pauvre mais penser risquer l'être dans les 5 prochaines années, en bas) a un positionnement en triangle qui illustre l'importance fondamentale que cette variable a dans la constitution des deux premiers axes
+- L'indicateur du niveau de vie inférieur à un niveau de vie minimum pour vivre déclaré s’oppose sur les deux diagonales de manière symétrique. Il semble donc bien résumer l’opposition entre richesse et pauvreté selon cette typologie. 
 
 
 ```{r, echo=FALSE}
@@ -886,6 +911,15 @@ explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
                      labels_positions = NULL, xlim = xlim, ylim = ylim)
 
+explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+                     ind_lab_min_contrib = 0, col_var = "revenus_financiers", labels_size = 9, point_opacity = 1,
+                     opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
+                     labels_positions = NULL, xlim = xlim, ylim = ylim)
+
+explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+                     ind_lab_min_contrib = 0, col_var = "revenus_locatifs", labels_size = 9, point_opacity = 1,
+                     opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
+                     labels_positions = NULL, xlim = xlim, ylim = ylim)
 explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      ind_lab_min_contrib = 0, col_var = "presta_rsa", labels_size = 9, point_opacity = 1,
                      opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
@@ -897,7 +931,26 @@ explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      labels_positions = NULL, xlim = xlim, ylim = ylim)
 
 explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+                     ind_lab_min_contrib = 0, col_var = "presta_hlm", labels_size = 9, point_opacity = 1,
+                     opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
+                     labels_positions = NULL, xlim = xlim, ylim = ylim)
+
+
+
+explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+                     ind_lab_min_contrib = 0, col_var = "presta_etudes", labels_size = 9, point_opacity = 1,
+                     opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
+                     labels_positions = NULL, xlim = xlim, ylim = ylim)
+
+
+
+explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      ind_lab_min_contrib = 0, col_var = "presta_chomage", labels_size = 9, point_opacity = 1,
+                     opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
+                     labels_positions = NULL, xlim = xlim, ylim = ylim)
+
+explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+                     ind_lab_min_contrib = 0, col_var = "presta_handi", labels_size = 9, point_opacity = 1,
                      opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
                      labels_positions = NULL, xlim = xlim, ylim = ylim)
 
@@ -906,6 +959,7 @@ explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
                      ind_lab_min_contrib = 0, col_var = "subj_pauvrete_et_risque", labels_size = 9, point_opacity = 1,
                      opacity_var = NULL, point_size = 33, ellipses = TRUE, transitions = FALSE,
                      labels_positions = NULL, xlim = xlim, ylim = ylim)
+
 
 
 explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
@@ -952,33 +1006,13 @@ res$vars %>%
   afficher_tableau()
 ```
 
-
-
-
-#### Autres indicateurs de pauvreté monétaire
-
-(ou plutôt richesse comme il s'agit des revenus financiers et locatifs).
-
-Quand on les met en variables actives, elles déterminent un axe à elles seules de par leur spécificité. Je les ai donc gardées en supplémentaires. 
-
-En supplémentaires, ces deux variables se rapprochent de Q5 et Q4. En revanche, l'absence de revenus de location et financier se rapproche du centre de l'ACP. C'est assez logique dans le sens ou ces types de revenus concernent des personnes fortunées.
-
-```{r, echo=FALSE}
-explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("revenus_financiers",
-                                                                               "revenus_locatifs"), var_lab_min_contrib = 0, col_var = "Type", symbol_var = "Variable",
-                     size_var = NULL, size_range = c(10, 300), labels_size = 10, point_size = 128,
-                     transitions = TRUE, labels_positions = "auto", labels_prepend_var = FALSE,
-                     xlim = xlim, ylim = ylim)
-```
-
-
 #### Professions et statuts d'emploi
 
 Les professions et statuts d'emploi ont des positions assez marquées sur les axes de l'ACM comparées aux autres variables en supplémentaire. 
 
-- Les cadres supérieurs et professions libérales sont en haut à gauche (ancrage dans la richesse)
-- Les chômeurs, personnes au foyer et autres inactifs sont situé à droite au milieu (pauvreté). 
-- Les ouvriers et employés sont situés en bas au milieu (vulnérabilité potentielle).
+-	En haut à droite (pauvreté) : Autre inactif, au foyer, chômeurs, 
+-	En haut à gauche (richesse) : cadres, professions libérales, professions intermédiaires, retraités, artisans et même agriculteur
+-	En bas (situation entre deux) : Employés, Ouvriers
 
 
 ```{r, echo=FALSE}
@@ -991,12 +1025,7 @@ explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = "pr
 
 #### Vie familiale et tranche d'âge
 
-Vie familiale et tranche d'âge se positionnent selon la même logique, en particulier selon l'axe horizontal. 
-
-- Les couples sans enfant sont en légèrement en haut et à gauche (relatif ancrage dans la richesse)
-- Les personnes âgées sont situées à relativement à gauche au milieu (richesse relative) alors que les enfants et jeunes sont situés à droite au milieu (pauvreté relative)
-- Les chefs de famille monoparentale sont situés à gauche et plutôt en haut (ancrage dans la pauvreté)
-- Les couples avec enfant en haut au milieu (richesse moyenne et peu vulnérable par rapport à la pauvreté). 
+Vie familiale et tranche d'âge se positionnent selon la même logique, en particulier selon l'axe horizontal, c’est-à-dire de manière moins tranchée que les PCS, à part les familles monoparentales (en haut à droite, pauvreté). Les personnes qui vivent seules sont positionnées au centre légèrement en bas et font dont partie des personnes pouvant basculer facilement dans la pauvreté.  
 
 ```{r, echo=FALSE}
 explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("age_tranche",
@@ -1010,19 +1039,16 @@ explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("
 
 Ce dernier graphique présente les dernières modalités, qui se démarquent peu sur cette ACM. Le graphique a d'ailleurs été zoomé car tout s'agglutinait au centre des deux axes. Quelques variables particulières à noter cependant : 
 
-- Les diplômés de bac+3 et plus sont plutôt en haut à gauche (ancrage dans la richesse)
-- Les diplômés de bac+2 et propriétaires plutôt à gauche au milieu (richesse)
-- Les personnes qui touchent les allocations liées aux handicap sont plutôt en bas à droite (pauvreté et vulnérabilité)
-- Les personnes locataires, surtout de HLM sont situés à droite au milieu (pauvreté sans vulnérabilité/ancrage particulier)
-- Les personnes peu diplômées (CAP/BEP ou moins) sont situées en bas et légèrement à droite (légère pauvreté et vulnérabilité)
+- Les diplômés de bac+3 et dans une moindre mesure bac+2 et les propriétaires plus sont plutôt en haut à gauche 
+- Avoir quelqu'un dans son entourage au RSA ou être peu ou pas diplômé situe les individu plutôt en bas légèrement à droite (pauvreté relative)
 
 ```{r, echo=FALSE}
-explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("presta_handi",
-                                                                               "statut_occup", "diplome", "conn_rsa", "annee_fac"), var_lab_min_contrib = 0,
+explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("statut_occup", "diplome", "conn_rsa", "annee_fac"), var_lab_min_contrib = 0,
                      col_var = "Type", symbol_var = "Variable", size_var = NULL, size_range = c(10,
                                                                                                 300), labels_size = 10, point_size = 128, transitions = TRUE, labels_positions = NULL,
                      labels_prepend_var = FALSE,
-                     xlim = xlim, ylim = ylim)
+                     xlim = c(-1.5,1.5), ylim = c(-0.5, 0.5)
+)
 
 ```
 
@@ -1031,22 +1057,21 @@ explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("
 ```{r, echo=FALSE}
 bdd_poLCA <- bdd_logit %>% 
   mutate(s_sentpauvrisque = as.numeric(subj_pauvrete_et_risque),
-         s_infminidecla = as.numeric(subj_inf_mini_decla)+1,
+         s_infminidecla = as.numeric(factor(subj_inf_mini_decla,labels=c(1,2))),
          m_quantilenivie = as.numeric(quantile_nivie),
          m_locatif = as.numeric(revenus_locatifs),
          m_financier = as.numeric(revenus_financiers),
          i_log = as.numeric(presta_apl),
          i_rsa = as.numeric(presta_rsa),
-         i_chom = as.numeric(presta_chomage)
+         i_chom = as.numeric(presta_chomage),
+         i_handi = as.numeric(presta_handi),
+         i_bourse = as.numeric(presta_etudes),
+         i_hlm = as.numeric(presta_hlm),
   ) %>% 
   dplyr::select(ident, s_sentpauvrisque, s_infminidecla,
 m_quantilenivie, m_locatif, m_financier,
-i_log, i_rsa, i_chom)  
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm)
 
-actives_autres <- c("quantile_nivie", "presta_rsa","presta_chomage","presta_apl")
-actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
-actives <- c(actives_subj,actives_autres)
-passives <- c("revenus_financiers","revenus_locatifs","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam")
 num_indiv <- bdd_logit %>% 
   dplyr::select(c(all_of("ident"),all_of(actives),all_of(passives))) %>% 
   tidyr::drop_na() %>% dplyr::select(ident) %>% pull()
@@ -1058,8 +1083,8 @@ creer_x <- function(typo){
   x$probs <- lapply(colnames(x$y),function(var){
     t <- table(typo,bdd_poLCA_rmnasup[[var]])
     t <- t/rowSums(t)
-    row.names(t) <- paste0("class ", row.names(t),":")
-    colnames(t) <- paste0("Pr(", colnames(t),")")
+    row.names(t) <- paste0("classe ", row.names(t),":")
+    colnames(t) <- paste0("Prop(", colnames(t),")")
     return(t)  
   })
   names(x$probs) <- colnames(x$y)
@@ -1072,7 +1097,8 @@ poLCA.makeplot.poly.oneclass <- function(x,r,noms_classes=1:length(x$P)){
 K.j <- sapply(x$probs,ncol)
 par(mar=c(5,4,4,2)+0.1) #mfrow=c(1,1),
 layout(matrix(seq(1,(1+1)),1+1,1),heights=c(rep(5,1),1))
-poLCA:::poLCA.makeplot.poly(x$probs,r,x$y,K.j,paste("Classe ",noms_classes[r]," : part de la population = ",round(100*x$P[r],1)," %",sep=""))
+# poLCA:::poLCA.makeplot.poly(x$probs,r,x$y,K.j,paste("Classe ",noms_classes[r]," : part de la population = ",round(100*x$P[r],1)," %",sep=""))
+ poLCA:::poLCA.makeplot.poly(x$probs,r,x$y,K.j,paste("Classe ",names(x$P[r])," : part de la population = ",round(100*x$P[r],1)," %",sep=""))
 }
 
 ```
@@ -1085,16 +1111,17 @@ donnees <- res.mca$ind$coord[,c(1,2)]
 arbre <- hclust(dist(donnees), method = "ward.D2")
 inertie <- sort(arbre$height, decreasing = TRUE)
 plot(inertie[1:20], type = "s", xlab = "Nombre de classes", ylab = "Inertie")
-points(c(2, 3, 5,6), inertie[c(2, 3, 5,6)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
+points(c(2, 3, 6), inertie[c(2, 3, 6)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
 
 plot(arbre, labels = FALSE, main = "Partitions selon le nb de classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
 rect.hclust(arbre, 2, border = "green3")
 rect.hclust(arbre, 3, border = "red3")
-rect.hclust(arbre, 5, border = "blue3")
-rect.hclust(arbre, 6, border = "yellow3")
+rect.hclust(arbre, 6, border = "blue3")
 
-typo <- cutree(arbre,6)
-s.class(res.mca$ind$coord[,c(1,2)], as.factor(typo), col = brewer.pal(7, "Set1"), sub = "Axes 1 et 2")
+#Typologie en 6 classes
+typo <- factor(factor(cutree(arbre,k=6),labels=c(2,5,3,4,6,1)),levels=1:6)
+s.class(res.mca$ind$coord[,c(1,2)], typo, col = brewer.pal(7, "Set1")[c(1:5,7)], sub = "Axes 1 et 2")
+
 for(i in 1:length(unique(typo))){
   poLCA.makeplot.poly.oneclass(creer_x(typo),i)
 }
@@ -1108,16 +1135,15 @@ donnees <- res.mca$ind$coord
 arbre <- hclust(dist(donnees), method = "ward.D2")
 inertie <- sort(arbre$height, decreasing = TRUE)
 plot(inertie[1:20], type = "s", xlab = "Nombre de classes", ylab = "Inertie")
-points(c(2, 3, 5,6), inertie[c(2, 3, 5,6)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
+points(c(2, 3, 5), inertie[c(2, 3, 5)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
 
 plot(arbre, labels = FALSE, main = "Partitions selon le nb de classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
 rect.hclust(arbre, 2, border = "green3")
 rect.hclust(arbre, 3, border = "red3")
 rect.hclust(arbre, 5, border = "blue3")
-rect.hclust(arbre, 6, border = "yellow3")
 
-typo <- cutree(arbre,6)
-s.class(res.mca$ind$coord[,c(1,2)], as.factor(typo), col = brewer.pal(7, "Set1"), sub = "Axes 1 et 2")
+typo <- factor(cutree(arbre,5))
+s.class(res.mca$ind$coord[,c(1,2)], typo, col = brewer.pal(7, "Set1"), sub = "Axes 1 et 2")
 for(i in c(1,3,4,5,2)){ #1:length(unique(typo))
   poLCA.makeplot.poly.oneclass(creer_x(typo),i)
 }
@@ -1125,52 +1151,7 @@ for(i in c(1,3,4,5,2)){ #1:length(unique(typo))
 
 ```
 
-## Essai avec davantage de variables actives
 
-=> Effet Guttman criant. 
-
-"Il ne faut pas s'extasier" (Cf. biblio Cibois) devant cet effet Guttmann qui indique simplement une forte liaison entre les différentes réponses de l'enquête. En quelques sortes, toutes les modalités sont prises par les mêmes individus typiques à droite et à gauche. Finalement, c'est le bas de l'effet Guttmann qu'il est souvent intéressant d'analyser, c'est-à-dire ici le risque de pauvreté future qui concernent les gens avec niveaux de vie intermédiaires. 
-
-Cet effet oppose traditionnellement deux axes : 
-
-- Axe 1 : Les très riches versus les très pauvres
-- Axe 2 (artificiel) : les situations extrêmes versus moyennes. 
-
-```{r, echo=FALSE}
-#actives_autres <- c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_chomage","presta_apl")
-# Non car sinon actifs versus non actifs
-#actives_autres <- c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
-actives_autres <- c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
-actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
-actives <- c(actives_subj,actives_autres)
-passives <- c("statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"#,"presta_handi",
-              )
-
-bdd_acm <- bdd_logit %>% 
-  dplyr::select(c(all_of(actives),all_of(passives))) %>% 
-  tidyr::drop_na()
-res.mca <- MCA(bdd_acm,
-               quali.sup=(length(actives)+1):(ncol(bdd_acm)),
-               graph=FALSE) 
-#explor(res.mca)
-#saveRDS(res.mca,"../data/res.mca2.RDS")
-res <- explor::prepare_results(res.mca)
-
-
-explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = FALSE, var_sup_choice = ,
-    var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
-    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
-    labels_positions = NULL, labels_prepend_var = FALSE, xlim = c(-2, 2),
-    ylim = c(-1, 2))
-
-explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = c("statut_occup",
-    "diplome", "conn_rsa", "annee_fac", "prof_statut_act", "age_tranche", "vie_fam"),
-    var_lab_min_contrib = 0, col_var = "Type", symbol_var = "Variable", size_var = NULL,
-    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
-    labels_positions = NULL, labels_prepend_var = FALSE, xlim = c(-1.16, 1.32),
-    ylim = c(-0.974, 1.5))
-
-```
 
 
 # Notes méthodologiques
