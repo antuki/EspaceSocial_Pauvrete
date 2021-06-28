@@ -107,7 +107,12 @@ bdd <- bdd %>%
            na.rm=TRUE)
 }
 ))) %>% 
-   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+   # mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+  mutate(subj_inf_mini_decla = factor(
+     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
+     levels=c(TRUE,FALSE),
+     labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
+     ) %>% 
   mutate(subj_pauvrete = 
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
   mutate(subj_risque_pauvrete = 
@@ -308,6 +313,16 @@ bdd_logit <- bdd %>%
                   c("Membre du couple (pas d’enfants à charge)","Vit seul",
                     "Membre du couple (enfants à charge)", "Chef famille monoparentale",
                     "Enfant","Autre situation familiale"))
+    )) %>% 
+  mutate(
+    statut_occup0 = factor(case_when(
+      lo1%in%c(2,3,4)  ~ 1,
+      lo1==1 ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire ou hébergé","Propriétaire")) 
     )) %>% 
   mutate(
     statut_occup = factor(case_when(
@@ -675,7 +690,7 @@ bdd_logit <- bdd %>%
     levels=c(1,2),
     labels=paste0("-",
                   c("Pas de bourse d'étude",
-                    "bourse d'étude")) 
+                    "Bourse d'étude")) 
     )) %>% 
   mutate(
     presta_pensionalim = factor(case_when(
@@ -781,7 +796,8 @@ bdd_logit <- bdd %>%
 bdd_fa <- bdd_logit %>% 
   mutate(s_sentpauv = subj_pauvrete + 0,
          s_risqpauv = subj_risque_pauvrete + 0,
-         s_infminidecla = subj_inf_mini_decla + 0,
+         #s_infminidecla = subj_inf_mini_decla + 0,
+         s_infminidecla = as.numeric(factor(subj_inf_mini_decla,labels=c(1,0)))-1,
          m_nivie1 = ifelse(quantile_nivie=="-Quintile 1",1,0),
          m_nivie2 = ifelse(quantile_nivie=="-Quintile 2",1,0),
          m_nivie3 = ifelse(quantile_nivie=="-Quintile 3",1,0),
@@ -808,7 +824,7 @@ bdd_fa <- bdd_logit %>%
 
 bdd_poLCA <- bdd_logit %>% 
   mutate(s_sentpauvrisque = as.numeric(subj_pauvrete_et_risque),
-         s_infminidecla = as.numeric(subj_inf_mini_decla)+1,
+         s_infminidecla = as.numeric(subj_inf_mini_decla),
          m_quantilenivie = as.numeric(quantile_nivie),
          m_locatif = as.numeric(revenus_locatifs),
          m_financier = as.numeric(revenus_financiers),
@@ -837,8 +853,8 @@ The final criterion is interpretability.
 ```{r, echo=FALSE}
 bdd_fa_small <- bdd_fa %>% 
   dplyr::select(s_sentpauv, s_risqpauv, s_infminidecla,
-m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5,
-i_log, i_rsa, i_chom)
+m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) 
 
 bdd_fa_tetra <- tetrachoric(bdd_fa_small, smooth = TRUE)
 # Matrice de corrélation
@@ -850,8 +866,6 @@ round((vp/sum(vp)*100),2)
 scree(bdd_fa_tetra$rho, factors = FALSE)
 par(mar=c(0,0,0,0)) #mfrow=c(1,1),
 resnf <- nfactors(bdd_fa_tetra$rho, n = 8, fm = "ml", cor = "tet")
-# Nombre de facteurs : 2 ou 3.
-
 ```
 
 <!-- ### Variables catégorielles  -->
@@ -917,16 +931,42 @@ n alternative to factor analysis,  which is unfortunately frequently confused wi
 ```{r, echo=FALSE}
 
 pauvFA <- fa(bdd_fa_tetra$rho, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
+# New approche plus classique ?
+#pauvFA <- fa(bdd_fa_small, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
+
 summary(pauvFA)
-fa.plot(pauvFA$loadings[,1:2], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,5),rep(3,3)))
-fa.plot(pauvFA$loadings[,2:3], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,5),rep(3,3)))
-fa.plot(pauvFA$loadings[,c(3,2)], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,5),rep(3,3)))
+
+#Factor loading can be classified based on their magnitude.
+#* 0.50 or more - Practically significant
+#* 0.40 to 0.49 - More important
+#* 0.30 to 0.39 - Minimum consideration level
+
+fa.diagram(pauvFA,cut=0)
+
+# reproduction lavaan
+modlavaan <- 'ML3 =~ 0.817*s_infminidecla + m_nivie5 + m_financier + m_locatif + s_sentpauv + s_risqpauv
+          ML1 =~ 0.996*i_log + i_rsa + i_hlm + i_handi + m_nivie4 #+ i_chom
+          ML2 =~0.832*m_nivie1 + m_nivie2 + m_nivie3'
+pauvFAlavaan <- lavaan::cfa(modlavaan,bdd_fa_small,std.lv=TRUE)
+
+lavaan.diagram(pauvFAlavaan, cut=0)
+# Diagramme complètement différent avec lavaan... pas compatible
+
+# reproduction lavaan simplifié (que ceux >0.4)
+modlavaan <- 'ML3 =~ 0.817*s_infminidecla + m_nivie5 + m_financier + m_locatif + s_sentpauv
+          ML1 =~ 0.996*i_log + i_rsa + i_hlm
+          ML2 =~0.832*m_nivie1 + m_nivie2'
+pauvFAlavaan <- lavaan::cfa(modlavaan,bdd_fa_small,std.lv=TRUE)
+
+lavaan.diagram(pauvFAlavaan, cut=0)
+
+
+fa.plot(pauvFA$loadings[,1:2], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,7),rep(3,6)))
+fa.plot(pauvFA$loadings[,2:3], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,7),rep(3,6)))
+fa.plot(pauvFA$loadings[,c(3,2)], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,7),rep(3,6)))
 
 print(pauvFA$loadings, cutoff = 0.2)
 round(pauvFA$communality, 2)
-
-
-pauvFA <- fa(bdd_fa_tetra$rho, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
 ```
 
 <!-- ### Variables catégorielles  -->
@@ -944,6 +984,14 @@ round(pauvFA2$communality, 2)
 
 
 ```
+Premier type de clustering (de variables et non d'individus) avec iclust
+
+
+```{r, echo=FALSE, fig.height = 6}
+ic.tetra <- iclust(bdd_fa_tetra$rho,title="ICLUST using tetrachoric correlations")
+iclust.diagram(ic.tetra)
+```
+
 ## Latent Categorical Variables
 
 Source : https://m-clark.github.io/sem/mixture-models.html
@@ -952,10 +1000,12 @@ Documentation https://raw.githubusercontent.com/dlinzer/poLCA/master/inst/doc/po
 
 
 ```{r, echo=FALSE, fig.height = 3}
-actives_autres <- c("quantile_nivie", "presta_rsa","presta_chomage","presta_apl")
+actives_autres <- c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
 actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
 actives <- c(actives_subj,actives_autres)
-passives <- c("revenus_financiers","revenus_locatifs","presta_handi","statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam")
+passives <- c("statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"#,"presta_handi",
+              )
+
 num_indiv <- bdd_logit %>% 
   dplyr::select(c(all_of("ident"),all_of(actives),all_of(passives))) %>% 
   tidyr::drop_na() %>% dplyr::select(ident) %>% pull()
@@ -965,51 +1015,19 @@ bdd_poLCA_rmnasup <- bdd_poLCA %>% filter(ident%in%num_indiv)
 
 ```{r, echo=FALSE, fig.height = 3}
 
-
 par(mfrow=c(1,1),mar=c(5,4,4,2)+0.1)
-
-# result3 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-# m_quantilenivie,
-# i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=3, graphs=FALSE, na.rm=TRUE)
-# for(i in 1:3){
-# poLCA.makeplot.poly.oneclass(result3,i)
-# }
-# 
-# result4 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-# m_quantilenivie,
-# i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=4, graphs=FALSE, na.rm=TRUE)
-# for(i in 1:4){
-# poLCA.makeplot.poly.oneclass(result4,i)
-# }
 
 set.seed(1)
 
-result5 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-m_quantilenivie,
-i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=5, graphs=FALSE, na.rm=TRUE, verbose = FALSE)
+result = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
+m_quantilenivie,m_locatif, m_financier,
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=7, graphs=FALSE, na.rm=TRUE, verbose = TRUE)
 
-probs.start.new <- poLCA.reorder(result5$probs.start,c(4,5,2,1,3))
-
-result5 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-m_quantilenivie,
-i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=5, graphs=FALSE, na.rm=TRUE, probs.start=probs.start.new)
-
-
-
-
-# result6 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-# m_quantilenivie,
-# i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=6, graphs=FALSE, na.rm=TRUE)
-# for(i in 1:6){
-# poLCA.makeplot.poly.oneclass(result6,i)
-# }
+# probs.start.new <- poLCA.reorder(result$probs.start,c(4,5,2,1,3))
 # 
-# result7 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
+# result = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
 # m_quantilenivie,
-# i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=7, graphs=FALSE, na.rm=TRUE)
-# for(i in 1:7){
-# poLCA.makeplot.poly.oneclass(result7,i)
-# }
+# i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=6, graphs=FALSE, na.rm=TRUE, probs.start=probs.start.new)
 
 
 
@@ -1019,18 +1037,18 @@ i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=5, graphs=FALSE, na.r
 ```{r, echo=FALSE, fig.height = 5, fig.width=10}
 
 res.mca <- readRDS("../data/res.mca.rds")
-# s.class(res.mca$ind$coord[,c(1,2)], factor(result5$predclass, levels=c(4,5,2,1,3), labels=c(1,2,3,5,6)), col = brewer.pal(7, "Set1")[c(1,2,3,5,6)], sub = "Axes 1 et 2")
+# s.class(res.mca$ind$coord[,c(1,2)], factor(result$predclass, levels=c(4,5,2,1,3), labels=c(1,2,3,5,6)), col = brewer.pal(7, "Set1")[c(1,2,3,5,6)], sub = "Axes 1 et 2")
 
-s.class(res.mca$ind$coord[,c(1,2)], factor(result5$predclass,labels=c(1,2,3,5,6)), col = brewer.pal(7, "Set1")[c(1,2,3,5,6)], sub = "Axes 1 et 2")
+s.class(res.mca$ind$coord[,c(1,2)], factor(result$predclass,labels=c(1,2,3,4,5,6,7)), col = brewer.pal(7, "Set1")[c(1,2,3,4,5,6,7)], sub = "Axes 1 et 2")
 
 for(i in 1:5){
-poLCA.makeplot.poly.oneclass(result5,i, noms_classes = c(1,2,3,5,6))
+poLCA.makeplot.poly.oneclass(result,i, noms_classes = c(1,2,3,4,5))
 }
 
 ```
 
 
-## Confirmatory factor analysis (CFA) des dimensions de la pauvreté [**NON INSPIRANT**]
+## Confirmatory factor analysis (CFA) des dimensions de la pauvreté 
 
 EFA and CFA are mathematically very similar, since we have the same fundamental
 equation in both cases. In EFA we assumed uncorrelated factors by setting
@@ -1041,11 +1059,13 @@ equation in both cases. In EFA we assumed uncorrelated factors by setting
 bdd_fa_naomit <- na.omit(bdd_fa %>%
   dplyr::select(s_sentpauv, s_risqpauv, s_infminidecla,
 m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
-i_log, i_rsa, i_chom))
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm))
 
+#Bug si toutes les variables...
 pauv_model0 <- '
-pauvrete =~ s_sentpauv + s_infminidecla + s_risqpauv + m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 + i_log + i_rsa + i_chom
+pauvrete =~ s_sentpauv + s_infminidecla + s_risqpauv + m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 +  i_log + i_rsa + i_chom
 '
+
 
 fit0 <- lavaan::cfa(pauv_model0, data = bdd_fa_naomit,
 ordered = names(bdd_fa_naomit))
@@ -1063,8 +1083,8 @@ summary(fit0, standardized = TRUE, fit.measures = TRUE)
 ```{r, echo=FALSE}
 pauv_model1 <- '
 s =~ s_sentpauv + s_infminidecla + s_risqpauv
-m =~ m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 
-i =~ i_log + i_rsa + i_chom
+m =~ m_nivie1 + m_nivie2 + m_nivie4 + m_nivie5 
+i =~ i_log + i_rsa + i_chom + i_handi 
 '
 
 fit1 <- lavaan::cfa(pauv_model1, data = bdd_fa_naomit,
@@ -1108,7 +1128,7 @@ head(modificationIndices(fit1, sort.=TRUE, minimum.value=3))
 
 ```
 
-### Indicateurs de chômage et risque de pauvreté écartés
+### Quelques indicateurs écartés
 
 ```{r, echo=FALSE}
 pauv_model2 <- '
@@ -1234,8 +1254,8 @@ mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 
 ```
-##  Structural equation models (SEM) [**NON INSPIRANT**]
 
+##  Structural equation models (SEM)
 
 Structural equation models (SEM) integrate confirmatory factor analysis (CFA) into a larger path analytic framework. Formally, we extend the basic CFA expression (measurement model) by an additional linear specification reflecting dependencies among the latent variables (structural model). 
 
@@ -1262,115 +1282,6 @@ intercepts = FALSE, rotation = 4, thresholdColor = "red",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 ```
-
-## Essai avec davantage de variables actives
-
-```{r, echo=FALSE}
-bdd_fa_small <- bdd_fa %>% 
-  dplyr::select(s_sentpauv, s_risqpauv, s_infminidecla,
-m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
-i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) 
-
-bdd_fa_tetra <- tetrachoric(bdd_fa_small, smooth = TRUE)
-# Matrice de corrélation (est censée être semi-définie positive)
-bdd_fa_tetra$rho
-# Valeurs propres
-vp <- eigen(bdd_fa_tetra$rho)$values
-# Conservation de la variance. 
-round((vp/sum(vp)*100),2)
-scree(bdd_fa_tetra$rho, factors = FALSE)
-par(mar=c(0,0,0,0)) #mfrow=c(1,1),
-resnf <- nfactors(bdd_fa_tetra$rho, n = 8, fm = "ml", cor = "tet")
-```
-
-```{r, echo=FALSE}
-#pauvFA <- fa(bdd_fa_tetra$rho, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
-# New approche plus classique ?
-pauvFA <- fa(bdd_fa_small, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
-
-summary(pauvFA)
-
-#Factor loading can be classified based on their magnitude.
-#* 0.50 or more - Practically significant
-#* 0.40 to 0.49 - More important
-#* 0.30 to 0.39 - Minimum consideration level
-fa.diagram(pauvFA,cut=0)
-
-# reproduction lavaan
-modlavaan <- 'ML3 =~ 0.817*s_infminidecla + m_nivie5 + m_financier + m_locatif + s_sentpauv + s_risqpauv
-          ML1 =~ 0.996*i_log + i_rsa + i_hlm + i_handi + m_nivie4 #+ i_chom
-          ML2 =~0.832*m_nivie1 + m_nivie2 + m_nivie3'
-pauvFAlavaan <- lavaan::cfa(modlavaan,bdd_fa_small,std.lv=TRUE)
-
-lavaan.diagram(pauvFAlavaan, cut=0)
-# Diagramme complètement différent avec lavaan... pas compatible
-
-# reproduction lavaan simplifié (que ceux >0.4)
-modlavaan <- 'ML3 =~ 0.817*s_infminidecla + m_nivie5 + m_financier + m_locatif + s_sentpauv
-          ML1 =~ 0.996*i_log + i_rsa + i_hlm
-          ML2 =~0.832*m_nivie1 + m_nivie2'
-pauvFAlavaan <- lavaan::cfa(modlavaan,bdd_fa_small,std.lv=TRUE)
-
-lavaan.diagram(pauvFAlavaan, cut=0)
-
-fa.plot(pauvFA$loadings[,1:2], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,7),rep(3,6)))
-fa.plot(pauvFA$loadings[,2:3], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,7),rep(3,6)))
-fa.plot(pauvFA$loadings[,c(3,2)], labels=row.names(bdd_fa_tetra$rho), cluster = c(rep(1,3),rep(2,7),rep(3,6)))
-
-print(pauvFA$loadings, cutoff = 0.2)
-round(pauvFA$communality, 2)
-
-```
-
-
-Premier type de clustering (de variables et non d'individus) avec iclust
-
-
-```{r, echo=FALSE, fig.height = 6}
-ic.tetra <- iclust(bdd_fa_tetra$rho,title="ICLUST using tetrachoric correlations")
-iclust.diagram(ic.tetra)
-```
-
-```{r, echo=FALSE, fig.height = 3}
-actives_autres <- c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
-actives_subj <- c("subj_pauvrete_et_risque", "subj_inf_mini_decla")
-actives <- c(actives_subj,actives_autres)
-passives <- c("statut_occup", "diplome", "conn_rsa","annee_fac", "prof_statut_act", "age_tranche","vie_fam"#,"presta_handi",
-              )
-
-num_indiv <- bdd_logit %>% 
-  dplyr::select(c(all_of("ident"),all_of(actives),all_of(passives))) %>% 
-  tidyr::drop_na() %>% dplyr::select(ident) %>% pull()
-bdd_poLCA_rmnasup <- bdd_poLCA %>% filter(ident%in%num_indiv)
-```
-
-
-```{r, echo=FALSE, fig.height = 3}
-
-par(mfrow=c(1,1),mar=c(5,4,4,2)+0.1)
-
-set.seed(1)
-
-result5 = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-m_quantilenivie,m_locatif, m_financier,
-i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=5, graphs=FALSE, na.rm=TRUE, verbose = TRUE)
-
-```
-
-
-```{r, echo=FALSE, fig.height = 5, fig.width=10}
-
-res.mca <- readRDS("../data/res.mca2.rds")
-# s.class(res.mca$ind$coord[,c(1,2)], factor(result5$predclass, levels=c(4,5,2,1,3), labels=c(1,2,3,5,6)), col = brewer.pal(7, "Set1")[c(1,2,3,5,6)], sub = "Axes 1 et 2")
-
-s.class(res.mca$ind$coord[,c(1,2)], factor(result5$predclass,labels=c(1,2,3,5,6)), col = brewer.pal(7, "Set1")[c(1,2,3,5,6)], sub = "Axes 1 et 2")
-
-for(i in 1:5){
-poLCA.makeplot.poly.oneclass(result5,i, noms_classes = c(1,2,3,5,6))
-}
-
-```
-
 
 # Notes méthodologiques
 
