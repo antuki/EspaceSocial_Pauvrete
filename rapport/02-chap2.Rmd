@@ -1,8 +1,6 @@
-# La pauvreté comme Espace social
+# Le sentiment de pauvreté ne se réduit pas au niveau de vie {#sec:nonreducnv}
 
-## Le sentiment de pauvreté ne se réduit pas au niveau de vie {#sec:nonreducnv}
-
-### A partir de 2018, le sentiment de pauvreté augmente mais ses facteurs explicatifs ne sont pas radicalement modifiés
+## A partir de 2018, le sentiment de pauvreté augmente mais ses facteurs explicatifs ne sont pas radicalement modifiés
 
 
 Le Baromètre d’opinion de la Drees permet de mesurer le niveau et l’évolution au cours du temps du sentiment de pauvreté^[Pour rappel, le sentiment de pauvreté s’appréhende dans le Baromètre d’opinion par la proportion de Français qui, à la question `PE3` « Et vous personnellement, pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ? », répondent « Je me considère déjà comme pauvre » (voir extrait de questionnaire en annexe \@ref(annexequestio)). ] des Français. Les données de l’enquête permettent d’observer que le sentiment de pauvreté a sensiblement augmenté ces dernières années, en particulier depuis 2018, pour atteindre 19 % en 2019 (figure \@ref(fig:figchap1compa20152019)). Il en va de même pour les difficultés financières perçues, à savoir la mise en relation du niveau de vie minimum nécessaire pour vivre selon les enquêtés au niveau de vie dont ils disposent effectivement^[quand la réponse à la question `PE16` « Selon vous, pour vivre, quel est le montant dont doit disposer AU MINIMUM un foyer comme le vôtre, par mois (en euros) ? » est inférieure à celle de la question `SDREVCL` « Nous désirons savoir à quel niveau de revenus MENSUELS NETS AVANT IMPOTS se situe votre foyer » dont on a imputé de la non-réponse (voir partie \@ref(sec:mesures))], qui concernent plus de la moitié des Français, et ce depuis les cinq dernières années.
@@ -19,6 +17,51 @@ fig_chap1_compa20152019
 :::
 
 En parallèle, la pauvreté objective -- qui correspond à la proportion de Français en dessous du seuil de pauvreté (seuil de 60 % du revenu médian^[Cet indicateur ne correspond pas aux données nationales officielles mais à un calcul avec les données du Baromètre. La source qui fait référence en France pour le taux de pauvreté (Insee, ERFS) donne, elle, des taux en légère augmentation depuis 2015 :  14,3 % pour 2015, 13,9 % pour 2016, 14,1 % pour 2017 et 14,8 % pour 2018.]) diminue légèrement et atteint 14 % en 2019. Enfin, 44 % des Français jugent en 2019 ne pas être suffisamment aidés par les pouvoirs publics^[Réponse « Vous auriez besoin d’être aidé(e) davantage par les pouvoir publics » à la question `PE15` : « Actuellement, compte tenu de votre situation globale, du montant des aides publiques (RSA, allocations familiales, aides au logement), et du montant de vos impôts, vous considérez que… ». Cette question est posée uniquement en **années paires**.].
+
+
+Professionnellement, le fait d’être à la recherche d’un emploi ou sans activité professionnelle augmente significativement les chances toutes choses par ailleurs de se sentir pauvre par rapport au fait d’être en CDI à temps plein. La moitié des Français appartenant à ces deux catégories indiquent se sentir pauvre (figure \@ref(fig:figstatactevol)). Cette exposition forte au sentiment de pauvreté conforte les théories de Castel (@castel2004insecurite et @castel2014metamorphoses) selon lesquelles les populations exclues du marché du travail auraient un risque accru d’insécurité sociale^[Il faut également considérer que le sentiment de pauvreté révèle principalement un sentiment d’insécurité sociale, or on a vu en partie \@ref(sec:limitesduvoux) que @paugam2020se insiste également sur le rôle de la charge institutionnelle de l’assistance.] (revenus instables rendant difficile la projection vers l’avenir). En revanche, le statut d’emploi précaire ne ressort plus significativement différent du CDI à temps plein sur la période 2016-2019 alors qu’il l’était sur la période 2015-2017.
+
+```{r figstatactevol, fig.cap="Evolution du sentiment de pauvreté selon le statut d'activité", fig.height=4}
+fig_statactevol <- readRDS("figures/fig_statactevol.RDS")
+fig_statactevol
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+:::
+
+
+
+Au-delà du statut d’activité, le tableau \@ref(tab:tabcompa) révèle un effet également de la classe sociale par la significativité positive d’appartenir aux catégories professionnelles d’ouvriers et d’employés. Près d’un ouvrier ou ancien ouvrier sur trois et d’un employé ou ancien employé sur cinq se déclarent pauvre en 2019 (figure \@ref(fig:figstatactevol)), avec des écarts qui se creusent avec les autres professions depuis 2015. C’est le cas en particulier pour les ouvriers, dont le coefficient de la régression devient significatif sur la période 2016-2019 alors qu’il ne l’était pas pour la période précédente. 
+
+
+```{r figpcsevol, fig.cap="Evolution du sentiment de pauvreté selon la catégorie professionnelle", fig.height=4}
+fig_pcsevol <- readRDS("figures/fig_pcsevol.RDS")
+fig_pcsevol
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+:::
+
+Le bloc de modalités sur la composition familiale a également beaucoup d’effet sur le sentiment de pauvreté. Le fait de vivre seul(e) joue un rôle déterminant puisqu’il double, toutes les autres variables du modèle étant égales par ailleurs, le risque de se sentir pauvre par rapport à un couple sans enfant (tableau \@ref(tab:tabcompa)). Même si le fait d’être le parent d’une famille monoparentale n’est plus significatif en présence des contrôles du modèle, il est la situation familiale qui connaît le plus fort sentiment de pauvreté puisqu’un tiers des personnes dans cette situation se déclarent pauvres (figure \@ref(fig:figviefamevol)). Ces résultats semblent illustrer l’effet protecteur du couple sur le fait de se sentir ou non pauvre. Le couple permet en effet notamment de faire des économies d’échelles, notamment en matière de dépenses vis-à-vis de son logement. Au sujet du logement, le fait d’être propriétaire plutôt que locataire diminue significativement les chances de se déclarer pauvre (tableau \@ref(tab:tabcompa)).  
+
+```{r figviefamevol, fig.cap="Evolution du sentiment de pauvreté selon la situation familiale", fig.height=4}
+fig_viefamevol <- readRDS("figures/fig_viefamevol.RDS")
+fig_viefamevol
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+:::
+
+
 
 Pour expliquer le sentiment de pauvreté, un premier modèle de régression logistique où le fait de se déclarer pauvre constitue la variable dépendante est utilisé. Ses résultats sont présentés en tableau \@ref(tab:tabcompa). On remarquera dans les dernières lignes de celui-ci que les années 2018 et 2019 sont très significativement positives dans le modèle appliqué sur la base compilant les années 2016 à 2019, majoritairement utilisée pour ce mémoire. Ce résultat est cohérent avec l’évolution observée en figure \@ref(fig:figchap1compa20152019) commentée précédemment. Malgré la brusque augmentation du sentiment de pauvreté observée depuis 2018, les autres coefficients du modèle actualisé sont globalement semblables à ceux du modèle appliqué sur les données plus anciennes (2015—2017). En d’autres termes, cela semble signifier que, même si le sentiment de pauvreté a augmenté en niveau depuis 2018, ses déterminants n’ont pas sensiblement changé dans le temps (sauf petites exceptions décrites ci-après).
 
@@ -67,51 +110,8 @@ C’est le cas notamment du fait d’avoir bénéficié de certaines prestations
 
 Au-delà des dimensions monétaire et institutionnelle de la pauvreté, les autres variables du modèle du tableau \@ref(tab:tabcompa) montrent également l’importance de la position sociale et de la composition familiale sur le sentiment de pauvreté. 
 
-Professionnellement, le fait d’être à la recherche d’un emploi ou sans activité professionnelle augmente significativement les chances toutes choses par ailleurs de se sentir pauvre par rapport au fait d’être en CDI à temps plein. La moitié des Français appartenant à ces deux catégories indiquent se sentir pauvre (figure \@ref(fig:figstatactevol)). Cette exposition forte au sentiment de pauvreté conforte les théories de Castel (@castel2004insecurite et @castel2014metamorphoses) selon lesquelles les populations exclues du marché du travail auraient un risque accru d’insécurité sociale^[Il faut également considérer que le sentiment de pauvreté révèle principalement un sentiment d’insécurité sociale, or on a vu en partie \@ref(sec:limitesduvoux) que @paugam2020se insiste également sur le rôle de la charge institutionnelle de l’assistance. Nous verrons également en section \@ref(sec:traducsp) ce qui peut être traduit par le sentiment de pauvreté.] (revenus instables rendant difficile la projection vers l’avenir). En revanche, le statut d’emploi précaire ne ressort plus significativement différent du CDI à temps plein sur la période 2016-2019 alors qu’il l’était sur la période 2015-2017.
 
-```{r figstatactevol, fig.cap="Evolution du sentiment de pauvreté selon le statut d'activité", fig.height=4}
-fig_statactevol <- readRDS("figures/fig_statactevol.RDS")
-fig_statactevol
-```
-
-:::{.note data-latex=""} 
-*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
-
-*Source : Baromètre d’opinion de la DREES, 2015-2019.*
-:::
-
-
-
-Au-delà du statut d’activité, le tableau \@ref(tab:tabcompa) révèle un effet également de la classe sociale par la significativité positive d’appartenir aux catégories professionnelles d’ouvriers et d’employés. Près d’un ouvrier ou ancien ouvrier sur trois et d’un employé ou ancien employé sur cinq se déclarent pauvre en 2019 (figure \@ref(fig:figstatactevol)), avec des écarts qui se creusent avec les autres professions depuis 2015. C’est le cas en particulier pour les ouvriers, dont le coefficient de la régression devient significatif sur la période 2016-2019 alors qu’il ne l’était pas pour la période précédente. 
-
-
-```{r figpcsevol, fig.cap="Evolution du sentiment de pauvreté selon la catégorie professionnelle", fig.height=4}
-fig_pcsevol <- readRDS("figures/fig_pcsevol.RDS")
-fig_pcsevol
-```
-
-:::{.note data-latex=""} 
-*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
-
-*Source : Baromètre d’opinion de la DREES, 2015-2019.*
-:::
-
-Le bloc de modalités sur la composition familiale a également beaucoup d’effet sur le sentiment de pauvreté. Le fait de vivre seul(e) joue un rôle déterminant puisqu’il double, toutes les autres variables du modèle étant égales par ailleurs, le risque de se sentir pauvre par rapport à un couple sans enfant (tableau \@ref(tab:tabcompa)). Même si le fait d’être le parent d’une famille monoparentale n’est plus significatif en présence des contrôles du modèle, il est la situation familiale qui connaît le plus fort sentiment de pauvreté puisqu’un tiers des personnes dans cette situation se déclarent pauvres (figure \@ref(fig:figviefamevol)). Ces résultats semblent illustrer l’effet protecteur du couple sur le fait de se sentir ou non pauvre. Le couple permet en effet notamment de faire des économies d’échelles, notamment en matière de dépenses vis-à-vis de son logement. Au sujet du logement, le fait d’être propriétaire plutôt que locataire diminue significativement les chances de se déclarer pauvre (tableau \@ref(tab:tabcompa)).  
-
-```{r figviefamevol, fig.cap="Evolution du sentiment de pauvreté selon la situation familiale", fig.height=4}
-fig_viefamevol <- readRDS("figures/fig_viefamevol.RDS")
-fig_viefamevol
-```
-
-:::{.note data-latex=""} 
-*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
-
-*Source : Baromètre d’opinion de la DREES, 2015-2019.*
-:::
-
-
-
-### A quel niveau (ménage, individu) se mesure la pauvreté ?
+## A quel niveau (ménage, individu) se mesure la pauvreté ?
 
 L’importance de la structure familiale sur le sentiment de pauvreté invite à s’interroger sur l’échelle de mesure de la pauvreté. Si l’échelle du ménage a son importance (niveau au sein duquel on se partage en général les ressources), il est intéressant d’étudier à quel point l’échelle individuelle joue également.
 
@@ -153,7 +153,7 @@ tab_rsa
 :::
 
 
-### Quelles variables du Baromètre intégrer dans les dimensions monétaire et institutionnelle de la pauvreté ?
+## Quelles variables du Baromètre intégrer dans les dimensions monétaire et institutionnelle de la pauvreté ?
 
 @duvoux2018qui ont ainsi montré que la pauvreté monétaire, mesurée par le quintile de niveau de vie du ménage des individus, n’est pas l’unique facteur explicatif du sentiment de pauvreté. Même à quintile de niveau de vie fixé, la pauvreté institutionnelle -- mesurée par le fait d’être bénéficiaire du RSA, d’allocations chômage ou de prestations liées au handicap, à l’invalidité ou à la dépendance -- et d’autres caractéristiques sociodémographiques telles que le statut d’emploi, la profession et la composition du ménage, ont également un effet sur le sentiment de pauvreté. 
 
@@ -243,201 +243,3 @@ tab_final21
 *Source : Baromètre d’opinion de la DREES, 2016-2019.*
 
 :::
-
-
-
-
-## Que peut traduire le sentiment de pauvreté ? {#sec:traducsp}
-
-Pauvreté objective (monétaire et institutionnelle) mais aussi : insécurité sociale, déclassement, pessimisme...
-
-ME1 filtre : non 2018
-Pensez-vous pouvoir compter sur quelqu’un en cas de grave problème personnel ?
-1. Oui, certainement
-2. Oui, probablement
-3. Non probablement pas
-4. Non, certainement pas
-5. [NSP]
-
-ME2 filtre : non 2018
-Compte tenu de vos ressources, diriez-vous que votre ménage a des difficultés pour boucler ses
-fins de mois … ?
-1. Souvent
-2. De temps en temps
-3. Rarement
-4. Jamais
-5. [NSP]
-
-ME3 Filtre : non 2018
-En imaginant que vous deviez faire face à une dépense imprévue de 500 € dans l’année qui vient,
-pensez-vous… ?
-1. Que vous y feriez face sans trop de problème
-2. Qu’il vous serait assez difficile d’y faire face
-3. Qu’il vous serait très difficile d’y faire face
-4. [NSP]
-
-ME4 filtre : non 2018
-Êtes-vous inquiet.e à l’idée de ne pas pouvoir être bien soigné en cas de gros problème de santé ?
-1. Oui, très inquiet.e
-2. Oui, assez inquiet.e
-3. Non, pas très inquiet.e
-4. Non, pas inquiet.e du tout
-5. [NSP]
-
-ME5 filtre : non 2018
-Globalement, diriez-vous que les revenus de votre foyer sont plutôt variables ou plutôt stables d’un
-mois sur l’autre ?
-1. Plutôt stables
-2. Plutôt variables
-3. [NSP]
-
-ME6 filtre : non 2018
-Dans les mois qui viennent, pensez-vous que les revenus de votre foyer vont… ?
-1. Plutôt augmenter
-2. Plutôt diminuer
-3. Rester stables
-4. [NSP]
-
-
-****
-
-OG1 filtre : non SOCLE 2002- 
-Vous personnellement, comment qualifieriez-vous votre situation actuelle ? Diriez-vous de votre situation actuelle, qu'elle est … 
-1. Très bonne 
-2. Assez bonne 
-3. Assez mauvaise 
-4. Très mauvaise 
-5. [NSP]
-
-OG2 filtre : non SOCLE 2017 - 
-Par rapport à la situation de vos parents au même âge, diriez-vous que votre situation actuelle est... ? 
-1. Bien meilleure 
-2. Plutôt meilleure 
-3. À peu près identique 
-4. Plutôt moins bonne 
-5. Bien moins bonne 
-6. [NSP]
-
-OG3 filtre : non SOCLE 2000 - 
-Quand vous pensez à l'avenir, êtes-vous plutôt optimiste ou plutôt pessimiste... ? 
-1. Très optimiste 
-2. Plutôt optimiste 
-3. Plutôt pessimiste 
-4. Très pessimiste 
-5. [NSP] 
-_1 Pour vous-même 
-_2 Pour vos enfants ou les générations futures 
-
-OG4 filtre : non SOCLE 2000 - 
-Pour chacun des sujets suivants, dites-moi s'il VOUS préoccupe VOUS PERSONNELLEMENT beaucoup, assez, peu ou pas du tout ? 
-1. Beaucoup 
-2. Assez 
-3. Peu 
-4. Pas du tout 
-5. [NSP] 
-
-ENQUETEUR : MONTRER L’ÉCRAN ET ENUMERER 
-
-_1 Le logement 2014 - 
-_2 Les migrations des populations des pays pauvres vers les pays riches 
-_3 La pauvreté 
-_4 L’insécurité dans votre quartier ou votre village 2014 - 
-_5 La dette de la France 2014 - 
-_6 Le chômage 
-_7 Les crises financières internationales 
-_8 La santé des Français 2014 - 
-_9 le niveau des salaires et du pouvoir d’achat 2014 - 
-
-ROTATION ALEATOIRE
-
-OG5 filtre : non 
-Et pour les sujets suivants, dites-moi s'il VOUS préoccupe VOUS PERSONNELLEMENT beaucoup, assez, peu ou pas du tout ? 
-1. Beaucoup 
-2. Assez 
-3. Peu 
-4. Pas du tout 
-5. [NSP] 
-
-ENQUETEUR : MONTRER ECRAN ET ENUMERER 
-
-_1 Les problèmes liés à l'environnement 2000 - 
-_2 Les risques alimentaires 2000 – 2018 ; MODULE ANNEE IMPAIRE 2019 - 
-_3 Le Sida 2000 – 2018 ; MODULE ANNEE IMPAIRE 2019 - 
-_4 L’avenir du système de retraite 2014 – 
-_5 Le cancer 2000 - 
-_6 Les risques d’épidémie 2009 – 2018 ; MODULE ANNEE IMPAIRE 2019 - 
-_7 Les inégalités entre les femmes et les hommes 2014 –
-
-IN1 filtre : non SOCLE 2000 - 
-La société française aujourd'hui, vous paraît-elle plutôt juste ou plutôt injuste ? 
-1. Plutôt juste 
-2. Plutôt injuste 
-3. [NSP]
-
-IN2 filtre : non SOCLE 2000 - 
-Globalement, depuis 5 ans, diriez-vous que les inégalités en France... ? 
-1. Ont plutôt augmenté 
-2. Ont plutôt diminué 
-3. [Sont restées stables] 
-4. [NSP]
-
-IN3 filtre : non SOCLE 2000 - 
-Et à l'avenir, pensez-vous que les inégalités en France... ? 
-1. Vont plutôt augmenter 
-2. Vont plutôt diminuer 
-3. [Resteront stables] 
-4. [NSP] 
-
-IN11filtrer si : si SDACT < 5 SOCLE 2014 - 
-_1 Que gagnent en moyenne les gens qui ont la même profession que vous ? 
-\__________/ 
-_2 Que devraient gagner en moyenne les gens qui ont la même profession que vous ? 
-\__________/ 
-ENQUÊTEUR : POSEZ LA QUESTION POUR LA DERNIÈRE PROFESSION EXERCÉE SI RETRAITÉ OU CHOMEUR AYANT DÉJÀ TRAVAILLE. NOTEZ LE SALAIRE (OU LA RÉMUNÉRATION) NET(TE) MENSUEL(LE) EN EUROS. SI L’ENQUÊTÉ RÉPOND EN FRANCS, TRADUIRE EN EUROS. NOTEZ 999 999 999 POUR « NE SAIT PAS » (OU REFUS DE RÉPONDRE). SI L’ENQUÊTÉ TRAVAILLE À MI-TEMPS, CONVERTIR EN PLEIN TEMPS. 
-CODAGE : QUANTITÉ
-
-PE1 Filtre : non SOCLE 2000 - 
-Selon vous, depuis 5 ans, la pauvreté et l'exclusion en France... 
-1. Ont diminué 
-2. Ont augmenté 
-3. [Sont restées stables] 
-4. [NSP] 
-ENQUETEUR : ENUMERER 
-PE2 Filtre : non SOCLE 2000 - 
-Et à l'avenir, pensez-vous que la pauvreté et l'exclusion en France... ? 
-1. Vont plutôt diminuer 
-2. Vont plutôt augmenter 
-3. [Resteront stables] 
-4. [NSP] 
-ENQUETEUR : ENUMERER
-
-
-## L'importante prise en compte du risque de pauvreté subjectif
-
-### Espace social des pauvretés monétaire institutionelle et subjective par Analyse des Correspondances Multiples
-
-<!-- Résultat de l'ACM -->
-<!-- Notes : Pour cette étude, X individus sur les 12XXX individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées.  -->
-
-```{r acm1, fig.show='hold', fig.cap='ACM', echo=FALSE}
-
-if (knitr::is_latex_output()) {
-  library(cowplot)
-  fig_svg <- cowplot::ggdraw()+cowplot::draw_image("figures/acm1.svg")
-  plot(fig_svg)
-} else {
-  knitr::include_graphics('figures/acm1.svg')
-}
-
-```
-
-### La pauvreté subjective en trois modalités : absence, présence et risque à venir
-
-<!-- Résultat des modèles multinomiaux -->
-
-## La pauvreté comme dimension latente
-
-### Comment modéliser des variables latentes ? 
-
-### Construction d'un espace social par analyse factorielle
-

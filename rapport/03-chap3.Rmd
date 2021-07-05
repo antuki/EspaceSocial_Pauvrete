@@ -1,0 +1,32 @@
+# La pauvreté comme Espace social (analyse exploratoire)
+
+## L'importante prise en compte du risque de pauvreté subjectif
+
+### Espace social exploratoire des pauvretés monétaire institutionelle et subjective par Analyse des Correspondances Multiples
+
+<!-- Résultat de l'ACM -->
+<!-- Notes : Pour cette étude, X individus sur les 12XXX individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées.  -->
+
+```{r acm1, fig.show='hold', fig.cap='ACM', echo=FALSE}
+
+if (knitr::is_latex_output()) {
+  library(cowplot)
+  fig_svg <- cowplot::ggdraw()+cowplot::draw_image("figures/acm1.svg")
+  plot(fig_svg)
+} else {
+  knitr::include_graphics('figures/acm1.svg')
+}
+
+```
+
+### La pauvreté subjective en trois modalités : absence, présence et risque à venir
+
+<!-- Résultat des modèles multinomiaux -->
+
+## La pauvreté comme dimension latente
+
+### Comment modéliser des variables latentes ? 
+
+### Construction d'un espace social par analyse factorielle
+
+
