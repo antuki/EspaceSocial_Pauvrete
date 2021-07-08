@@ -76,7 +76,7 @@ library(poLCA) #pour les Latent Categorical Variables (pour utiliser les graphs 
 
 ```{r, echo=FALSE}
 bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
-  filter(annee%in%2016:2019)
+  filter(annee%in%2015:2019) #NEW : 2015 à 2019
 
 revenus_a_imputer <- bdd %>%
 mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
@@ -316,7 +316,7 @@ bdd_logit <- bdd %>%
    ),
     levels=c(1,2),
     labels=paste0("-",
-                  c("Locataire ou hébergé","Propriétaire")) 
+                  c("Locataire ou hébergé","Propriétaire ")) 
     )) %>% 
   mutate(
     statut_occup = factor(case_when(
@@ -330,7 +330,7 @@ bdd_logit <- bdd %>%
                   c("Locataire privé / hébergé",
                     "Locataire HLM","Propriétaire")) 
     )) %>% 
-  mutate(annee_fac = factor(annee,labels=paste0("-",2016:2019))) %>% 
+  mutate(annee_fac = factor(annee,labels=paste0("-",2015:2019))) %>% 
   mutate(annee_fac_paires = factor(ifelse(annee%in%c(2016,2018),annee,NA),labels=paste0("-",c(2016,2018)))) %>% 
   mutate(pauvrete_mon_rel= factor(
     ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
@@ -770,6 +770,10 @@ bdd_logit <- bdd %>%
                         "Employé","Ouvrier","Chômeur",
                         "Retraité","Au foyer","Autre inactif"))
   ))
+ 
+
+bdd_logit_2015_2017 <- bdd_logit %>% filter(annee<2018) 
+bdd_logit_2018_2019 <- bdd_logit %>% filter(annee>=2018)
 
 ```
 
@@ -833,7 +837,7 @@ res.mca <- MCA(bdd_acm,
                quali.sup=(length(actives)+1):(ncol(bdd_acm)),
                graph=FALSE) 
 #explor(res.mca)
-#saveRDS(res.mca,"../data/res.mca.RDS")
+saveRDS(res.mca,"../data/res.mca.RDS")
 res <- explor::prepare_results(res.mca)
 
 ```
@@ -855,11 +859,24 @@ explor::MCA_var_plot(res, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = NUL
     labels_positions = NULL, labels_prepend_var = FALSE, xlim = xlim,
     ylim = ylim)
 
+explor::MCA_var_plot(res, xax = 1, yax = 3, var_sup = TRUE, var_sup_choice = NULL,
+    var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
+    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
+    labels_positions = NULL, labels_prepend_var = FALSE, xlim = xlim,
+    ylim = ylim)
+
 explor::MCA_var_plot(res, xax = 3, yax = 2, var_sup = TRUE, var_sup_choice = NULL,
     var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
     size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
     labels_positions = NULL, labels_prepend_var = FALSE, xlim = xlim,
     ylim = ylim)
+
+explor::MCA_var_plot(res, xax = 3, yax = 4, var_sup = TRUE, var_sup_choice = NULL,
+    var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
+    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
+    labels_positions = NULL, labels_prepend_var = FALSE, xlim = xlim,
+    ylim = ylim)
+
 
 ```
 
@@ -970,6 +987,44 @@ explor::MCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
  
 ```
 
+### Distinction avant/après 2018
+
+2015-2017
+
+```{r}
+bdd_acm_2015_2017 <- bdd_logit_2015_2017 %>% 
+  dplyr::select(c(all_of(actives),all_of(passives))) %>% 
+  tidyr::drop_na()
+res.mca_2015_2017 <- MCA(bdd_acm_2015_2017,
+               quali.sup=(length(actives)+1):(ncol(bdd_acm_2015_2017)),
+               graph=FALSE) 
+res_2015_2017 <- explor::prepare_results(res.mca_2015_2017)
+
+explor::MCA_var_plot(res_2015_2017, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = NULL,
+    var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
+    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
+    labels_positions = NULL, labels_prepend_var = FALSE, xlim = xlim,
+    ylim = ylim)
+```
+
+
+2018-2019
+
+```{r}
+bdd_acm_2018_2019 <- bdd_logit_2018_2019 %>% 
+  dplyr::select(c(all_of(actives),all_of(passives))) %>% 
+  tidyr::drop_na()
+res.mca_2018_2019 <- MCA(bdd_acm_2018_2019,
+               quali.sup=(length(actives)+1):(ncol(bdd_acm_2018_2019)),
+               graph=FALSE) 
+res_2018_2019 <- explor::prepare_results(res.mca_2018_2019)
+
+explor::MCA_var_plot(res_2018_2019, xax = 1, yax = 2, var_sup = TRUE, var_sup_choice = NULL,
+    var_lab_min_contrib = 0, col_var = "Variable", symbol_var = "Type", size_var = NULL,
+    size_range = c(10, 300), labels_size = 10, point_size = 56, transitions = TRUE,
+    labels_positions = NULL, labels_prepend_var = FALSE, xlim = xlim,
+    ylim = ylim)
+```
 
 ### Variables supplémentaires
 
@@ -1111,26 +1166,28 @@ donnees <- res.mca$ind$coord[,c(1,2)]
 arbre <- hclust(dist(donnees), method = "ward.D2")
 inertie <- sort(arbre$height, decreasing = TRUE)
 plot(inertie[1:20], type = "s", xlab = "Nombre de classes", ylab = "Inertie")
-points(c(2, 3, 6), inertie[c(2, 3, 6)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
+points(c(2, 3, 4,5), inertie[c(2, 3, 4,5)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
 
 plot(arbre, labels = FALSE, main = "Partitions selon le nb de classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
 rect.hclust(arbre, 2, border = "green3")
 rect.hclust(arbre, 3, border = "red3")
-rect.hclust(arbre, 6, border = "blue3")
+rect.hclust(arbre, 4, border = "blue3")
+rect.hclust(arbre, 5, border = "yellow3")
 
-#Typologie en 6 classes
-typo <- factor(factor(cutree(arbre,k=6),labels=c(2,5,3,4,6,1)),levels=1:6)
-s.class(res.mca$ind$coord[,c(1,2)], typo, col = brewer.pal(7, "Set1")[c(1:5,7)], sub = "Axes 1 et 2")
+#Typologie en 5 classes
+nbclasses <- 5
+typo <- factor(factor(cutree(arbre,k=nbclasses),labels=c(5,3,4,2,1)),levels=1:nbclasses)
+s.class(res.mca$ind$coord[,c(1,2)], typo, col = brewer.pal(5, "Set1")[1:nbclasses], sub = "Axes 1 et 2")
 
-for(i in 1:length(unique(typo))){
+for(i in 1:nbclasses){
   poLCA.makeplot.poly.oneclass(creer_x(typo),i)
 }
 
 ```
 
-### Sur tous les axes factoriels
+<!-- ### Sur tous les axes factoriels -->
 
-```{r}
+```{r, eval=FALSE, echo=FALSE}
 donnees <- res.mca$ind$coord
 arbre <- hclust(dist(donnees), method = "ward.D2")
 inertie <- sort(arbre$height, decreasing = TRUE)
@@ -1156,7 +1213,8 @@ for(i in c(1,3,4,5,2)){ #1:length(unique(typo))
 
 # Notes méthodologiques
 
-Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations) mais seules 10 555 observations sont conservées (celles qui n'ont aucune variable manquante pour l'ensemble des variables utilisées, actives comme supplémentaires).
+Pour ces modèles cinq vagues du Baromètre ont été empilées : 2015, 2016, 2017, 2018 et 2019 (15 137 observations) mais seules **XX XXX** observations sont conservées (celles qui n'ont aucune variable manquante pour l'ensemble des variables utilisées, actives comme supplémentaires).
+
 
 # Bibliographie {.unnumbered}
 
