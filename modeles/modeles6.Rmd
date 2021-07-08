@@ -68,7 +68,9 @@ library(semPlot) #path draw CFA SEM
 library(poLCA) #pour les Latent Categorical Variables
 library(ade4) #pour la fonction s5 de plot des classes de CAH
 library(RColorBrewer) #palettes de couleur
-
+library(ggplot2) #graphiques corrplot
+library(tidyr) #pour pivot_longer / wider
+library(tibble) #pour rownames_to_column
 ```
 ```{r, echo=FALSE}
 poLCA.makeplot.poly.oneclass <- function(x,r,noms_classes=1:length(x$P)){
@@ -77,11 +79,49 @@ par(mar=c(5,4,4,2)+0.1) #mfrow=c(1,1),
 layout(matrix(seq(1,(1+1)),1+1,1),heights=c(rep(5,1),1))
 poLCA:::poLCA.makeplot.poly(x$probs,r,x$y,K.j,paste("Classe ",noms_classes[r]," : part de la population = ",round(100*x$P[r],1)," %",sep=""))
 }
+
+
+
+correlation_ggplot <- function(mat,ordre=row.names(mat),titre_legende="Corrélation"){
+  mat <- mat[ordre,ordre]
+  #mat[lower.tri(mat)] <- NA
+  cbind(
+    data.frame(mat)  %>%
+      rownames_to_column(var="mesure1") %>%
+      pivot_longer(-mesure1, "mesure2") %>%
+      mutate(mesure1 = factor(mesure1,levels = unique(mesure1)),
+             mesure2 = factor(mesure2,levels = unique(mesure1))
+      ),
+    data.frame(ggcorrplot::cor_pmat(mat))  %>%
+      rownames_to_column(var="mesure1") %>%
+      pivot_longer(-mesure1, "mesure2") %>% 
+      mutate(value=ifelse(value>0.05,"0","1")) %>% 
+      dplyr::select(value) %>% 
+      setNames("signi")
+  )  %>% 
+    mutate(label = round(value,2)) %>% 
+    ggplot(aes(mesure1, mesure2, col=value)) + ## to get the rect filled
+    geom_tile(color="white", fill="white") +
+    geom_point(size = 5, shape=16) +
+    geom_point(aes(shape = signi),size = 2,color = "black")+
+    labs(x = NULL, y = NULL, col = titre_legende) +
+    theme_classic()+
+    scale_shape_manual(name="Significativité (5 %)",
+                       values=c(4,NA), breaks=c("1","0"),labels=c("Oui","Non"))+
+    scale_color_gradient2(mid="#FBFEF9",low="#6D9EC1",high="#E46726",
+                          limits=c(-1,1), na.value="#FFFFFF")  +
+    scale_x_discrete(expand=c(0,0)) +
+    scale_y_discrete(expand=c(0,0)) +
+    scale_size(range=c(4,10), guide=NULL) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+}
+
 ```
 
 ```{r, echo=FALSE}
 bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
-  filter(annee%in%2016:2019)
+  filter(annee%in%2015:2019) #NEW : 2015 à 2019
 
 revenus_a_imputer <- bdd %>%
 mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
@@ -336,7 +376,7 @@ bdd_logit <- bdd %>%
                   c("Locataire privé / hébergé",
                     "Locataire HLM","Propriétaire")) 
     )) %>% 
-  mutate(annee_fac = factor(annee,labels=paste0("-",2016:2019))) %>% 
+  mutate(annee_fac = factor(annee,labels=paste0("-",2015:2019))) %>% 
   mutate(annee_fac_paires = factor(ifelse(annee%in%c(2016,2018),annee,NA),labels=paste0("-",c(2016,2018)))) %>% 
   mutate(pauvrete_mon_rel= factor(
     ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
@@ -797,7 +837,7 @@ bdd_fa <- bdd_logit %>%
   mutate(s_sentpauv = subj_pauvrete + 0,
          s_risqpauv = subj_risque_pauvrete + 0,
          #s_infminidecla = subj_inf_mini_decla + 0,
-         s_infminidecla = as.numeric(factor(subj_inf_mini_decla,labels=c(1,0)))-1,
+         s_infminidecla = ifelse(as.numeric(subj_inf_mini_decla)==2,0,1),
          m_nivie1 = ifelse(quantile_nivie=="-Quintile 1",1,0),
          m_nivie2 = ifelse(quantile_nivie=="-Quintile 2",1,0),
          m_nivie3 = ifelse(quantile_nivie=="-Quintile 3",1,0),
@@ -809,7 +849,7 @@ bdd_fa <- bdd_logit %>%
          i_rsa = ifelse(presta_rsa=="-RSA",1,0),
          i_chom = ifelse(presta_chomage=="-Allocation chômage",1,0),
          i_handi = ifelse(presta_handi=="-AAH, APA, PCH (handicap)",1,0),
-         i_bourse = ifelse(presta_etudes=="-bourse d'étude",1,0),
+         i_bourse = ifelse(presta_etudes=="-Bourse d'étude",1,0),
          i_hlm = ifelse(presta_hlm=="-Locataire HLM",1,0)
           
   ) #%>% 
@@ -824,7 +864,8 @@ bdd_fa <- bdd_logit %>%
 
 bdd_poLCA <- bdd_logit %>% 
   mutate(s_sentpauvrisque = as.numeric(subj_pauvrete_et_risque),
-         s_infminidecla = as.numeric(subj_inf_mini_decla),
+         #s_infminidecla = as.numeric(subj_inf_mini_decla),
+         s_infminidecla = ifelse(as.numeric(subj_inf_mini_decla)==2,1,2),
          m_quantilenivie = as.numeric(quantile_nivie),
          m_locatif = as.numeric(revenus_locatifs),
          m_financier = as.numeric(revenus_financiers),
@@ -837,7 +878,7 @@ bdd_poLCA <- bdd_logit %>%
   ) %>% 
   dplyr::select(ident, s_sentpauvrisque, s_infminidecla,
 m_quantilenivie, m_locatif, m_financier,
-i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm)
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm, sexe)
 
 
 ```
@@ -850,44 +891,46 @@ We print out the last six eigenvalues and see that the last eigenvalue is negati
 
 The final criterion is interpretability.
 
+### Indicatrices
+
 ```{r, echo=FALSE}
 bdd_fa_small <- bdd_fa %>% 
   dplyr::select(s_sentpauv, s_risqpauv, s_infminidecla,
 m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
 i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) 
 
+# Matrice de corrélation pearson
+cor_pearson = cor(bdd_fa_small %>% na.omit(), method = "pearson")
+correlation_ggplot(mat=cor_pearson, ordre = c("s_sentpauv","s_infminidecla","i_log","i_rsa","m_nivie1","i_hlm","i_bourse",
+                                                   "i_handi","i_chom","m_nivie2","s_risqpauv","m_nivie3","m_nivie4","m_nivie5","m_locatif",
+                                                   "m_financier"),
+                   titre_legende = "Corrélation Pearson")
+# Matrice de corrélation tétra
 bdd_fa_tetra <- tetrachoric(bdd_fa_small, smooth = TRUE)
-# Matrice de corrélation
-bdd_fa_tetra$rho
-# Valeurs propres
-vp <- eigen(bdd_fa_tetra$rho)$values
-# Conservation de la variance. 
-round((vp/sum(vp)*100),2)
-scree(bdd_fa_tetra$rho, factors = FALSE)
-par(mar=c(0,0,0,0)) #mfrow=c(1,1),
-resnf <- nfactors(bdd_fa_tetra$rho, n = 8, fm = "ml", cor = "tet")
+correlation_ggplot(mat=bdd_fa_tetra$rho, ordre = c("s_sentpauv","s_infminidecla","i_log","i_rsa","m_nivie1","i_hlm","i_bourse",
+                                                   "i_handi","i_chom","m_nivie2","s_risqpauv","m_nivie3","m_nivie4","m_nivie5","m_locatif",
+                                                   "m_financier"),
+                   titre_legende = "Corrélation Tétra")
 ```
 
-<!-- ### Variables catégorielles  -->
+### Variables catégorielles (plus de 2 modalités possibles)
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=TRUE, echo=FALSE}
 bdd_poLCA_small <- bdd_poLCA %>% 
   dplyr::select(s_sentpauvrisque, s_infminidecla,
-m_quantilenivie, #m_locatif, m_financier,
-i_log, i_rsa, i_chom)
+m_quantilenivie, m_locatif, m_financier,
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm)
 
-bdd_poLCA_poly <- polychoric(bdd_poLCA_small, smooth = TRUE)
-# Matrice de corrélation
-bdd_poLCA_poly$rho
-# Valeurs propres
-vp <- eigen(bdd_poLCA_poly$rho)$values
-# Conservation de la variance. 
-round((vp/sum(vp)*100),2)
-scree(bdd_poLCA_poly$rho, factors = FALSE)
-par(mar=c(0,0,0,0)) #mfrow=c(1,1),
-resnf <- nfactors(bdd_poLCA_poly$rho, n = 8, fm = "ml", cor = "tet")
-# Nombre de facteurs : 2 ou 3.
 
+# Matrice de corrélation spearman
+cor_spearman = cor(bdd_poLCA_small %>% na.omit(), method = "spearman")
+correlation_ggplot(mat=cor_spearman, ordre = rev(c("m_quantilenivie","m_locatif","m_financier","s_infminidecla","s_sentpauvrisque","i_hlm","i_handi","i_chom","i_rsa","i_log","i_bourse")),
+                   titre_legende = "Corrélation Spearman")
+# Matrice de corrélation poly
+#If using data with a variable number of response alternatives, it is necessary to use the global=FALSE option in polychoric.
+bdd_poLCA_poly <- polychoric(bdd_poLCA_small, smooth = TRUE, global=FALSE)
+correlation_ggplot(mat=bdd_poLCA_poly$rho, ordre = rev(c("m_quantilenivie","m_locatif","m_financier","s_infminidecla","s_sentpauvrisque","i_hlm","i_handi","i_chom","i_rsa","i_log","i_bourse")), titre_legende = "Corrélation Poly")
+ 
 ```
 
 
@@ -928,7 +971,15 @@ Unlike factor analysis, principal components analysis or PCA makes the assumptio
 
 n alternative to factor analysis,  which is unfortunately frequently confused withfactoranalysis, isprincipal components analysis.  Although the goals ofPCAandFAare similar,PCA  is  a  descriptive  model  of  the  data,  while  FA  is  a  structural  model.   Psychologiststypically use PCA in a manner similar to factor analysis and thus theprincipalfunctionproduces  output that is  perhaps  more  understandable  than  that produced byprincompin thestatspackage.  Table 4 shows a PCA of the Thurstone 9 variable problem rotatedusing thePromaxfunction.  Note how the loadings from the factor model are similar butsmaller than the principal component loadings.  This is because the PCA model attemptsto account for the entire variance of the correlation matrix, while FA accounts for just thecommon variance.  This distinction becomes most important for small correlation matrices.Also note how the goodness of fit statistics, based upon the residual off diagonal elements,is much worse than thefasolution.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
+# Graphique
+# Valeurs propres
+vp <- eigen(bdd_fa_tetra$rho)$values
+# Conservation de la variance. 
+round((vp/sum(vp)*100),2)
+scree(bdd_fa_tetra$rho, factors = FALSE)
+par(mar=c(0,0,0,0)) #mfrow=c(1,1),
+resnf <- nfactors(bdd_fa_tetra$rho, n = 8, fm = "ml", cor = "tet")
 
 pauvFA <- fa(bdd_fa_tetra$rho, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
 # New approche plus classique ?
@@ -969,28 +1020,40 @@ print(pauvFA$loadings, cutoff = 0.2)
 round(pauvFA$communality, 2)
 ```
 
+
 <!-- ### Variables catégorielles  -->
 
-```{r, echo=FALSE, eval = FALSE}
+```{r, echo=FALSE, eval = TRUE}
+# Graphique
+# Valeurs propres
+vp <- eigen(bdd_poLCA_poly$rho)$values
+# Conservation de la variance. 
+round((vp/sum(vp)*100),2)
+scree(bdd_fa_tetra$rho, factors = FALSE)
+par(mar=c(0,0,0,0)) #mfrow=c(1,1),
+resnf <- nfactors(bdd_fa_tetra$rho, n = 8, fm = "ml", cor = "tet")
 
-pauvFA2 <- fa(bdd_poLCA_poly$rho, nfactors = 3, rotate = "oblimin", fm = "ml", cor="tet", scores= "regression", missing = TRUE, impute = "median") 
+pauvFA2 <- fa(bdd_poLCA_poly$rho, nfactors = 2, rotate = "oblimin", fm = "ml", cor="poly", scores= "regression", missing = TRUE, impute = "median") 
 summary(pauvFA2)
-fa.plot(pauvFA2$loadings[,1:2], labels=row.names(bdd_poLCA_poly$rho), cluster = c(rep(1,2),rep(2,1),rep(3,3)))
-fa.plot(pauvFA2$loadings[,2:3], labels=row.names(bdd_poLCA_poly$rho), cluster = c(rep(1,2),rep(2,1),rep(3,3)))
-fa.plot(pauvFA2$loadings[,c(3,2)], labels=row.names(bdd_poLCA_poly$rho), cluster = c(rep(1,2),rep(2,1),rep(3,3)))
-
 print(pauvFA2$loadings, cutoff = 0.2)
 round(pauvFA2$communality, 2)
 
+fa.plot(pauvFA2$loadings[,1:2], labels=row.names(bdd_poLCA_poly$rho), cluster = c(rep(1,2),rep(2,3),rep(3,6)))
+
+# fa.plot(pauvFA2$loadings[,2:3], labels=row.names(bdd_poLCA_poly$rho), cluster = c(rep(1,2),rep(2,1),rep(3,3)))
+# fa.plot(pauvFA2$loadings[,c(3,2)], labels=row.names(bdd_poLCA_poly$rho), cluster = c(rep(1,2),rep(2,1),rep(3,3)))
 
 ```
+
 Premier type de clustering (de variables et non d'individus) avec iclust
 
-
 ```{r, echo=FALSE, fig.height = 6}
-ic.tetra <- iclust(bdd_fa_tetra$rho,title="ICLUST using tetrachoric correlations")
-iclust.diagram(ic.tetra)
+ic.poly <- iclust(bdd_poLCA_poly$rho,title="ICLUST using polychoric correlations")
+#iclust.diagram(ic.poly)
 ```
+
+
+
 
 ## Latent Categorical Variables
 
@@ -1019,17 +1082,18 @@ par(mfrow=c(1,1),mar=c(5,4,4,2)+0.1)
 
 set.seed(1)
 
+nbclasses = 6
+
 result = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
 m_quantilenivie,m_locatif, m_financier,
-i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=7, graphs=FALSE, na.rm=TRUE, verbose = TRUE)
-
-# probs.start.new <- poLCA.reorder(result$probs.start,c(4,5,2,1,3))
-# 
-# result = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
-# m_quantilenivie,
-# i_log, i_rsa, i_chom) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=6, graphs=FALSE, na.rm=TRUE, probs.start=probs.start.new)
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=nbclasses, graphs=FALSE, na.rm=TRUE, verbose = TRUE,maxiter = 5000)
 
 
+probs.start.new <- poLCA.reorder(result$probs.start,1:6)
+
+result = poLCA(cbind(s_sentpauvrisque, s_infminidecla,
+m_quantilenivie,m_locatif, m_financier,
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) ~ 1, bdd_poLCA_rmnasup,nrep=1,nclass=nbclasses, graphs=FALSE, na.rm=TRUE,  probs.start=probs.start.new, verbose = FALSE,maxiter = 5000)
 
 ```
 
@@ -1037,12 +1101,14 @@ i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm) ~ 1, bdd_poLCA_rmnasup,nrep=1,nc
 ```{r, echo=FALSE, fig.height = 5, fig.width=10}
 
 res.mca <- readRDS("../data/res.mca.rds")
+noms_classes <- c("A","B","C1","C2","D","E")
+ordre_classes <- c(5,2,1,4,6,3)
+ordre_plots <- c(3,2,6,4,1,5)
 # s.class(res.mca$ind$coord[,c(1,2)], factor(result$predclass, levels=c(4,5,2,1,3), labels=c(1,2,3,5,6)), col = brewer.pal(7, "Set1")[c(1,2,3,5,6)], sub = "Axes 1 et 2")
+s.class(res.mca$ind$coord[,c(1,2)], factor(result$predclass,labels=noms_classes[ordre_classes]), col = c(brewer.pal(5, "Set1")[1:3],"#193818",brewer.pal(5, "Set1")[4:5])[ordre_classes], sub = "Axes 1 et 2") #"#2d692b",
 
-s.class(res.mca$ind$coord[,c(1,2)], factor(result$predclass,labels=c(1,2,3,4,5,6,7)), col = brewer.pal(7, "Set1")[c(1,2,3,4,5,6,7)], sub = "Axes 1 et 2")
-
-for(i in 1:5){
-poLCA.makeplot.poly.oneclass(result,i, noms_classes = c(1,2,3,4,5))
+for(i in ordre_plots){
+poLCA.makeplot.poly.oneclass(result,i, noms_classes = noms_classes[ordre_classes])
 }
 
 ```
@@ -1055,20 +1121,13 @@ equation in both cases. In EFA we assumed uncorrelated factors by setting
 
 ### Modèle sans dimensions de la pauvreté
 
+
 ```{r, echo=FALSE}
-bdd_fa_naomit <- na.omit(bdd_fa %>%
-  dplyr::select(s_sentpauv, s_risqpauv, s_infminidecla,
-m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
-i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm))
-
-#Bug si toutes les variables...
-pauv_model0 <- '
-pauvrete =~ s_sentpauv + s_infminidecla + s_risqpauv + m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 +  i_log + i_rsa + i_chom
-'
+pauv_model0 <- 'pauvrete =~ s_sentpauvrisque + s_infminidecla + m_quantilenivie + m_locatif + m_financier+ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm'
 
 
-fit0 <- lavaan::cfa(pauv_model0, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
+fit0 <- lavaan::cfa(pauv_model0, data = bdd_poLCA_rmnasup,
+ordered = TRUE)
 
 semPaths(fit0, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
@@ -1076,19 +1135,28 @@ intercepts = FALSE, rotation = 4, thresholdColor = "red",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 summary(fit0, standardized = TRUE, fit.measures = TRUE)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# bdd_fa_naomit <- na.omit(bdd_fa %>%
+#   dplyr::select(s_sentpauv, s_risqpauv, s_infminidecla,
+# m_nivie1, m_nivie2, m_nivie3, m_nivie4, m_nivie5, m_locatif, m_financier,
+# i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm))
 ```
 
 ### Modèle avec 3 dimensions de la pauvreté (i,m,s)
 
+
 ```{r, echo=FALSE}
 pauv_model1 <- '
-s =~ s_sentpauv + s_infminidecla + s_risqpauv
-m =~ m_nivie1 + m_nivie2 + m_nivie4 + m_nivie5 
-i =~ i_log + i_rsa + i_chom + i_handi 
+s =~ s_sentpauvrisque + s_infminidecla
+m =~ (-1)*m_quantilenivie + m_locatif + m_financier 
+i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
 '
 
-fit1 <- lavaan::cfa(pauv_model1, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
+fit1 <- lavaan::cfa(pauv_model1, data = bdd_poLCA_rmnasup,
+ordered = TRUE)
 
 semPaths(fit1, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
@@ -1108,11 +1176,11 @@ mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 # Summary
 summary(fit1, standardized = TRUE, fit.measures = TRUE)
 ```
-- p-valeur du test du chi-2 de 0, très mauvais car un résultat non significatif veut dire que le modèle "fits" mais il ne faut pas faire très attention à cette statistique car elle est très souvent significative quand l'échantillon est grand. 
-- Le CFI doit être supérieur à 0,95. Ici 0,98 OK
-- Le RMSEA doit être dans l'intervalle [0.05,0.10]. Ici [0,03, 0.04] pas tout à fait le cas donc. 
-- Le SRMR doit être inférieur à 0.08, pas du tout le cas ici 0,24.
 
+- p-valeur du test du chi-2 de 0, très mauvais car un résultat non significatif veut dire que le modèle "fits" mais il ne faut pas faire très attention à cette statistique car elle est très souvent significative quand l'échantillon est grand. 
+- Le CFI doit être supérieur à 0,95.
+- Le RMSEA doit être dans l'intervalle [0.05,0.10].
+- Le SRMR doit être inférieur à 0.08.
 
 ### Comment améliorer le modèle ?
 
@@ -1128,60 +1196,18 @@ head(modificationIndices(fit1, sort.=TRUE, minimum.value=3))
 
 ```
 
-### Quelques indicateurs écartés
-
-```{r, echo=FALSE}
-pauv_model2 <- '
-s =~ s_sentpauv + s_infminidecla
-m =~ m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 
-i =~ i_log + i_rsa 
-p =~ i_chom + s_risqpauv
-'
-fit2 <- lavaan::cfa(pauv_model2, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
-
-semPaths(fit2, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-summary(fit2)
-```
-
-### Carrément à partir de l'EFA
-
-```{r, echo=FALSE}
-pauv_model3 <- '
-i =~ i_log + i_rsa 
-s =~ s_infminidecla + m_nivie5
-m =~ m_nivie1 + m_nivie2 
-'
-fit3 <- lavaan::cfa(pauv_model3, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
-
-semPaths(fit3, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-summary(fit3)
-```
-
 ### CFA hiérarchique 
-
-
 
 ```{r, echo=FALSE}
 pauv_model_hier <- '
-s =~ s_sentpauv + s_risqpauv + s_infminidecla
-m =~ m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 
-i =~ i_log + i_rsa + i_chom
+s =~ s_sentpauvrisque + s_infminidecla
+m =~ (-1)*m_quantilenivie + m_locatif + m_financier 
+i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
 pauvrete =~ s + m + i
 '
 
-fit_hier <- lavaan::cfa(pauv_model_hier, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
-
+fit_hier <- lavaan::cfa(pauv_model_hier, data = bdd_poLCA_rmnasup,
+ordered = TRUE)
 
 semPaths(fit_hier, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
@@ -1189,44 +1215,6 @@ intercepts = FALSE, rotation = 4, thresholdColor = "red",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 summary(fit_hier, standardized = TRUE, fit.measures = TRUE)
-```
-
-```{r, echo=FALSE}
-pauv_model_hier2 <- '
-s =~ s_sentpauv + s_infminidecla
-m =~ m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 
-i =~ i_log + i_rsa 
-p =~ i_chom + s_risqpauv
-pauvrete =~ s + m + i + p
-'
-
-fit_hier2 <- lavaan::cfa(pauv_model_hier2, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
-
-
-semPaths(fit_hier2, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-```
-
-```{r, echo=FALSE}
-pauv_model_hier3 <- '
-s =~ s_sentpauv + s_infminidecla
-m =~ m_nivie1 + m_nivie2 + m_nivie3 + m_nivie4 + m_nivie5 
-i =~ i_log + i_rsa 
-p =~ i_chom + s_risqpauv
-pauvrete =~ s + m + i
-'
-
-fit_hier3 <- lavaan::cfa(pauv_model_hier3, data = bdd_fa_naomit,
-ordered = names(bdd_fa_naomit))
-
-
-semPaths(fit_hier3, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 ```
 
 ## CFA avec des covariables (MIMIC)
@@ -1238,14 +1226,15 @@ Remarque : ne marche qu'avec les covariates exogènes de moins de 2 facteurs (à
 
 ```{r, echo=FALSE}
 pauv_model_mimic <- '
-s =~ s_sentpauv + s_risqpauv + s_infminidecla
-m =~ m_nivie1 + m_nivie5 + m_locatif + m_financier
-i =~ i_log + i_rsa + i_chom
+s =~ s_sentpauvrisque + s_infminidecla
+m =~ (-1)*m_quantilenivie + m_locatif + m_financier 
+i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
 pauvrete =~ s + m + i
 pauvrete ~ sexe
 '
 
-fit_mimic <- lavaan::cfa(pauv_model_mimic, data = bdd_fa)
+fit_mimic <- lavaan::cfa(pauv_model_mimic, data = bdd_poLCA,
+                         ordered=TRUE)
 
 semPaths(fit_mimic, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
@@ -1262,19 +1251,21 @@ Structural equation models (SEM) integrate confirmatory factor analysis (CFA) in
 
 Remarque : ne marche pas pour les facteurs non ordonnés (en gros, considère les facteurs comme des variables numériques)
 
+Remarque : estimator ML for ordered data is not supported yet. Use WLSMV instead.
+
 ```{r, echo=FALSE}
 pauv_model_sem <- '
-s =~ s_sentpauv + s_risqpauv + s_infminidecla
-m =~ m_nivie1 + m_nivie5 + m_locatif + m_financier
-i =~ i_log + i_rsa + i_chom
+s =~ s_sentpauvrisque + s_infminidecla
+m =~ (-1)*m_quantilenivie + m_locatif + m_financier 
+i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
 pauvrete ~ s + m + i
 pauvrete =~ sexe
 '
 
 fit_sem <- lavaan::sem(pauv_model_sem,
-                       data = bdd_fa %>% 
+                       data = bdd_poLCA %>% 
                          mutate(sexe=as.numeric(sexe)),
-                       estimator = "MLR")
+                       estimator = "WLSMV")
 
 semPaths(fit_sem, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
@@ -1285,7 +1276,8 @@ mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 # Notes méthodologiques
 
-Pour ces modèles quatre vagues du Baromètre ont été empilées : 2016, 2017, 2018 et 2019 (12 114 observations). Le nombre d'observations utilisées est différent dans chaque modèle, il s'agit uniquement des individus où toutes les variables utilisées dans les modèles sont renseignées (voir notes en bas des tableaux).
+
+Pour ces modèles cinq vagues du Baromètre ont été empilées : 2015, 2016, 2017, 2018 et 2019 (15 137 observations). Le nombre d'observations utilisées est différent dans chaque modèle, il s'agit uniquement des individus où toutes les variables utilisées dans les modèles sont renseignées (voir notes en bas des tableaux).
 
 # Bibliographie {.unnumbered}
 
