@@ -152,7 +152,7 @@ bdd2017 <- bdd2017 %>%
            na.rm=TRUE)
 }
 ))) %>% 
-   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+    mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
   mutate(subj_pauvrete = 
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
   mutate(subj_besoin_aide_etat =
@@ -229,13 +229,15 @@ bdd20172 <- bdd20172 %>%
            na.rm=TRUE)
 }
 ))) %>% 
-#   mutate(subj_inf_mini_decla = sdrevcl_imput_moy -  
   mutate(subj_inf_mini_decla = sdrevcl_imput - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+    # mutate(subj_inf_mini_decla = factor(
+    #  sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
+    #  levels=c(TRUE,FALSE),
+    #  labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
+    #  ) %>% 
   mutate(subj_pauvrete = 
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
-#  mutate(subj_besoin_aide_etat = ifelse(pe15==2, TRUE,FALSE)) %>%  #NEW
     mutate(subj_besoin_aide_etat = ifelse(pe15==2,     TRUE,ifelse(pe15%in%c(3),NA,FALSE))) %>% 
-#  mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
   mutate(obj_pauvrete= sdrevcl_imput/sduc<seuil_pauvrete)
 ```
 
@@ -246,6 +248,10 @@ data2_g1 <- bdd20172 %>%
                                                              poids, na.rm=TRUE)),
               subj_inf_mini_decla = round(100*weighted.mean(subj_inf_mini_decla,
                                                              poids, na.rm=TRUE)),
+              
+              
+              
+              
             obj_pauvrete = round(100*weighted.mean(obj_pauvrete,
                                                              poids, na.rm=TRUE)),
               
@@ -758,7 +764,7 @@ bdd2017_logit <- bdd2017 %>%
    ),
     levels=c(1,2),
     labels=paste0("-",
-                  c("Locataire ou hébergé","Propriétaire")) 
+                  c("Locataire ou hébergé","Propriétaire ")) 
     )) %>% 
   mutate(annee_fac = factor(annee,labels=paste0("-",2015:2017))) %>% 
   mutate(pauvrete_mon_rel= factor(
@@ -887,12 +893,12 @@ kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %
 - Le modèle tel qu'exposé dans Papuchon et Duvoux n'est pas estimable dans le sens où les personnes sans PCS sont censées être exclues du champ. Or les personnes sans activité professionnelle le sont bien dans la partie statut d'activité. On ajoute donc une catégorie autres dans les PCS. 
 - Dans quel case ranger un indépendant ? CDI à temps plein ? Précaire à temps partiel ? Car les indépendants ne répondent pas sur leur contrat de travail. 
 
-## Données actualisées (2016-2019) [**NEW**]
+## Données actualisées (2015-2019) et figures du rapport
 
 ```{r, echo=FALSE}
 #Chargement de la base de données
 bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
-  filter(annee%in%2016:2019)
+  filter(annee%in%2015:2019) #NEW : 2015 à 2019
 
 revenus_a_imputer <- bdd %>%
   mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
@@ -920,275 +926,18 @@ bdd <- bdd %>%
            na.rm=TRUE)
 }
 ))) %>% 
-   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+  mutate(subj_inf_mini_decla = factor(
+     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
+     levels=c(TRUE,FALSE),
+     labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
+     ) %>%
+   # mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
   mutate(subj_pauvrete = 
            ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
   mutate(subj_besoin_aide_etat =
                    ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
   mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
 ```
-
-```{r, echo=FALSE}
-#Chargement de la base de données
-bdd2015 <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
-  filter(annee%in%2015:2019)
-
-revenus_a_imputer <- bdd2015 %>%
-  mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
-  group_by(sdrevtr) %>% 
-  summarise(sdrevcl = mean(sdrevcl,na.rm=TRUE))
-
-
-bdd2015 <- bdd2015 %>% 
-  mutate(
-    sdrevcl_imput_moy = case_when(
-      sdrevcl!=999999999 ~ sdrevcl,
-      sdrevcl==999999999 & sdrevtr==1 ~ revenus_a_imputer$sdrevcl[1],
-      sdrevcl==999999999 & sdrevtr==2 ~ revenus_a_imputer$sdrevcl[2],
-      sdrevcl==999999999 & sdrevtr==3 ~ revenus_a_imputer$sdrevcl[3],
-      sdrevcl==999999999 & sdrevtr==4 ~ revenus_a_imputer$sdrevcl[4],
-      sdrevcl==999999999 & sdrevtr==5 ~ revenus_a_imputer$sdrevcl[5],
-      sdrevcl==999999999 & sdrevtr==6 ~ revenus_a_imputer$sdrevcl[6],
-      sdrevcl==999999999 & sdrevtr==7 ~ revenus_a_imputer$sdrevcl[7]
-             )
-  )
-
-bdd2015 <- bdd2015 %>% 
-   mutate(seuil_pauvrete = do.call(c,lapply(annee,function(annee_selec){
-0.6*median(bdd2015[bdd2015$annee==annee_selec,"sdrevcl_imput_moy"]/bdd2015[bdd2015$annee==annee_selec,"sduc"],
-           na.rm=TRUE)
-}
-))) %>% 
-   mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
-  mutate(subj_pauvrete = 
-           ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
-  mutate(subj_besoin_aide_etat =
-                   ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
-  mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete)
-
-bdd2015 <- bdd2015 %>% 
-  mutate(quantile_nivie = factor(
-    cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
-        breaks=quantile(sdrevcl_imput_moy/sduc,
-                        probs=seq(0,1,0.2),na.rm=TRUE),
-        labels=1:5),
-    levels=rev(c(1,2,3,4,5)),
-    labels=rev(paste0("Quintile ",c(1,2,3,4,5))))
-  )
-```
-
-
-Graphique intro : Sentiment de pauvreté en fonction du niveau de vie en 2019
-
- 
-```{r, echo=FALSE}
-fig_intro <- bdd2015 %>%
-  filter(annee==2019 & !is.na(quantile_nivie)) %>% 
-  group_by(quantile_nivie) %>% 
-  count(pe3, wt=poids) %>% 
-  mutate(n = 100*n/sum(n)) %>% 
-  ungroup() %>% 
-  mutate(#quantile_nivie=factor(quantile_nivie,labels=names(attr(bdd2015$quantile_nivie,"labels"))),
-         pe3=factor(pe3,labels=
-           c(names(attr(bdd2015$pe3,"labels"))[1:2],"Je me considère déjà\ncomme pauvre",names(attr(bdd2015$pe3,"labels"))[4])), 
-         pe3=factor(pe3,levels=levels(pe3)[c(4,2,1,3)])) %>% 
-  ggplot(aes(x=quantile_nivie, y=n, fill=pe3)) +
-  geom_bar(stat="identity") + coord_flip() +
-  labs(
-   # title="Sentiment de pauvreté en fonction du niveau de vie en 2019",
-    y="Part (%)", x="Niveau de vie") +
-  theme_minimal() +
-  scale_fill_manual(name= paste(strwrap(attr(bdd2015$pe3,"label"),30),collapse="\n"),
-                    values=rev(c('red','orange','lightgreen','gray')),
-                    guide=guide_legend(reverse=TRUE)) + 
-  geom_text(aes(label = paste0(round(n,0))), 
-            position = position_stack(vjust = 0.5))
-
-fig_intro
-#saveRDS(fig_intro,"../rapport/figures/fig_intro.RDS")
-```
-
-Graphique chapitre 1 : Différents indicateurs de pauvreté (2015 à 2019)
-
-```{r, echo=FALSE}
-data_g1_new <- bdd2015 %>%
-  group_by(annee) %>%
-    summarise(subj_pauvrete = round(100*weighted.mean(subj_pauvrete,
-                                                             poids, na.rm=TRUE)),
-              subj_inf_mini_decla = round(100*weighted.mean(subj_inf_mini_decla,
-                                                             poids, na.rm=TRUE)),
-            obj_pauvrete = round(100*weighted.mean(obj_pauvrete,
-                                                             poids, na.rm=TRUE)),
-              
-              subj_besoin_aide_etat = round(100*weighted.mean(subj_besoin_aide_etat,
-                                                         poids, na.rm=TRUE))
-              ) 
-
-fig_chap1_compa20152019 <- ggplot(data=data_g1_new %>% tidyr::pivot_longer(!annee),
-       aes(x=name, y=value, fill=annee)) +
-  geom_bar(stat="identity", position=position_dodge())+
-  geom_text(aes(label=value), vjust=1.6, color="white",
-            position = position_dodge(0.9), size=3.5)+
-  #scale_fill_brewer(palette="Paired")+
-  scale_fill_manual(values = c(rev(brewer.pal(5,"Purples")[3:5]),brewer.pal(4,"Oranges")[3:4]) )+
-  theme_minimal() +
-  scale_x_discrete(name ="Part des Français concernés (%)",
-                   limits=c("subj_pauvrete","obj_pauvrete",
-                            "subj_besoin_aide_etat",
-                            "subj_inf_mini_decla"),
-                   labels=c(
-      "obj_pauvrete" = "Pauvreté\nmonétaire\nobjective",
-      "subj_inf_mini_decla" = "Niveau de vie\ninf. au minimum\ndéclaré",
-      "subj_besoin_aide_etat"="Besoin de\nplus d'aide\npublique",
-      "subj_pauvrete" = "Sentiment\nde pauvreté"))+
-  #ggtitle("Graphique 1 : Différents indicateurs de pauvreté") +
-  ylab("")+
-  labs(fill="Année")
-fig_chap1_compa20152019
-#saveRDS(fig_chap1_compa20152019,"../rapport/figures/fig_chap1_compa20152019.RDS")
-```
-
-
-Graphique chapitre 1 : Evolution du sentiment de pauvreté selon les statuts d'activités
-
-```{r, echo=FALSE}
-data_statactevol <- bdd2015 %>%
-   mutate(subj_pauvrete_et_risque = 
-           factor(
-           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
-           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
-         ) %>% 
-  mutate(
-    statact = factor(case_when(
-      sdsitua==1 & sdstatemp%in%c(1)   ~ 1,
-      sdsitua%in%c(2,3) | (sdsitua==1 & sdstatemp%in%c(NA,2,3,4,5)) ~ 2,
-      sdsitua==4 ~ 3,
-      sdsitua==5 ~ 4,
-      sdsitua==6 ~ 5,
-      sdsitua==7 ~ 6,
-      TRUE ~ NA_real_),
-    levels=1:6,
-    labels=paste0("",
-                  c("CDI temps plein",
-                    "Emploi précaire ou à temps partiel",
-                    "Recherche d’emploi",
-                    "Étudiant",
-                    "Retraité",
-                    "Aucune activité professionnelle"))
-    )) %>%
-  group_by(annee, statact, subj_pauvrete_et_risque) %>% 
-  summarise(poids= sum(poids)) %>% 
-  na.omit() %>%
-  group_by(annee, statact) %>% 
-  mutate(poids=prop.table(poids)*100) %>%
-  filter(subj_pauvrete_et_risque=="Déjà pauvre") %>% 
-  group_by(annee, statact) %>% 
-  summarise(poids = poids)
-
-fig_statactevol <- ggplot(data_statactevol, aes(x = annee, y = poids, group = statact)) +
-    geom_line(aes(color = statact))+
-    geom_point(aes(color = statact)) +
-    geom_text(aes(label=round(poids,0), color=statact),hjust=0, vjust=-0.5, show.legend = FALSE)+
-    scale_color_brewer(palette="Dark2")+
-    theme_minimal() +
-    scale_x_discrete(name ="Année")+
-    #ggtitle("Evolution du sentiment de pauvreté selon le statut d'activité") +
-  ylab("Sentiment de pauvreté (%)")+
-  labs(color="Statut d'activité")
-fig_statactevol
-saveRDS(fig_statactevol,"../rapport/figures/fig_statactevol.RDS")
-```
-
-
-Graphique chapitre 1 : Evolution du sentiment de pauvreté selon les professions
-
-```{r, echo=FALSE}
-data_pcsevol <- bdd2015 %>%
-   mutate(subj_pauvrete_et_risque = 
-           factor(
-           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
-           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
-         ) %>%
-  mutate(prof = factor(
-    #ifelse(sdpcs7!=7,sdpcs7,NA),
-    sdpcs7,
-    levels=c(1,2,3,4,5,6,7),
-    labels=paste0("",c("Agriculteur",
-                        "Artisan commerçant","Cadre supérieur, profession libérale","Profession intermédiaire",
-                        "Employé","Ouvrier","Aucune"))
-  )) %>% 
-  group_by(annee, prof, subj_pauvrete_et_risque) %>% 
-  summarise(poids= sum(poids)) %>% 
-  na.omit() %>%
-  group_by(annee, prof) %>% 
-  mutate(poids=prop.table(poids)*100) %>%
-  filter(subj_pauvrete_et_risque=="Déjà pauvre") %>% 
-  group_by(annee, prof) %>% 
-  summarise(poids = poids)
-
-fig_pcsevol <- ggplot(data_pcsevol, aes(x = annee, y = poids, group = prof)) +
-    geom_line(aes(color = prof))+
-    geom_point(aes(color = prof)) +
-    geom_text(aes(label=round(poids,0), color=prof),hjust=0, vjust=-0.5, show.legend = FALSE)+
-    scale_color_brewer(palette="Paired")+
-    theme_minimal() +
-    scale_x_discrete(name ="Année")+
-    #ggtitle("Evolution du sentiment de pauvreté selon la catégorie professionnelle") +
-  ylab("Sentiment de pauvreté (%)")+
-  labs(color="Catégorie professionnelle")
-fig_pcsevol
-saveRDS(fig_pcsevol,"../rapport/figures/fig_pcsevol.RDS")
-```
-
-
-Graphique chapitre 1 : Evolution du sentiment de pauvreté selon la situation familiale
-
-```{r, echo=FALSE}
-data_viefamevol <- bdd2015 %>%
-   mutate(subj_pauvrete_et_risque = 
-           factor(
-           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
-           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
-         ) %>% 
-  mutate(
-    vie_fam = factor(case_when(
-      sdsitfam==1 ~ 1,
-      sdsitfam==2 & sdnbenf==1 ~ 2, #attention dépend des bases
-      sdsitfam==2 & sdnbenf!=1 ~ 3, #attention dépend des bases
-      sdsitfam==3 ~ 4,
-      sdsitfam==4 ~ 5,
-      sdsitfam%in%c(5,6,7) ~ 6,
-      TRUE ~ NA_real_
-    ),
-    levels=c(1,2,3,4,5,6),
-    labels=paste0("",
-                  c("Vit seul","Membre du couple (pas d’enfants à charge)",
-                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
-                    "Enfant","Autre"))
-    )) %>% 
-  group_by(annee, vie_fam, subj_pauvrete_et_risque) %>% 
-  summarise(poids= sum(poids)) %>% 
-  na.omit() %>%
-  group_by(annee, vie_fam) %>% 
-  mutate(poids=prop.table(poids)*100) %>%
-  filter(subj_pauvrete_et_risque=="Déjà pauvre") %>% 
-  group_by(annee, vie_fam) %>% 
-  summarise(poids = poids)
-
-fig_viefamevol <- ggplot(data_viefamevol, aes(x = annee, y = poids, group = vie_fam)) +
-    geom_line(aes(color = vie_fam))+
-    geom_point(aes(color = vie_fam)) +
-    geom_text(aes(label=round(poids,0), color=vie_fam),hjust=0, vjust=-0.5, show.legend = FALSE)+
-    scale_color_brewer(palette="Set2")+
-    theme_minimal() +
-    scale_x_discrete(name ="Année")+
-    #ggtitle("Evolution du sentiment de pauvreté selon la situation familiale") +
-  ylab("Sentiment de pauvreté (%)")+
-  labs(color="Situation familiale")
-fig_viefamevol
-saveRDS(fig_viefamevol,"../rapport/figures/fig_viefamevol.RDS")
-```
-
 
 ```{r, echo=FALSE}
 bdd_logit <- bdd %>% 
@@ -1295,7 +1044,7 @@ bdd_logit <- bdd %>%
     labels=paste0("-",
                   c("Locataire ou hébergé","Propriétaire")) 
     )) %>% 
-  mutate(annee_fac = factor(annee,labels=paste0("-",2016:2019))) %>%  #NEW
+  mutate(annee_fac = factor(annee,labels=paste0("-",2015:2019))) %>%  #NEW : 2015 à 2019
   mutate(pauvrete_mon_rel= factor(
     ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
                                   ifelse(sdrevcl_imput_moy/sduc>=1.2*seuil_pauvrete,1,
@@ -1310,6 +1059,244 @@ bdd_logit <- bdd %>%
   )
   )
 
+```
+
+
+Graphique intro : Sentiment de pauvreté en fonction du niveau de vie en 2019
+
+ 
+```{r, echo=FALSE}
+fig_intro <- bdd_logit %>%
+  filter(annee==2019 & !is.na(quantile_nivie)) %>% 
+  group_by(quantile_nivie) %>% 
+  count(pe3, wt=poids) %>% 
+  mutate(n = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  mutate(#quantile_nivie=factor(quantile_nivie,labels=names(attr(bdd$quantile_nivie,"labels"))),
+         pe3=factor(pe3,labels=
+           c(names(attr(bdd$pe3,"labels"))[1:2],"Je me considère déjà\ncomme pauvre",names(attr(bdd$pe3,"labels"))[4])), 
+         pe3=factor(pe3,levels=levels(pe3)[c(4,2,1,3)])) %>% 
+  ggplot(aes(x=quantile_nivie, y=n, fill=pe3)) +
+  geom_bar(stat="identity") + coord_flip() +
+  labs(
+   # title="Sentiment de pauvreté en fonction du niveau de vie en 2019",
+    y="Part (%)", x="Niveau de vie") +
+  theme_minimal() +
+  scale_fill_manual(name= paste(strwrap(attr(bdd$pe3,"label"),30),collapse="\n"),
+                    values=rev(c('red','orange','lightgreen','gray')),
+                    guide=guide_legend(reverse=TRUE)) + 
+  geom_text(aes(label = paste0(round(n,0))), 
+            position = position_stack(vjust = 0.5))
+
+fig_intro
+saveRDS(fig_intro,"../rapport/figures/fig_intro.RDS")
+```
+
+Graphique chapitre 1 : Différents indicateurs de pauvreté (2015 à 2019)
+
+    
+```{r, echo=FALSE}
+
+data_g1_new_effectifs <- bdd %>%
+  mutate(subj_inf_mini_decla=ifelse(subj_inf_mini_decla=="-Rev. inf. au minimum décla.",TRUE,FALSE)) %>% 
+   group_by(annee) %>% 
+   summarise(subj_pauvrete = sum(!is.na(subj_pauvrete)),
+             subj_inf_mini_decla = sum(!is.na(subj_inf_mini_decla)),
+             obj_pauvrete = sum(!is.na(obj_pauvrete)),
+             subj_besoin_aide_etat = sum(!is.na(subj_besoin_aide_etat))
+             )
+
+data_g1_new <- bdd %>%
+  mutate(subj_inf_mini_decla=ifelse(subj_inf_mini_decla=="-Rev. inf. au minimum décla.",TRUE,FALSE)) %>% 
+  group_by(annee) %>%
+    summarise(subj_pauvrete = round(100*weighted.mean(subj_pauvrete,
+                                                             poids, na.rm=TRUE)),
+                            subj_inf_mini_decla = round(100*weighted.mean(subj_inf_mini_decla, poids, na.rm=TRUE)),
+            obj_pauvrete = round(100*weighted.mean(obj_pauvrete,
+                                                             poids, na.rm=TRUE)),
+              
+              subj_besoin_aide_etat = round(100*weighted.mean(subj_besoin_aide_etat,
+                                                         poids, na.rm=TRUE))
+              ) 
+
+data_g1_new_ic <- cbind(data_g1_new[,1],1.96*100*sqrt(apply(data_g1_new,2,as.numeric)/100 * (1-apply(data_g1_new,2,as.numeric)/100)/apply(data_g1_new_effectifs,2,as.numeric))[,-1])
+
+
+
+
+fig_chap1_compa20152019 <- ggplot(
+  data=cbind(data_g1_new %>% tidyr::pivot_longer(!annee),
+             data_g1_new_ic %>% tidyr::pivot_longer(!annee) %>% dplyr::select(value) 
+  ) %>% setNames(c("annee","name","value","ic")),
+       aes(x=name, y=value, fill=annee)) +
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_errorbar(aes(ymin = value - ic, ymax = value + ic), width = 0.2, position = position_dodge(0.9)) +
+  geom_text(aes(label=value), vjust=1.6, color="white",
+            position = position_dodge(0.9), size=3.5)+
+  scale_fill_manual(values = c(rev(brewer.pal(5,"Purples")[3:5]),brewer.pal(4,"Oranges")[3:4]) )+
+  theme_minimal() +
+  scale_x_discrete(name ="Part des Français concernés (%)",
+                   limits=c("subj_pauvrete","obj_pauvrete",
+                            "subj_besoin_aide_etat",
+                            "subj_inf_mini_decla"),
+                   labels=c(
+      "obj_pauvrete" = "Pauvreté\nmonétaire\nobjective",
+      "subj_inf_mini_decla" = "Niveau de vie\ninf. au minimum\ndéclaré",
+      "subj_besoin_aide_etat"="Besoin de\nplus d'aide\npublique",
+      "subj_pauvrete" = "Sentiment\nde pauvreté"))+
+  #ggtitle("Graphique 1 : Différents indicateurs de pauvreté") +
+  ylab("")+
+  labs(fill="Année")
+fig_chap1_compa20152019
+saveRDS(fig_chap1_compa20152019,"../rapport/figures/fig_chap1_compa20152019.RDS")
+```
+
+
+Graphique chapitre 1 : Evolution du sentiment de pauvreté selon les statuts d'activités
+
+```{r, echo=FALSE}
+data_statactevol <- bdd %>%
+   mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
+  mutate(
+    statact = factor(case_when(
+      sdsitua==1 & sdstatemp%in%c(1)   ~ 1,
+      sdsitua%in%c(2,3) | (sdsitua==1 & sdstatemp%in%c(NA,2,3,4,5)) ~ 2,
+      sdsitua==4 ~ 3,
+      sdsitua==5 ~ 4,
+      sdsitua==6 ~ 5,
+      sdsitua==7 ~ 6,
+      TRUE ~ NA_real_),
+    levels=1:6,
+    labels=paste0("",
+                  c("CDI temps plein",
+                    "Emploi précaire ou à temps partiel",
+                    "Recherche d’emploi",
+                    "Étudiant",
+                    "Retraité",
+                    "Aucune activité professionnelle"))
+    )) %>%
+  group_by(annee, statact, subj_pauvrete_et_risque) %>% 
+  summarise(poids= sum(poids)) %>% 
+  na.omit() %>%
+  group_by(annee, statact) %>% 
+  mutate(poids=prop.table(poids)*100) %>%
+  filter(subj_pauvrete_et_risque=="Déjà pauvre") %>% 
+  group_by(annee, statact) %>% 
+  summarise(poids = poids)
+
+fig_statactevol <- ggplot(data_statactevol, aes(x = annee, y = poids, group = statact)) +
+    geom_line(aes(color = statact))+
+    geom_point(aes(color = statact)) +
+    geom_text(aes(label=round(poids,0), color=statact),hjust=0, vjust=-0.5, show.legend = FALSE)+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal() +
+    #theme(plot.margin = margin(1, 0, 0, 0, "pt")) +
+    scale_y_continuous(expand = c(0, 5)) +
+    scale_x_discrete(name ="Année")+
+    #ggtitle("Evolution du sentiment de pauvreté selon le statut d'activité") +
+  ylab("Sentiment de pauvreté (%)")+
+  labs(color="Statut d'activité")
+fig_statactevol
+saveRDS(fig_statactevol,"../rapport/figures/fig_statactevol.RDS")
+```
+
+
+Graphique chapitre 1 : Evolution du sentiment de pauvreté selon les professions
+
+```{r, echo=FALSE}
+data_pcsevol <- bdd %>%
+   mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>%
+  mutate(prof = factor(
+    #ifelse(sdpcs7!=7,sdpcs7,NA),
+    sdpcs7,
+    levels=c(1,2,3,4,5,6,7),
+    labels=paste0("",c("Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale","Profession intermédiaire",
+                        "Employé","Ouvrier","Aucune"))
+  )) %>% 
+  group_by(annee, prof, subj_pauvrete_et_risque) %>% 
+  summarise(poids= sum(poids)) %>% 
+  na.omit() %>%
+  group_by(annee, prof) %>% 
+  mutate(poids=prop.table(poids)*100) %>%
+  filter(subj_pauvrete_et_risque=="Déjà pauvre") %>% 
+  group_by(annee, prof) %>% 
+  summarise(poids = poids)
+
+fig_pcsevol <- ggplot(data_pcsevol, aes(x = annee, y = poids, group = prof)) +
+    geom_line(aes(color = prof))+
+    geom_point(aes(color = prof)) +
+    geom_text(aes(label=round(poids,0), color=prof),hjust=0, vjust=-0.5, show.legend = FALSE)+
+    scale_color_brewer(palette="Paired")+
+    theme_minimal() +
+    #theme(plot.margin = margin(1, 0, 0, 0, "pt")) +
+    scale_y_continuous(expand = c(0, 5)) +
+    scale_x_discrete(name ="Année")+
+    #ggtitle("Evolution du sentiment de pauvreté selon la catégorie professionnelle") +
+  ylab("Sentiment de pauvreté (%)")+
+  labs(color="Catégorie professionnelle")
+fig_pcsevol
+saveRDS(fig_pcsevol,"../rapport/figures/fig_pcsevol.RDS")
+```
+
+
+Graphique chapitre 1 : Evolution du sentiment de pauvreté selon la situation familiale
+
+```{r, echo=FALSE}
+data_viefamevol <- bdd %>%
+   mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
+  mutate(
+    vie_fam = factor(case_when(
+      sdsitfam==1 ~ 1,
+      sdsitfam==2 & sdnbenf==1 ~ 2, #attention dépend des bases
+      sdsitfam==2 & sdnbenf!=1 ~ 3, #attention dépend des bases
+      sdsitfam==3 ~ 4,
+      sdsitfam==4 ~ 5,
+      sdsitfam%in%c(5,6,7) ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=c(1,2,3,4,5,6),
+    labels=paste0("",
+                  c("Vit seul","Membre du couple (pas d’enfants à charge)",
+                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
+                    "Enfant","Autre"))
+    )) %>% 
+  filter(vie_fam!="Autre") %>% #NEW enlever autres du graphique
+  group_by(annee, vie_fam, subj_pauvrete_et_risque) %>% 
+  summarise(poids= sum(poids)) %>% 
+  na.omit() %>%
+  group_by(annee, vie_fam) %>% 
+  mutate(poids=prop.table(poids)*100) %>%
+  filter(subj_pauvrete_et_risque=="Déjà pauvre") %>% 
+  group_by(annee, vie_fam) %>% 
+  summarise(poids = poids)
+
+fig_viefamevol <- ggplot(data_viefamevol, aes(x = annee, y = poids, group = vie_fam)) +
+    geom_line(aes(color = vie_fam))+
+    geom_point(aes(color = vie_fam)) +
+    geom_text(aes(label=round(poids,0), color=vie_fam),hjust=0, vjust=-0.5, show.legend = FALSE)+
+    scale_color_brewer(palette="Set2")+
+    theme_minimal() +
+    #theme(plot.margin = margin(1, 0, 0, 0, "pt")) +
+    scale_y_continuous(expand = c(0, 5)) +
+    scale_x_discrete(name ="Année")+
+    #ggtitle("Evolution du sentiment de pauvreté selon la situation familiale") +
+  ylab("Sentiment de pauvreté (%)")+
+  labs(color="Situation familiale")
+fig_viefamevol
+saveRDS(fig_viefamevol,"../rapport/figures/fig_viefamevol.RDS")
 ```
 
 
@@ -1442,7 +1429,7 @@ tab_compa_new <- df_model1_new %>%
  mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
     )) %>%
-  add_row(modalite = "2015",odds_ratio="Non inclus") %>% 
+  #add_row(modalite = "2015",odds_ratio="Non inclus") %>% 
   select(variable,modalite,odds_ratio) %>% 
   slice(-1)  %>% 
   arrange(match(modalite, c(modalite[2],modalite[-2]))) %>% 
@@ -1456,7 +1443,7 @@ R2_ajuste_new <- with(summary(reg1_new), 1 - deviance/null.deviance)
 N_new <- length(summary(reg1_new)$deviance.resid)
 
 tab_compa <- tab_compa_old %>% bind_cols(tab_compa_new %>% select(odds_ratio)) %>% 
-  setNames(c("Modèle logit"," Variable dépendante : se déclarer pauvre", "Odds ratio - Années 2015 à 2017","Odds ratio - Années 2016 à 2019"))
+  setNames(c("Modèle logit"," Variable dépendante : se déclarer pauvre", "Odds ratio - Années 2015 à 2017","Odds ratio - Années 2015 à 2019"))
 
 saveRDS(tab_compa,"../rapport/figures/tab_compa.RDS")
 
@@ -1471,7 +1458,7 @@ kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %
                                  N_old," et $R^2$ ajusté = ",
                                  gsub("\\.",",",
                                       round(100*R2_ajuste_old,1))," %",
-                                 " / Modèle 2016-2019 : N = ",
+                                 " / Modèle 2015-2019 : N = ",
                                  N_new," et $R^2$ ajusté = ", 
                                  gsub("\\.",",",
                                       round(100*R2_ajuste_new,1))," %."))
@@ -1495,3 +1482,4 @@ Pour ces modèles trois vagues du Baromètre ont été empilées : 2015, 2016, 2
 # Bibliographie {.unnumbered}
 
 - Duvoux Nicolas, Papuchon Adrien, « Qui se sent pauvre en France ? Pauvreté subjective et insécurité sociale », Revue française de sociologie, vol. 59, 2018, p. 607-647.
+- Formule pour les intervalles de confiance de proportions : https://courses.lumenlearning.com/atd-odessa-statistics/chapter/a-population-proportion/
