@@ -152,7 +152,8 @@ knitr::opts_chunk$set(echo=FALSE,
                warning=FALSE,
                fig.width = 6,
                fig.height = 5,
-	             fig.align = 'center'
+	             fig.align = 'center',
+	             dev = c("svglite","svg","png")
                )
 options(knitr.kable.NA = '')
 
@@ -185,6 +186,7 @@ library(dplyr) #manipuler les bases de données
 library(tidyr) #pour pivot_longer
 library(ggplot2) #pour les graphiques
 library(RColorBrewer) #pour les palettes de couleur
+library(ggrepel)
 ```
 
 <!--

@@ -1,32 +1,201 @@
-# La pauvreté comme Espace social (analyse exploratoire)
+# La pauvreté comme Espace social (analyse exploratoire) {#sec:esexplo}
 
-## L'importante prise en compte du risque de pauvreté subjectif
+## Modèle descriptif : les indicateurs mesurables de la pauvreté {#sec:esexplodescri}
+ 
+### Pauvretés monétaire, institutionnelle et subjective par Analyse des Correspondances Multiples {#sec:esexplodescriACM}
 
-### Espace social exploratoire des pauvretés monétaire institutionelle et subjective par Analyse des Correspondances Multiples
 
-<!-- Résultat de l'ACM -->
-<!-- Notes : Pour cette étude, X individus sur les 12XXX individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées.  -->
+```{r acm1, fig.show='hold', fig.cap='Espace des variables actives de la pauvreté monétaire, institutionnelle et sujective (ACM)', echo=FALSE, out.width="100%"}
 
-```{r acm1, fig.show='hold', fig.cap='ACM', echo=FALSE}
+gg_acm_actives <- readRDS("figures/gg_acm_actives.RDS")
 
-if (knitr::is_latex_output()) {
-  library(cowplot)
-  fig_svg <- cowplot::ggdraw()+cowplot::draw_image("figures/acm1.svg")
-  plot(fig_svg)
-} else {
-  knitr::include_graphics('figures/acm1.svg')
-}
+gg_acm_actives
+
+
+
+# if (knitr::is_latex_output()) {
+#   library(cowplot)
+#   fig_svg <- cowplot::ggdraw()+cowplot::draw_image("figures/acm1.svg")
+#   plot(fig_svg)
+# } else {
+#   knitr::include_graphics('figures/acm1.svg')
+# }
 
 ```
 
-### La pauvreté subjective en trois modalités : absence, présence et risque à venir
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
 
-<!-- Résultat des modèles multinomiaux -->
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
-## La pauvreté comme dimension latente
+*Note : Pour cette étude, 1 798 individus sur les 15 137 individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées (en variables actives ou supplémentaires).*
 
-### Comment modéliser des variables latentes ? 
+:::
 
-### Construction d'un espace social par analyse factorielle
+```{r acm2, fig.show='hold', fig.cap='Espace de quelques variables supplémentaires de la pauvreté monétaire, institutionnelle et sujective (ACM)', echo=FALSE, out.width="100%"}
 
+gg_acm_passives <- readRDS("figures/gg_acm_passives.RDS")
+
+gg_acm_passives
+
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+*Note : Pour cette étude, 1 798 individus sur les 15 137 individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées (en variables actives ou supplémentaires).*
+
+:::
+
+
+### Cinq classes ordonnées de pauvreté par Classification Ascendante Hiérarchique {#sec:esexploCAH}
+
+```{r cah1, fig.show='hold', fig.cap="Nuage des individus de l'ACM et CAH sur les deux premiers axes factoriels", echo=FALSE, out.width="100%"}
+
+gg_cah <- readRDS("figures/gg_cah.RDS")
+
+gg_cah
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+*Note : Le nuage des individus comporte beaucoup moins de points qu’il y a d’individus dans la base de données. C’est parce que de nombreux individus ont répondu exactement les mêmes réponses aux questions correspondant aux variables actives. Ils sont donc superposés.*
+
+:::
+
+
+```{r cah2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 5 classes de la CAH', echo=FALSE, fig.width=7, fig.height=8, out.width="100%"}
+
+gg_cah_bar <- readRDS("figures/gg_cah_bar.RDS")
+
+gg_cah_bar
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+*Note : Les modalités de chaque variables sont ordonnées telles que celles les plus à gauche (en rouge) soient les indicateurs de pauvreté et à droite (en vert) les indicateurs de richesse. Par exemple, dans la classe 3, 35 % des individus appartiennent à des ménages du troisième quintile de niveau de vie, aucun individu n'appartient à un ménage qui reçoit des revenus locatifs, 1 % indiquent se sentir pauvre et 12 % indiquent risquer le devenir dans les cinq prochaines années.*
+
+:::
+
+## Modèle structurel : les dimensions latentes de la pauvreté {#sec:esexplostructu}
+
+### Deux dimensions latentes par analyse en facteurs communs exploratoire {#sec:esexplostructuefa}
+
+```{r corrplot, fig.show='hold', fig.cap='Corrélation de Spearman entreles différents indicateurs de pauvreté', echo=FALSE, fig.width=7, fig.height=4.5, out.width="100%"}
+
+gg_corrplot <- readRDS("figures/gg_corrplot.RDS")
+
+gg_corrplot
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+:::
+
+
+```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et sujective (Analyse en Facteurs Communs)', echo=FALSE, fig.width=7, fig.height=4.5, out.width="100%"}
+
+gg_loadings <- readRDS("figures/gg_loadings.RDS")
+
+gg_loadings
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+*Note : Pour la variable « HLM » (être locataire d’un logement social), la saturation sur le premier facteur est de 0,24 et celle sur le second facteur est de 0,46.*
+
+:::
+
+### Six classes non ordonnées de pauvreté par modèle en classes latentes {#sec:esexplostructutypo}
+
+```{r latentclass1, fig.show='hold', fig.cap="Nuage des individus de l'ACM et classes latentes sur les deux premiers axes factoriels", echo=FALSE, out.width="100%"}
+
+gg_latentclass <- readRDS("figures/gg_latentclass.RDS")
+
+gg_latentclass
+
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+:::
+
+```{r latentclass2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 6 classes latentes', echo=FALSE, fig.width=7, fig.height=8, out.width="100%"}
+
+gg_latentclass_bar <- readRDS("figures/gg_latentclass_bar.RDS")
+
+gg_latentclass_bar
+
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+*Note : Les modalités de chaque variables sont ordonnées telles que celles les plus à gauche (en rouge) soient les indicateurs de pauvreté et à droite (en vert) les indicateurs de richesse. Par exemple, dans la classe B.1, 32 % des individus appartiennent à des ménages du troisième quintile de niveau de vie, 4 % des individus appartiennent à un ménage qui reçoit des revenus locatifs, 7 % indiquent se sentir pauvre et 30 % indiquent risquer le devenir dans les cinq prochaines années.*
+
+
+:::
+
+
+```{r tablatent}
+
+tab_latent <- readRDS("figures/tab_latent.RDS")
+
+tab_latent %>%
+  kable(caption="Influence des caractéristiques sociales sur l'appartenance à la classe C.2 plutôt que C.1", booktabs = TRUE, longtable = TRUE) %>%
+   kableExtra::column_spec(1, width = "4cm") %>%
+   kableExtra::column_spec(2, width = "6cm") %>%
+   kableExtra::column_spec(3, width = "4cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote(c(paste0("N = ",
+                                 "4305"," et $R^2$ ajusté = ","28,1", "%."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                         ))
+
+
+```
+
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine appartenant aux classes C.1 et C.2.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+:::
+
+
+```{r ggtaux, fig.show='hold', fig.cap='Titre', echo=FALSE, fig.width=7, fig.height=6, out.width="100%"}
+
+gg_taux_viefam <- readRDS("figures/gg_taux_viefam.RDS")
+
+gg_taux_viefam
+
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+:::
 

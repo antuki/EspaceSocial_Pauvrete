@@ -444,4 +444,15 @@ Parmi les situations suivantes, quelle est celle qui correspond à la vôtre ?
 
 *ENQUETEUR : SI L’ENQUETE.E A PLUSIEURS DIPLOMES, CODER LE PLUS ELEVE*
 
+# Analyses factorielles et Analyses en facteurs communs {#annexeAF}
 
+##	Mise en œuvre d’une analyse en facteurs communs exploratoire {#sec:annexeAFAFE}
+
+
+##	Mise en œuvre d’une analyse en facteurs communs confirmatoire {#sec:annexeAFAFC}
+
+## ACP ACM AFC {#sec:annexeAFACM}
+
+### L'effet Guttman {#sec:annexeAFACMguttman}
+
+### Comparaison AF / analyse factorielle {#sec:annexeAFACMcompa}

@@ -1,6 +1,6 @@
 # Le sentiment de pauvreté ne se réduit pas au niveau de vie {#sec:nonreducnv}
 
-## A partir de 2018, le sentiment de pauvreté augmente mais ses facteurs explicatifs ne sont pas radicalement modifiés
+## A partir de 2018, le sentiment de pauvreté augmente mais ses facteurs explicatifs ne sont pas radicalement modifiés {#sec:augmentesubj}
 
 
 Le Baromètre d’opinion de la Drees permet de mesurer le niveau et l’évolution au cours du temps du sentiment de pauvreté^[Pour rappel, le sentiment de pauvreté s’appréhende dans le Baromètre d’opinion par la proportion de Français qui, à la question `PE3` « Et vous personnellement, pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ? », répondent « Je me considère déjà comme pauvre » (voir extrait de questionnaire en annexe \@ref(annexequestio)). ] des Français. Les données de l’enquête permettent d’observer que le sentiment de pauvreté a sensiblement augmenté ces dernières années, en particulier depuis 2018, pour atteindre 19 % en 2019 (figure \@ref(fig:figchap1compa20152019)). Il en va de même pour les difficultés financières perçues, à savoir la mise en relation du niveau de vie minimum nécessaire pour vivre selon les enquêtés au niveau de vie dont ils disposent effectivement^[quand la réponse à la question `PE16` « Selon vous, pour vivre, quel est le montant dont doit disposer AU MINIMUM un foyer comme le vôtre, par mois (en euros) ? » est inférieure à celle de la question `SDREVCL` « Nous désirons savoir à quel niveau de revenus MENSUELS NETS AVANT IMPOTS se situe votre foyer » dont on a imputé de la non-réponse (voir partie \@ref(sec:mesures))], qui concernent plus de la moitié des Français, et ce depuis les cinq dernières années.
@@ -83,7 +83,7 @@ kableExtra::kable_styling(
      kableExtra::footnote(general = c(paste0("Modèle 2015-2017 : N = ",
                                  "8460"," et $R^2$ ajusté = ","24,8"," %",
                                  " / Modèle 2016-2019 : N = ",
-                                 "10759"," et $R^2$ ajusté = ","25,9"," %."), 
+                                 "13590"," et $R^2$ ajusté = ","25,5"," %."), 
                           "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
                           ))
 
@@ -130,8 +130,8 @@ tab_rsa <- tab_rsa %>%
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
-                              "11628"," et $R^2$ ajusté = ",
-                              "5,9"," %."), 
+                                 "14612"," et $R^2$ ajusté = ",
+                              "6,1"," %."),
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
                          ) %>% 
   # kableExtra::kable_paper("striped", full_width = F) %>%
@@ -168,8 +168,8 @@ tab_mon <- tab_mon %>%
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
-                              "10817"," et $R^2$ ajusté = ",
-                              "18,5"," %."), 
+                              "13672"," et $R^2$ ajusté = ",
+                              "18,3"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
                          ) 
 
@@ -193,8 +193,8 @@ tab_inst <- tab_inst %>%
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
-                              "11630"," et $R^2$ ajusté = ",
-                              "12,5"," %."), 
+                              "14613"," et $R^2$ ajusté = ",
+                              "12,2"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
                          ) 
 
@@ -214,12 +214,11 @@ Le tableau \@ref(tab:tabfinal21) présente une dernière modélisation économé
 ```{r tabfinal21}
 tab_final21 <- readRDS("figures/tab_final21.RDS") 
 
-
 tab_final21 <- tab_final21 %>% 
-  kable(caption="Modèle de synthèse des effets sur le sentiment de pauvreté", booktabs = TRUE, longtable = TRUE) %>%  
+  kable(caption="Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues", booktabs = TRUE, longtable = TRUE) %>%
    kableExtra::column_spec(1, width = "4cm") %>%
    kableExtra::column_spec(2, width = "6cm") %>%
-   kableExtra::column_spec(3, width = "4cm") %>%
+   kableExtra::column_spec(3:4, width = "4cm") %>%
   kableExtra::kable_styling(
   latex_options = c("hold_position", "repeat_header"),
   repeat_header_text = "\\textit{(suite)}",
@@ -227,12 +226,13 @@ tab_final21 <- tab_final21 %>%
   ) %>%
   kableExtra::pack_rows("Pauvreté monétaire", 1, 9) %>%
   kableExtra::pack_rows("Pauvreté institutionnelle", 10, 18) %>%
-  kableExtra::pack_rows("Contrôles", 19, 56) %>%
-  kableExtra::footnote(c(paste0("N = ",
-                              "10726"," et $R^2$ ajusté = ",
-                              "26,6"," %."), 
-                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-                         ) 
+  kableExtra::pack_rows("Contrôles", 19, 57) %>%
+  kableExtra::footnote(c(paste0("Sentiment de pauvreté : N = ",
+                                 "13548"," et $R^2$ ajusté = ","26,0"," %",
+                                 " / Difficultés financières perçues : N = ",
+                                 "13678"," et $R^2$ ajusté = ",
+                              "28,6"," %."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                         ))
 
 tab_final21
 ```
