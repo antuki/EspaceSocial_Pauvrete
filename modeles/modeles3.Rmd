@@ -663,7 +663,8 @@ data_t6 %>%
 
 ```{r}
 bdd2017_logit <- bdd2017 %>% 
-  mutate(quantile_nivie = factor(
+ mutate(nivie = sdrevcl_imput_moy/sduc) %>% 
+ mutate(quantile_nivie = factor(
     cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
         breaks=quantile(sdrevcl_imput_moy/sduc,
                         probs=seq(0,1,0.2),na.rm=TRUE),
@@ -940,7 +941,8 @@ bdd <- bdd %>%
 ```
 
 ```{r, echo=FALSE}
-bdd_logit <- bdd %>% 
+bdd_logit <- bdd %>%
+  mutate(nivie = sdrevcl_imput_moy/sduc) %>% 
   mutate(quantile_nivie = factor(
     cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
         breaks=quantile(sdrevcl_imput_moy/sduc,
@@ -1271,9 +1273,9 @@ data_viefamevol <- bdd %>%
     labels=paste0("",
                   c("Vit seul","Membre du couple (pas d’enfants à charge)",
                     "Membre du couple (enfants à charge)", "Chef famille monoparentale",
-                    "Enfant","Autre"))
+                    "Enfant","Autre situation familiale"))
     )) %>% 
-  filter(vie_fam!="Autre") %>% #NEW enlever autres du graphique
+  filter(vie_fam!="Autre situation familiale") %>% #NEW enlever autres du graphique
   group_by(annee, vie_fam, subj_pauvrete_et_risque) %>% 
   summarise(poids= sum(poids)) %>% 
   na.omit() %>%
