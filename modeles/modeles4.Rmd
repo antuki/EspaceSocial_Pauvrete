@@ -1713,60 +1713,119 @@ run_regression(y="non_rep_dipl",
 
 ## Figures rapport 
 
-```{r, echo=FALSE}
-# run_regression(y="subj_pauvrete",
-#                #x= c("est_rsa","presta_rsa","conn_rsa"),
-#                x= c("est_rsa","presta_rsa","conn_rsa_fam",
-#                     "conn_rsa_horsfam"),
-#                kable=TRUE)
+RSA : individu / ménage
 
-tab_rsa <- run_regression(y="subj_pauvrete", 
-                       #x= c("est_rsa","presta_rsa","conn_rsa"),
-                       x= c("est_rsa","presta_rsa","conn_rsa_fam",
-                    "conn_rsa_horsfam"),
+```{r, echo=FALSE}
+# run_regression(y="subj_pauvrete", 
+#                        x= c("est_rsa","vie_fam"),
+#                kable=TRUE)
+#14613 8%
+# run_regression(y="subj_pauvrete", 
+#                x= c("presta_rsa","vie_fam"),
+#                kable=TRUE)
+#14634 8,3%
+
+tab_rsa1 <- bind_cols(run_regression(y="subj_pauvrete", 
+                       x= c("est_rsa","vie_fam"),
                kable=FALSE)  %>%
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
   )) %>% 
   dplyr::select(modalite,odds_ratio) %>% 
   slice(-1) %>%
-  mutate(modalite = c("N'est pas une personne au RSA", "Est une personne au RSA", "N'a personne dans son ménage au RSA", "A quelqu'un dans son ménage au RSA", "Ne connaît personne dans sa famille au RSA", "Connaît quelqu'un dans sa famille au RSA", "Ne connaît personne hors famille au RSA", "Connaît quelqu'un hors famille au RSA")
+  mutate(modalite = c("Pas de RSA", "RSA", modalite[3:8])
          ) %>% 
+  arrange(match(modalite, c(modalite[1:3],modalite[5],modalite[4],modalite[6:8]))),
+  run_regression(y="subj_pauvrete", 
+                       x= c("presta_rsa","vie_fam"),
+               kable=FALSE)  %>%
+  mutate(odds_ratio = ifelse(
+    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+  )) %>% 
+  dplyr::select(modalite,odds_ratio) %>% 
+  slice(-1) %>%
+  mutate(modalite = c("N'a personne dans son ménage au RSA", "A quelqu'un dans son ménage au RSA", modalite[3:8])
+         ) %>% 
+  arrange(match(modalite, c(modalite[1:3],modalite[5],modalite[4],modalite[6:8]))) %>% 
+    pull(odds_ratio)
+) %>% 
+  setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio (individu)","Odds ratio (ménage)")) 
+
+saveRDS(tab_rsa1,"../rapport/figures/tab_rsa1.RDS")
+
+tab_rsa1 %>% 
+  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, ménage) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+  kableExtra::column_spec(1, width = "6cm") %>% 
+  kableExtra::column_spec(2, width = "2cm") %>%
+  kableExtra::footnote(c(paste0("Niveau individu : N = ",
+                                 "14613"," et $R^2$ ajusté = ","8,0"," %",
+                                 " / Niveau ménage : N = ",
+                                 "14634"," et $R^2$ ajusté = ",
+                              "8,3"," %."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                         )) %>% 
+  kableExtra::kable_paper("striped", full_width = F) %>%
+  kableExtra::pack_rows("Perception du RSA", 1, 2) %>%
+  kableExtra::pack_rows("Structure familiale (contrôle)",3,8) 
+  
+```
+
+RSA : individu / famille / hors famille
+
+```{r, echo=FALSE}
+# run_regression(y="subj_pauvrete", 
+#                        x= c("est_rsa","conn_rsa_fam",
+#                     "conn_rsa_horsfam","vie_fam"),
+#                kable=TRUE)
+
+
+tab_rsa2 <- run_regression(y="subj_pauvrete", 
+                       x= c("est_rsa","conn_rsa_fam",
+                    "conn_rsa_horsfam","vie_fam"),
+               kable=FALSE)  %>%
+  mutate(odds_ratio = ifelse(
+    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+  )) %>% 
+  dplyr::select(modalite,odds_ratio) %>% 
+  slice(-1) %>%
+  mutate(modalite = c("N'est pas une personne au RSA", "Est une personne au RSA", "Ne connaît personne dans sa famille au RSA", "Connaît quelqu'un dans sa famille au RSA", "Ne connaît personne hors famille au RSA", "Connaît quelqu'un hors famille au RSA", modalite[7:12])
+         ) %>% 
+  arrange(match(modalite, c(modalite[1:6],modalite[8],modalite[7],modalite[9:12]))) %>% 
   setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio")) 
 
-saveRDS(tab_rsa,"../rapport/figures/tab_rsa.RDS")
+saveRDS(tab_rsa2,"../rapport/figures/tab_rsa2.RDS")
 
 
-tab_rsa %>% 
-  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, ménage et entourage) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+tab_rsa2 %>% 
+  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, famille et hors famille) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
-                              "14612"," et $R^2$ ajusté = ",
-                              "6,1"," %."), 
+                              "14613"," et $R^2$ ajusté = ",
+                              "9,1"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
                          ) %>% 
   kableExtra::kable_paper("striped", full_width = F) %>%
   kableExtra::pack_rows("Individu", 1, 2) %>%
-kableExtra::pack_rows("Ménage", 3, 4) %>% 
-  kableExtra::pack_rows("Famille", 5, 6) %>% 
-  kableExtra::pack_rows("Hors famille", 7, 8) 
-
+  kableExtra::pack_rows("Famille", 3, 4) %>% 
+  kableExtra::pack_rows("Hors famille", 5, 6) %>% 
+  kableExtra::pack_rows("Structure familiale (contrôle)",7,12) 
+  
 ```
 
 
 Pauvreté monétaire
 
 ```{r, echo=FALSE}
-#  run_regression(x= c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_pauvrete",kable=TRUE)
+# run_regression(x= c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs","vie_fam"), y="subj_pauvrete",kable=TRUE)
 
-tab_mon <- run_regression(x= c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs"), y="subj_pauvrete",kable=FALSE) %>% 
+tab_mon <- run_regression(x= c("quantile_nivie", "revenus_salaires","revenus_independant","revenus_retraite","revenus_financiers","revenus_locatifs","vie_fam"), y="subj_pauvrete",kable=FALSE) %>% 
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
   )) %>% 
   select(modalite,odds_ratio) %>% 
   slice(-1) %>% 
   arrange(match(modalite, c(modalite[2],modalite[-2]))) %>% 
+    arrange(match(modalite, c(modalite[1:15],modalite[17],modalite[16],modalite[18:21]))) %>% 
  setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio")) 
 
 saveRDS(tab_mon,"../rapport/figures/tab_mon.RDS")
@@ -1778,24 +1837,26 @@ tab_mon %>%
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
                               "13672"," et $R^2$ ajusté = ",
-                              "18,3"," %."), 
+                              "20,0"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-                         ) 
+                         )  %>% 
+  kableExtra::kable_paper("striped", full_width = F) %>%
+  kableExtra::pack_rows("Pauvreté monétaire", 1, 5) %>%
+  kableExtra::pack_rows("Structure familiale (contrôle)",16,21) 
 ```
 
 Pauvreté institutionnelle
 
 ```{r, echo=FALSE}
-# run_regression(x= c("presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm"), y="subj_pauvrete",kable=TRUE)
+# run_regression(x= c("presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm","vie_fam"), y="subj_pauvrete",kable=TRUE)
 
-
-tab_inst <- run_regression(x= c("presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm"), y="subj_pauvrete",kable=FALSE) %>% 
+tab_inst <- run_regression(x= c("presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm","vie_fam"), y="subj_pauvrete",kable=FALSE) %>% 
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
   )) %>% 
   select(modalite,odds_ratio) %>% 
-  slice(-1) %>% 
-  #arrange(match(modalite, c(modalites[2],modalite[-2]))) %>% 
+  slice(-1) %>%
+     arrange(match(modalite, c(modalite[1:12],modalite[14],modalite[13],modalite[15:18]))) %>% 
  setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio")) 
 
 saveRDS(tab_inst,"../rapport/figures/tab_inst.RDS")
@@ -1807,9 +1868,12 @@ tab_inst %>%
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
                               "14613"," et $R^2$ ajusté = ",
-                              "12,2"," %."), 
+                              "14,8"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-                         ) 
+                         ) %>% 
+  kableExtra::pack_rows("Pauvreté institutionnelle", 1, 5) %>%
+  kableExtra::pack_rows("Structure familiale (contrôle)",13,18) 
+
 ```
 
  
@@ -1965,13 +2029,13 @@ bdd_poLCA_rmnasup_comp <- bdd_logit %>%
 # run_regression(x=c(
 #   "quantile_nivie",
 #   #"presta_rsa","presta_apl","presta_chomage", "presta_handi",
-# "statut_occup0","prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", "conn_rsa", "annee_fac"),
+# "statut_occup0","prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", "annee_fac"), #"conn_rsa"
 #                        y="latent_classes", type_mod = "logit", bdd_log=bdd_poLCA_rmnasup_comp, kable=TRUE)
 
 tab_latent <- run_regression(x=c(
   "quantile_nivie",
   #"presta_rsa","presta_apl","presta_chomage", "presta_handi", 
-"statut_occup0","prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", "conn_rsa", "annee_fac"),
+"statut_occup0","prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", "annee_fac"), #"conn_rsa"
                        y="latent_classes", type_mod = "logit", bdd_log=bdd_poLCA_rmnasup_comp, kable=FALSE) %>% 
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
@@ -1983,7 +2047,7 @@ tab_latent <- run_regression(x=c(
   arrange(match(modalite, c(modalite[1:19],modalite[21],modalite[20],modalite[22:44])))  %>% 
   arrange(match(modalite, c(modalite[1:23],modalite[25],modalite[24],modalite[26:44])))  %>% 
   arrange(match(modalite, c(modalite[1:29],modalite[31],modalite[30],modalite[32:44]))) %>% 
-  mutate(modalite_y = c("Niveau de vie",rep("",4),"Logement",rep("",1), "Situation professionnelle",rep("",9),"Précarité de l'emploi","(subjective)","Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1),"Entourage au RSA",rep("",1),"Année",rep("",4))) %>% setNames(c("Modèle logit", "Variable dépendante : appartenir à la classe C.2 plutôt que C.1", "Odds ratio")) 
+  mutate(modalite_y = c("Niveau de vie",rep("",4),"Logement",rep("",1), "Situation professionnelle",rep("",9),"Précarité de l'emploi","(subjective)","Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1),"Année",rep("",4))) %>% setNames(c("Modèle logit", "Variable dépendante : appartenir à la classe C.2 plutôt que C.1", "Odds ratio")) 
 
 saveRDS(tab_latent,"../rapport/figures/tab_latent.RDS")
 
@@ -1998,152 +2062,10 @@ tab_latent %>%
   repeat_header_continued = "\\textit{(suite en page suivante...)}"
   ) %>%
   kableExtra::footnote(c(paste0("N = ",
-                                 "4305"," et $R^2$ ajusté = ","28,1", "%."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                                 "4305"," et $R^2$ ajusté = ","28,0", "%."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
                          ))
 ```
 
- 
-```{r, echo=FALSE, fig.height=6, fig.width=7}
-gg_taux_viefam <- function(df, legend_only=FALSE,
-                           legend.position="none", sous_champ="Titre"){
-  df <- df %>% 
-    filter(!vie_fam%in%c("-Autre situation familiale")) %>%
-    mutate(vie_fam = gsub("-","",vie_fam)) %>%         
-    mutate(vie_fam = factor(vie_fam,
-                            levels=c("Vit seul",
-                                     "Membre du couple (pas d’enfants à charge)",
-                                     "Membre du couple (enfants à charge)",
-                                     "Chef famille monoparentale",
-                                     "Enfant"),
-                            labels=c("Vit seul",
-                                     "Membre du couple\n(pas d’enfants\nà charge)",
-                                     "Membre du couple\n(enfants\nà charge)",
-                                     "Chef famille\nmonoparentale",
-                                     "Enfant")
-    )) %>% 
-    group_by(vie_fam) %>%
-    arrange(nivie) %>% 
-    mutate(denom = cumsum(poids*ifelse(is.na(indicatrice),0,1))) %>% 
-    mutate(num=cumsum(poids*ifelse(is.na(indicatrice) | !indicatrice,0,1))) %>% 
-    mutate(ratio=num/denom) %>% 
-    select(vie_fam,presta_rsa,poids,nivie,num,denom,ratio)
-  
-  p <- ggplot(df, aes(x=nivie, y=ratio, group=vie_fam, color=vie_fam)) +
-    #geom_line() +
-    geom_smooth(method = "loess", size=1)+ #lm, glm, loess, NULL, gam
-    scale_color_brewer(palette="Set2")+
-    theme_minimal()+
-    scale_x_continuous(name ="Niveau de vie de moins de ... (euros/mois)", limits=c(500,3000))+
-    scale_y_continuous(name ="Part de la population concernée",
-                       limits=c(0,1),
-                       labels=scales::percent)+
-    ggtitle(sous_champ) +
-    guides(linetype = guide_legend(title="Champ",order = 1),
-           color = guide_legend(title="Situation\nfamiliale", order = 2)
-    )+
-    theme(title=element_text(size=8, face="bold"))
-
-  if(legend_only){
-    p <- p +  
-      theme(legend.box="vertical", legend.position = "top",
-            legend.spacing.x = unit(0.2, 'cm'))
-    p <- cowplot::get_legend(p)
-  } else{
-    p <- p+  theme(legend.position=legend.position)
-    
-  }
-  
-  
-  return(p)
-  
-  
-}
-
-leg <- gg_taux_viefam(df=bdd_logit %>% mutate(indicatrice = ifelse(presta_rsa=="-RSA",1,0)), legend_only = TRUE)
-p1 <- gg_taux_viefam(df=bdd_logit %>% mutate(indicatrice = ifelse(presta_rsa=="-RSA",1,0)), sous_champ="Français qui bénéficient du RSA")
-p2 <- gg_taux_viefam(df=bdd_logit %>% mutate(indicatrice = ifelse(presta_apl=="-APL",1,0)), sous_champ="Français qui bénéficient d'APL")
-p3 <- gg_taux_viefam(df=bdd_logit %>% mutate(indicatrice = ifelse(subj_pauvrete==1,1,0)), sous_champ="Français qui se sentent pauvres")
-p4 <- gg_taux_viefam(df=bdd_logit %>% mutate(indicatrice = ifelse(subj_inf_mini_decla==1,1,0)), sous_champ="Français se sentant en difficulté fin.") #"-Rev. inf. au minimum décla."
-library(cowplot)
-
-gg_taux_viefam <- plot_grid(NULL,NULL,p1,p2,p3,p4,nrow=3, rel_heights = c(1,3,3))+
-  draw_plot(leg,x=0,y=0.45)
-
-saveRDS(gg_taux_viefam,"../rapport/figures/gg_taux_viefam.RDS")
-
-gg_taux_viefam
-
-```
-
-```{r, echo=FALSE, fig.height=6, fig.width=7}
-gg_taux_age <- function(df, legend_only=FALSE,
-                           legend.position="none", sous_champ="Titre"){
-  df <- df %>% 
-    filter(!vie_fam%in%c("-Autre situation familiale")) %>%
-    mutate(vie_fam = gsub("-","",vie_fam)) %>%         
-    mutate(vie_fam = factor(vie_fam,
-                            levels=c("Vit seul",
-                                     "Membre du couple (pas d’enfants à charge)",
-                                     "Membre du couple (enfants à charge)",
-                                     "Chef famille monoparentale",
-                                     "Enfant"),
-                            labels=c("Vit seul",
-                                     "Membre du couple\n(pas d’enfants\nà charge)",
-                                     "Membre du couple\n(enfants\nà charge)",
-                                     "Chef famille\nmonoparentale",
-                                     "Enfant")
-    )) %>% 
-    group_by(age_tranche) %>%
-    arrange(nivie) %>% 
-    mutate(denom = cumsum(poids*ifelse(is.na(indicatrice),0,1))) %>% 
-    mutate(num=cumsum(poids*ifelse(is.na(indicatrice) | !indicatrice,0,1))) %>% 
-    mutate(ratio=num/denom) %>% 
-    select(vie_fam,presta_rsa,poids,nivie,num,denom,ratio)
-  
-  p <- ggplot(df, aes(x=nivie, y=ratio, group=age_tranche, color=age_tranche)) +
-    #geom_line() +
-    geom_smooth(method = "loess", size=1)+ #lm, glm, loess, NULL, gam
-    scale_color_brewer(palette="Set2")+
-    theme_minimal()+
-    scale_x_continuous(name ="Niveau de vie de moins de ... (euros/mois)", limits=c(500,3000))+
-    scale_y_continuous(name ="Part de la population concernée",
-                       limits=c(0,1),
-                       labels=scales::percent)+
-    ggtitle(sous_champ) +
-    guides(linetype = guide_legend(title="Champ",order = 1),
-           color = guide_legend(title="Tranche\nage", order = 2)
-    )+
-    theme(title=element_text(size=8, face="bold"))
-
-  if(legend_only){
-    p <- p +  
-      theme(legend.box="vertical", legend.position = "top",
-            legend.spacing.x = unit(0.2, 'cm'))
-    p <- cowplot::get_legend(p)
-  } else{
-    p <- p+  theme(legend.position=legend.position)
-    
-  }
-  
-  
-  return(p)
-  
-  
-}
-
-leg <- gg_taux_age(df=bdd_logit %>% mutate(indicatrice = ifelse(presta_rsa=="-RSA",1,0)), legend_only = TRUE)
-p1 <- gg_taux_age(df=bdd_logit %>% mutate(indicatrice = ifelse(presta_rsa=="-RSA",1,0)), sous_champ="Français qui bénéficient du RSA")
-p2 <- gg_taux_age(df=bdd_logit %>% mutate(indicatrice = ifelse(presta_apl=="-APL",1,0)), sous_champ="Français qui bénéficient d'APL")
-p3 <- gg_taux_age(df=bdd_logit %>% mutate(indicatrice = ifelse(subj_pauvrete==1,1,0)), sous_champ="Français qui se sentent pauvres")
-p4 <- gg_taux_age(df=bdd_logit %>% mutate(indicatrice = ifelse(subj_inf_mini_decla==1,1,0)), sous_champ="Français se sentant en difficulté fin.") #"-Rev. inf. au minimum décla."
-library(cowplot)
-
-gg_taux_age <- plot_grid(NULL,NULL,p1,p2,p3,p4,nrow=3, rel_heights = c(1,3,3))+
-  draw_plot(leg,x=0,y=0.45)
-
-gg_taux_age
-
-```
 
 # Notes méthodologiques
 
