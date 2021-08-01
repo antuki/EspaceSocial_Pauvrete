@@ -10,6 +10,36 @@ Nous chercherons donc dans cette partie à construire l’Espace social des troi
 
 L’Analyse des Correspondances Multiples (ACM) (voir détails méthodologiques en annexe \@ref(sec:annexeAFACM)) est un outil quantitatif, rendu particulièrement célèbre en sociologie par Pierre Bourdieu en France, qui permet une représentation visuelle de l’espace social des variables mobilisées et contribue à l’amélioration de la compréhension du monde social. 
 
+
+Voir l'encadré \@ref(thm:encadre1). 
+
+::: {.theorem #encadre1 name="Modèles à classe latente"}
+
+Je rédige ici un encadré. 
+
+Et j'espère que ça va marcher !
+
+```{r inertie1, fig.show='hold', fig.cap="Inertie conservée selon le nombre d'axes de l'ACM", echo=FALSE, out.width="50%"}
+
+inertie_1_15 <- readRDS("figures/inertie_1_15.RDS")
+
+barplot(inertie_1_15, ylab="Inertie", xlab="Nombre d'axes")
+```
+
+```{r inertie2, fig.show='hold', fig.cap="Inertie conservée selon le nombre de classes de la CAH", echo=FALSE, out.width="50%"}
+
+inertie_1_20 <- readRDS("figures/inertie_1_20.RDS")
+
+plot(inertie_1_20, type = "s", xlab = "Nombre de classes", ylab = "Inertie")
+points(c(2, 3, 5), inertie_1_20[c(2, 3, 5)], col = c("green3", "red3", "blue3","yellow3","pink3"), cex = 2, lwd = 3)
+```
+
+:::
+
+
+
+
+
 Nous avons donc cherché dans un premier temps à représenter grâce à cette méthode l’espace social de la pauvreté issu des données du Baromètre d’opinion de la Drees. Nous avons pour cela utilisé comme variables actives l’ensemble des variables appartenant aux dimensions monétaire, institutionnelle et subjective de la pauvreté et identifiées comme pertinentes dans le chapitre \@ref(sec:nonreducnv),. 
 
 La figure \@ref(fig:acm1) représente le nuage des variables actives projeté sur les deux premiers axes de l’ACM. Le premier axe conserve à lui seul un cinquième de l’inertie totale. Le positionnement parabolique des différentes modalités révèle l’existence d’un effet Guttman (voir annexe \@ref(sec:annexeAFACMguttman)), c’est-à-dire une forte redondance entre les variables étudiées, et donc entre les différentes dimensions de la pauvreté. Les différentes modalités se positionnent le long de cette parabole qui oppose en haut à gauche les modalités signalant des situations de richesse à des situations de pauvreté en haut à droite. En bas au centre se situent les modalités fortement contributives de l’axe 2, qui renseignent sur des situations médianes : en particulier indiquer ne pas se sentir pauvre mais penser risquer le devenir dans les cinq années à venir ou appartenir au troisième quintile de niveau de vie des ménages. 
@@ -90,7 +120,7 @@ gg_cah
 
 
 
-```{r cah2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 5 classes de la CAH', echo=FALSE, fig.width=7, fig.height=8, out.width="100%"}
+```{r cah2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 5 classes de la CAH', echo=FALSE, fig.width=7, fig.height=6, out.width="100%"}
 
 gg_cah_bar <- readRDS("figures/gg_cah_bar.RDS")
 
@@ -128,7 +158,7 @@ La présence d’un effet Guttman suggère d’analyser les axes suivants afin d
 L’effet Guttman observé en figure \@ref(fig:acm1) suggère une corrélation globale entre l’ensemble des indicateurs de pauvreté. Il serait en théorie alors possible de créer un indicateur composite (typiquement le premier axe de l’ACM) classant les individus selon une échelle de pauvreté. Nous chercherons dans les parties qui suivent à aller plus loin dans la recherche d’axes de structuration / différenciation dans l’espace social de la pauvreté qui montreraient alors que la pauvreté n’est pas uniquement unidimensionnelle. 
 
 Tout d’abord, remarquons que les corrélations de Spearman^[La corrélation de Spearman permet de comparer deux variables sans que la relation soit nécessairement affine. Elle est égale au coefficient de corrélation de Pearson calculé sur les variables de rang. $r_s = \mathrm{corr}(\mathrm{rg}_X, \mathrm{rg}_Y) = \frac{\mathrm{cov}(\mathrm{rg}_X, \mathrm{rg}_Y)}{\sigma_{\mathrm{rg}_X} \sigma_{\mathrm{rg}_Y}}$. La variable de rang $\mathrm{rg}_{X_i}$ est définie telle que $\mathrm{rg}_{X_i}=j \iff X_i = X_{(j)}$ ($X_i$ est la $j$ème plus petite variable).] (figure \@ref(fig:corrplot)) entre les différentes variables de pauvreté, ne sont, étonnamment, pas très élevées. Seule la corrélation entre niveau de vie et difficultés financières perçues apparaît comme significative. En abaissant le seuil de tolérance et en représentant l’ensemble des corrélations supérieures au seuil (arbitraire) de 0,3 (figure \@ref(fig:corrplot)), les deux indicateurs subjectifs ont une corrélation au-dessus de ce seuil, de même pour les corrélations entre variables institutionnelles de RSA, APL et de location d’un logement social prises deux à deux (sauf entre RSA et location d’un logement social). Le niveau de vie est corrélé avec les deux variables de pauvreté subjective et certaines variables de pauvreté institutionnelle (APL, RSA).
-```{r corrplot, fig.show='hold', fig.cap='Corrélation de Spearman entreles différents indicateurs de pauvreté', echo=FALSE, fig.width=7, fig.height=4.5, out.width="100%"}
+```{r corrplot, fig.show='hold', fig.cap='Corrélation de Spearman entreles différents indicateurs de pauvreté', echo=FALSE, fig.width=7, fig.height=5, out.width="100%"}
 
 gg_corrplot <- readRDS("figures/gg_corrplot.RDS")
 
@@ -144,6 +174,15 @@ gg_corrplot
 Afin d’étudier plus en profondeur la structuration de l’espace social, nous avons réalisé une analyse en facteurs communs (AF) exploratoire (AFE). Alors que l’ACM avait pour principal objectif la réduction de dimension des données, l’AFE cherche en outre à identifier des dimensions latentes -- typiquement les différentes dimensions de la pauvreté -- qui se cachent derrière les variables mesurées et disponibles dans notre base de données. En outre, elle s’intéresse aux covariances en plus des variances, c’est-à-dire qu’elle conserve la structure des corrélations entre variables. De nombreux détails sur l’AFE sont disponibles en annexe \@ref(sec:annexeAFAFE), avec, en outre, ses différences avec les méthodes d’analyse factorielle plus connues en France (type ACM) (voir annexe \@ref(sec:annexeAFACMcompa)).
 
 La figure  \@ref(fig:afe) représente une AFE^[En langage R, la fonction `psych::fa()` permet d'effectuer une analyse en facteurs communs exploratoire (AFE) en utilisant différentes méthodes factorielles. Nous utilisons `fm=ml` pour réaliser une analyse en facteurs par maximum de vraisemblance. Nous utilisons également le paramètre `rotate = "oblimin"` comme méthode de rotation (non orthogonale). Les corrélations sont polychloriques `cor="poly"` car adaptées aux variables polytomiques (à plusieurs modalités, *polytomous* en anglais), comme celles dont nous disposons. Enfin, les scores factoriels sont calculés en réalisant une régression (`scores="regression"`).] en deux facteurs (c’est-à-dire deux dimensions latentes). Le premier facteur rassemble les indicateurs de pauvretés monétaire et subjective et le second les indicateurs de pauvreté institutionnelle. L’indicatrice d’être bénéficiaire du RSA est relativement proche de la première bissectrice (saturation ou *loading* de 0,52 pour le second axe et 0,23 pour le premier), de même pour la variable de location d’un logement social (0,46 contre 0,24), ce qui signifie qu’elles sont relativement proches également du premier facteur (dimension monétaire et subjective de la pauvreté). La première conclusion à tirer est donc que, lorsque parfois les dimensions de la pauvreté ne vont pas dans le même sens, l’opposition se fait entre pauvreté institutionnelle d’une part et monétaire et subjectives d’autre part (qui vont, elles, principalement dans le même sens). 
+
+```{r tabmodfit}
+
+tab_modfit <- round(readRDS("figures/tab_modfit.RDS")[,c(1,2,3,4,6,8,9)])
+
+tab_modfit %>%
+  kable(caption="Qualité des modèles de 2 à 8 classes")
+```
+
 
 ```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et sujective (Analyse en Facteurs Communs)', echo=FALSE, fig.width=7, fig.height=4.5, out.width="100%"}
 
@@ -186,7 +225,7 @@ Les 6 classes obtenues s’ordonnent toujours globalement selon l’échelle de 
 
 Toutefois, l’utilisation de l’analyse en facteurs communs permet d’ajouter de la nuance dans l’interprétation.  En effet, deux paires de classes se situent au même niveau (pour C.1 et C.2) ou à un niveau proche (pour D.1 et D.2) sur l’échelle (horizontale) de pauvreté mais se distinguent en termes de structure de la pauvreté (position verticale différente). 
 
-```{r latentclass2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 6 classes latentes', echo=FALSE, fig.width=7, fig.height=8, out.width="100%"}
+```{r latentclass2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 6 classes latentes', echo=FALSE, fig.width=7, fig.height=6, out.width="100%"}
 
 gg_latentclass_bar <- readRDS("figures/gg_latentclass_bar.RDS")
 
@@ -230,7 +269,7 @@ En conclusion, l’espace social de la pauvreté se structure principalement aut
 
 La classification en 6 classes obtenue en figure \@ref(fig:latentclass1) invite à s’interroger sur les différences sociales qui existent entre les deux classes moyennes C.2 (caractérisée par une forte présence de pauvreté institutionnelle mais par un ressenti de difficultés financières moindre) et C.1 (situation inverse). C’est pourquoi nous avons réalisé une nouvelle régression logistique pour laquelle la variable dépendante est l’appartenance à la classe C.2 plutôt que C.1. Les variables explicatives sont les différentes variables sociodémographiques déjà étudiées auparavant, en contrôlant également par le niveau de vie. 
 
-Le tableau \@ref(fig:tablatent) présente les résultats de cette régression. Les classes moyennes concernées par la pauvreté institutionnelle (et par des difficultés financières subjectives moindres) sont les ménages jeunes, locataires, inactifs ou indiquant occuper un emploi précaire. Mais c’est en particulier la situation familiale de ces ménages qui joue le plus grand rôle puisque la classe C.2 et sa pauvreté institutionnelle et son relatif optimisme concernant sa situation financière concerne en particulier les ménages avec enfants : que ce soit des couples, ou encore davantage, des familles monoparentales. 
+Le tableau \@ref(tab:tablatent) présente les résultats de cette régression. Les classes moyennes concernées par la pauvreté institutionnelle (et par des difficultés financières subjectives moindres) sont les ménages jeunes, locataires, inactifs ou indiquant occuper un emploi précaire. Mais c’est en particulier la situation familiale de ces ménages qui joue le plus grand rôle puisque la classe C.2 et sa pauvreté institutionnelle et son relatif optimisme concernant sa situation financière concerne en particulier les ménages avec enfants : que ce soit des couples, ou encore davantage, des familles monoparentales. 
 
 ```{r tablatent}
 
@@ -262,24 +301,22 @@ tab_latent %>%
 :::
 
 
-Ces deux types de ménages sont en effet ceux qui bénéficient le plus des APL quel que soit leur niveau de revenu (figure \@ref(fig:ggtaux)). Les familles monoparentales sont également nettement plus nombreuses à percevoir le RSA : parmi les ménages avec un niveau de vie inférieur à 1000 euros, elles sont en proportions deux fois plus nombreuses que les personnes seules et que les couples avec enfants à le recevoir. Si la pauvreté subjective (sentiment de pauvreté tout comme difficultés financières perçues) concerne également particulièrement les familles monoparentales, l’écart avec les autres types de ménages est moins fort que concernant la pauvreté institutionnelle. Notamment, les personnes vivant seules sont également très touchées par la pauvreté subjective, alors que bien moins souvent bénéficiaires d’APL ou de RSA. 
+Ces deux types de ménages sont en effet ceux qui bénéficient le plus des APL quel que soit leur niveau de revenu. Les familles monoparentales sont également nettement plus nombreuses à percevoir le RSA : parmi les ménages avec un niveau de vie inférieur à 1000 euros, elles sont en proportions deux fois plus nombreuses que les personnes seules et que les couples avec enfants à le recevoir. Si la pauvreté subjective (sentiment de pauvreté tout comme difficultés financières perçues) concerne également particulièrement les familles monoparentales, l’écart avec les autres types de ménages est moins fort que concernant la pauvreté institutionnelle. Notamment, les personnes vivant seules sont également très touchées par la pauvreté subjective, alors que bien moins souvent bénéficiaires d’APL ou de RSA. 
 
-```{r ggtaux, fig.show='hold', fig.cap='Indicateurs de pauvretés institutionnelle et subjective selon le niveau de vie et la structure familiale', echo=FALSE, fig.width=7, fig.height=6, out.width="100%"}
+```{r tabprestaviefam}
+tab_prestaviefam <- readRDS("figures/tab_prestaviefam.RDS") 
 
-gg_taux_viefam <- readRDS("figures/gg_taux_viefam.RDS")
-
-gg_taux_viefam
-
+tab_prestaviefam %>%
+  kable(caption="Être bénéficiaire de RSA et d'APL selon la situation familiale pour les personnes appartenant aux deux premiers quintiles de niveau de vie") %>%
+   kableExtra::column_spec(1, width = "6cm") %>%
+   kableExtra::column_spec(2:3, width = "4cm") %>%
+   kableExtra::row_spec(7, bold = TRUE)
 ```
 
 :::{.note data-latex=""} 
-*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+*Champ : Personnes dont le ménage appartient aux deux premiers quintiles de niveau de vie, d’au moins 18 ans résidant en France métropolitaine.*
 
 *Source : Baromètre d’opinion de la DREES, 2015-2019.*
-
-*Note : Par souci de lisibilité et pour mieux guider l'interprétation, les niveaux de vie conservés dans le graphique sont supérieurs à 1000 euros et inférieurs à 3000 euros. Par ce même souci de lisibilité, les courbes obtenues ont été légèrement lissées.*
-
-*Note de lecture : Les chefs de famille monoparentale appartenant à des ménages dont le niveau de vie est inférieur à 1000 euros par mois sont 78 % à percevoir une APL. Ils sont seulement 30 % chez les couples sans enfant de niveau de vie inférieur à 1000 euros par mois.*
 
 :::
 

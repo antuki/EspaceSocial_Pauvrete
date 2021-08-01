@@ -268,8 +268,9 @@ filter:alpha(opacity=30)
 }
 
 .book .book-body .page-wrapper .page-inner section.normal a{
-  color: #e9c8e1;
+  color: #ac3b91; /*#e9c8e1;*/
 }
+
 
 .book .book-header .btn {
     display: block;
@@ -298,6 +299,7 @@ border-color:#e9c8e1;
   margin-top:10px;
 }
 
+/* encadré*/
 .encadre {
   padding: 0.5em;
   background: #e9c8e1;
@@ -305,6 +307,23 @@ border-color:#e9c8e1;
   border: 2px solid #63003c;
   border-radius: 10px;
   margin-bottom: 15px;
+}
+
+/* encadré numéroté*/
+div.theorem {
+  padding: 0.5em;
+  background: #e9c8e1;
+  color: #63003c;
+  border: 2px solid #63003c;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-style: normal;
+}
+
+span.theorem{
+  width: 100%;
+  display: inline-block;
+  padding-bottom: 12px;
 }
 
 .center {

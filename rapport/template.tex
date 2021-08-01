@@ -90,6 +90,20 @@
   arc=4pt
 }
 
+\NewEnviron{encadre_num}[2][true]{%
+\begin{mdframed}[style=symmaryboxstyle,
+nobreak=#1,
+frametitle={%
+      \tikz[baseline=(current bounding box.east),outer sep=0pt]
+      \node[titlestyle,anchor=east]
+    {Summary --- #2};}
+]
+\vspace{-0.5em}
+\BODY
+\end{mdframed}
+}
+
+
 % Enlever les sous-titres des annexes dans le toc Kim
 % \newcommand{\stoptocwriting}{%
 %   \addtocontents{toc}{\protect\setcounter{tocdepth}{-5}}}

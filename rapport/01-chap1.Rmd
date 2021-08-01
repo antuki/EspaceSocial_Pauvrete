@@ -1,4 +1,4 @@
-# Dimensions de la pauvreté : perspectives théoriques {#chap1}
+# Dimensions de la pauvreté : perspectives théoriques {#sec:chap1}
 
 S’il est désormais largement reconnu que la pauvreté est multidimensionnelle, l’identification de ses différentes dimensions et de la manière dont elles interagissent ne fait pas consensus. Dans cette revue de littérature^[Cette revue de littérature a été guidée et facilitée par l'excellent article de blog de  @auzuret2020signifie], nous présenterons tout d’abord les différentes théories et mesures de la pauvreté (partie \@ref(sec:multidim)). Puis, dans la partie \@ref(sec:pauvsubj), nous décrirons plus précisément l’approche subjective de la pauvreté, développée en particulier dans le cas de la France dans @duvoux2018qui. Enfin, ces différents éléments nous amèneront à exposer la démarche de ce mémoire en partie \@ref(sec:objmem) visant à l'étude de l'interaction entre les dimensions de la pauvreté présentes dans le Baromètre d'opinion de la Drees, base de données que nous mobilisons. 
 
@@ -84,7 +84,7 @@ knitr::include_graphics("figures/fig_atd.png")
 :::
 
 
-Dans le cadre de ce mémoire de Master 2, nous avons donc cherché à  reconstruire empiriquement l’espace social de la pauvreté en mobilisant les différentes dimensions identifiées dans la littérature présentée dans ce chapitre \@ref(chap1). Pour cela, nous mobiliserons les données du Baromètre d’opinion de la Drees, comme Duvoux et Papuchon 2018, afin de faire intervenir la dimension subjective de la pauvreté. Nous tenterons de répondre à cet objectif grâce à des méthodes économétriques robustes, faisant notamment intervenir des analyses en classes latentes. Cette modélisation synthétique du phénomène de pauvreté devrait permettre de prolonger les travaux de Duvoux et Papuchon en situant socialement le rôle de chacune des dimensions de la pauvreté, en particulier la pauvreté subjective. 
+Dans le cadre de ce mémoire de Master 2, nous avons donc cherché à  reconstruire empiriquement l’espace social de la pauvreté en mobilisant les différentes dimensions identifiées dans la littérature présentée dans ce chapitre \@ref(sec:chap1). Pour cela, nous mobiliserons les données du Baromètre d’opinion de la Drees, comme Duvoux et Papuchon 2018, afin de faire intervenir la dimension subjective de la pauvreté. Nous tenterons de répondre à cet objectif grâce à des méthodes économétriques robustes, faisant notamment intervenir des analyses en classes latentes. Cette modélisation synthétique du phénomène de pauvreté devrait permettre de prolonger les travaux de Duvoux et Papuchon en situant socialement le rôle de chacune des dimensions de la pauvreté, en particulier la pauvreté subjective. 
 
 ### Problématique 
 

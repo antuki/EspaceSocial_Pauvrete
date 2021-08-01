@@ -19,7 +19,7 @@ fig_chap1_compa20152019
 En parallèle, la pauvreté objective -- qui correspond à la proportion de Français en dessous du seuil de pauvreté (seuil de 60 % du revenu médian^[Cet indicateur ne correspond pas aux données nationales officielles mais à un calcul avec les données du Baromètre. La source qui fait référence en France pour le taux de pauvreté (Insee, ERFS) donne, elle, des taux en légère augmentation depuis 2015 :  14,3 % pour 2015, 13,9 % pour 2016, 14,1 % pour 2017 et 14,8 % pour 2018.]) diminue légèrement et atteint 14 % en 2019. Enfin, 44 % des Français jugent en 2019 ne pas être suffisamment aidés par les pouvoirs publics^[Réponse « Vous auriez besoin d’être aidé(e) davantage par les pouvoir publics » à la question `PE15` : « Actuellement, compte tenu de votre situation globale, du montant des aides publiques (RSA, allocations familiales, aides au logement), et du montant de vos impôts, vous considérez que… ». Cette question est posée uniquement en **années paires**.].
 
 
-Professionnellement, le fait d’être à la recherche d’un emploi ou sans activité professionnelle augmente significativement les chances toutes choses par ailleurs de se sentir pauvre par rapport au fait d’être en CDI à temps plein. La moitié des Français appartenant à ces deux catégories indiquent se sentir pauvre (figure \@ref(fig:figstatactevol)). Cette exposition forte au sentiment de pauvreté conforte les théories de Castel (@castel2004insecurite et @castel2014metamorphoses) selon lesquelles les populations exclues du marché du travail auraient un risque accru d’insécurité sociale^[Il faut également considérer que le sentiment de pauvreté révèle principalement un sentiment d’insécurité sociale, or on a vu en partie \@ref(sec:limitesduvoux) que @paugam2020se insiste également sur le rôle de la charge institutionnelle de l’assistance.] (revenus instables rendant difficile la projection vers l’avenir). En revanche, le statut d’emploi précaire ne ressort plus significativement différent du CDI à temps plein sur la période 2016-2019 alors qu’il l’était sur la période 2015-2017.
+Professionnellement, le fait d’être à la recherche d’un emploi ou sans activité professionnelle augmente significativement les chances toutes choses par ailleurs de se sentir pauvre par rapport au fait d’être en CDI à temps plein. La moitié des Français appartenant à ces deux catégories indiquent se sentir pauvre (figure \@ref(fig:figstatactevol)). Cette exposition forte au sentiment de pauvreté conforte les théories de Castel (@castel2004insecurite et @castel2014metamorphoses) selon lesquelles les populations exclues du marché du travail auraient un risque accru d’insécurité sociale^[Il faut également considérer que le sentiment de pauvreté révèle principalement un sentiment d’insécurité sociale, or on a vu en partie \@ref(sec:limitesduvoux) que @paugam2020se insiste également sur le rôle de la charge institutionnelle de l’assistance.] (revenus instables rendant difficile la projection vers l’avenir). En revanche, le statut d’emploi précaire ne ressort plus significativement différent du CDI à temps plein sur la période 2015-2019 alors qu’il l’était sur la période 2015-2017.
 
 ```{r figstatactevol, fig.cap="Evolution du sentiment de pauvreté selon le statut d'activité", fig.height=4}
 fig_statactevol <- readRDS("figures/fig_statactevol.RDS")
@@ -34,7 +34,7 @@ fig_statactevol
 
 
 
-Au-delà du statut d’activité, le tableau \@ref(tab:tabcompa) révèle un effet également de la classe sociale par la significativité positive d’appartenir aux catégories professionnelles d’ouvriers et d’employés. Près d’un ouvrier ou ancien ouvrier sur trois et d’un employé ou ancien employé sur cinq se déclarent pauvre en 2019 (figure \@ref(fig:figstatactevol)), avec des écarts qui se creusent avec les autres professions depuis 2015. C’est le cas en particulier pour les ouvriers, dont le coefficient de la régression devient significatif sur la période 2016-2019 alors qu’il ne l’était pas pour la période précédente. 
+Au-delà du statut d’activité, le tableau \@ref(tab:tabcompa) révèle un effet également de la classe sociale par la significativité positive d’appartenir aux catégories professionnelles d’ouvriers et d’employés. Près d’un ouvrier ou ancien ouvrier sur trois et d’un employé ou ancien employé sur cinq se déclarent pauvre en 2019 (figure \@ref(fig:figstatactevol)), avec des écarts qui se creusent avec les autres professions depuis 2015. C’est le cas en particulier pour les ouvriers, dont le coefficient de la régression devient significatif sur la période 2015-2019 alors qu’il ne l’était pas pour la période précédente. 
 
 
 ```{r figpcsevol, fig.cap="Evolution du sentiment de pauvreté selon la catégorie professionnelle", fig.height=4}
@@ -82,7 +82,7 @@ kableExtra::kable_styling(
   ) %>%
      kableExtra::footnote(general = c(paste0("Modèle 2015-2017 : N = ",
                                  "8460"," et $R^2$ ajusté = ","24,8"," %",
-                                 " / Modèle 2016-2019 : N = ",
+                                 " / Modèle 2015-2019 : N = ",
                                  "13590"," et $R^2$ ajusté = ","25,5"," %."), 
                           "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
                           ))
@@ -97,7 +97,7 @@ tab_compa
 
 *Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
-*Lecture : Entre 2015 et 2017 (période d'étude de @duvoux2018qui), toutes les autres variables de cette régression étant égales par ailleurs, le risque pour une personne appartenant au premier quintile de niveau de vie de se déclarer pauvre plutôt que le contraire est 1,65 fois celui d'une personne du deuxième quintile. Ce rapport est de 1,48 sur la période 2016-2019 (période de référence pour ce mémoire).* 
+*Lecture : Entre 2015 et 2017 (période d'étude de @duvoux2018qui), toutes les autres variables de cette régression étant égales par ailleurs, le risque pour une personne appartenant au premier quintile de niveau de vie de se déclarer pauvre plutôt que le contraire est 1,65 fois celui d'une personne du deuxième quintile. Ce rapport est de 1,48 sur la période 2015-2019 (période de référence pour ce mémoire).* 
 
 *Note : Les résultats sont numériquement légèrement différents (mais les messages sont les mêmes) que dans @duvoux2018qui car nous avons ajouté la catégorie professionnelle "Aucune catégorie professionnelle" pour être exhaustif dans l'ensemble des modalités.*
 
@@ -119,36 +119,61 @@ S’agissant de la mesure de la position sociale, la *dominance approach* (@erik
 
 Or, @cayouette2019saisir démontrent, grâce à des analyses géométriques des données et classifications réalisées sur deux enquêtes distinctes de la statistique publique^[ Il s’agit de deux enquêtes nationales représentatives : « Trajectoires et origines » (TeO, Ined/Insee, 2008) et le « Panel d’élèves entrant dans le secondaire en 2007 » (DEPP-MEN).], que tenir compte des configurations familiales permet un pouvoir explicatif supérieur à celui des approches classiques. Depuis peu, des travaux de rénovation de la nomenclature des professions et catégories socioprofessionnelles (PCS) sont d’ailleurs en cours de finalisation dans la statistique publique française (@eidelman2019renovation), incluant une « PCS Ménage », permettant d’analyser les inégalités sociales. Il faudra attendre encore quelques années pour que cette approche devienne la norme dans les enquêtes.
 
-Même si les données du Baromètre d’opinion ne sont pas les plus adaptées pour étudier avec précision la composition des ménages et son effet sur la pauvreté, elles permettent toutefois d’observer, en interrogeant les Français sur plusieurs niveaux de perception du RSA (soi-même, au sein du ménage, au sein de la famille, et dans son entourage), que chaque niveau a son influence (coefficients significatifs dans le tableau \@ref(tab:tabrsa)) sur le sentiment de pauvreté, le niveau individuel ayant celui qui a le plus gros effet. 
+Même si les données du Baromètre d’opinion ne sont pas les plus adaptées pour étudier avec précision la composition des ménages et son effet sur la pauvreté, elles permettent toutefois d’observer, en interrogeant les Français sur plusieurs niveaux de perception du RSA (soi-même, au sein du ménage, au sein de la famille, et dans son entourage), que chaque niveau a son influence (coefficients significatifs dans le tableau \@ref(tab:tabrsa2)) sur le sentiment de pauvreté, le niveau individuel ayant celui qui a le plus gros effet. 
 
+```{r tabrsa1}
+tab_rsa1 <- readRDS("figures/tab_rsa1.RDS") 
 
-```{r tabrsa}
-tab_rsa <- readRDS("figures/tab_rsa.RDS") 
-
-tab_rsa <- tab_rsa %>% 
-  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, ménage et entourage) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+tab_rsa1 %>% 
+  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, ménage) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
-  kableExtra::footnote(c(paste0("N = ",
-                                 "14612"," et $R^2$ ajusté = ",
-                              "6,1"," %."),
-                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-                         ) %>% 
-  # kableExtra::kable_paper("striped", full_width = F) %>%
-  kableExtra::pack_rows("Individu", 1, 2) %>%
-kableExtra::pack_rows("Ménage", 3, 4) %>% 
-  kableExtra::pack_rows("Famille", 5, 6) %>% 
-  kableExtra::pack_rows("Hors famille", 7, 8) 
+  kableExtra::footnote(c(paste0("Niveau individu : N = ",
+                                 "14613"," et $R^2$ ajusté = ","8,0"," %",
+                                 " / Niveau ménage : N = ",
+                                 "14634"," et $R^2$ ajusté = ",
+                              "8,3"," %."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                         )) %>% 
+  kableExtra::kable_paper("striped", full_width = F) %>%
+  kableExtra::pack_rows("Perception du RSA", 1, 2) %>%
+  kableExtra::pack_rows("Structure familiale (contrôle)",3,8) 
 
-tab_rsa
+
 ```
 
 :::{.note data-latex=""} 
 *Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
 
-*Source : Baromètre d’opinion de la DREES, 2016-2019.*
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
-*Lecture : Entre 2016 et 2019, toutes les autres variables de cette régression étant égales par ailleurs, le risque pour une personne dont le ménage est bénéficiaire du RSA de se déclarer pauvre plutôt que le contraire est 2,62 fois celui d'une personne non bénéficiaire.* 
+*Note : A structure familiale fixée, le fait d'indiquer percevoir soi-même le RSA multiplie par 7 les chances d'indiquer se sentir pauvre. Le percevoir au niveau de son ménage, multiplie les chances par 5.*
+
+:::
+
+```{r tabrsa2}
+tab_rsa2 <- readRDS("figures/tab_rsa2.RDS") 
+
+tab_rsa2 %>% 
+  kable(caption="Mesure de l'effet d'être bénéficiaire du RSA à différents niveaux (individu, famille et hors famille) sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
+  kableExtra::column_spec(1, width = "6cm") %>% 
+  kableExtra::column_spec(2, width = "2cm") %>%
+  kableExtra::footnote(c(paste0("N = ",
+                              "14613"," et $R^2$ ajusté = ",
+                              "9,1"," %."), 
+                         "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+                         ) %>% 
+  kableExtra::kable_paper("striped", full_width = F) %>%
+  kableExtra::pack_rows("Individu", 1, 2) %>%
+  kableExtra::pack_rows("Famille", 3, 4) %>% 
+  kableExtra::pack_rows("Hors famille", 5, 6) %>% 
+  kableExtra::pack_rows("Structure familiale (contrôle)",7,12) 
+
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
 :::
 
@@ -163,23 +188,25 @@ S’agissant de la dimension monétaire de la pauvreté, le quintile de niveau d
 ```{r tabmon}
 tab_mon <- readRDS("figures/tab_mon.RDS") 
 
-tab_mon <- tab_mon %>% 
+tab_mon %>% 
   kable(caption="Mesure de l'effet de la pauvreté monétaire sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
                               "13672"," et $R^2$ ajusté = ",
-                              "18,3"," %."), 
+                              "20,0"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-                         ) 
+                         )  %>% 
+  # kableExtra::kable_paper("striped", full_width = F) %>%
+  kableExtra::pack_rows("Pauvreté monétaire", 1, 5) %>%
+  kableExtra::pack_rows("Structure familiale (contrôle)",16,21) 
 
-tab_mon
 ```
 
 :::{.note data-latex=""} 
 *Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
 
-*Source : Baromètre d’opinion de la DREES, 2016-2019.*
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
 :::
 
@@ -188,23 +215,23 @@ S’agissant de la pauvreté institutionnelle, le contour choisi est un peu plus
 ```{r tabinst}
 tab_inst <- readRDS("figures/tab_inst.RDS") 
 
-tab_inst <- tab_inst %>% 
+tab_inst %>% 
   kable(caption="Mesure de l'effet de la pauvreté institutionnelle sur le sentiment de pauvreté", booktabs = TRUE, longtable = FALSE) %>%  
   kableExtra::column_spec(1, width = "6cm") %>% 
   kableExtra::column_spec(2, width = "2cm") %>%
   kableExtra::footnote(c(paste0("N = ",
                               "14613"," et $R^2$ ajusté = ",
-                              "12,2"," %."), 
+                              "14,8"," %."), 
                          "* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-                         ) 
-
-tab_inst
+                         ) %>% 
+  kableExtra::pack_rows("Pauvreté institutionnelle", 1, 5) %>%
+  kableExtra::pack_rows("Structure familiale (contrôle)",13,18) 
 ```
 
 :::{.note data-latex=""} 
 *Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
 
-*Source : Baromètre d’opinion de la DREES, 2016-2019.*
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
 :::
 
@@ -240,6 +267,25 @@ tab_final21
 :::{.note data-latex=""} 
 *Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
 
-*Source : Baromètre d’opinion de la DREES, 2016-2019.*
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
+
+:::
+
+
+```{r tabpauvviefam}
+tab_pauvviefam <- readRDS("figures/tab_pauvviefam.RDS") 
+
+tab_pauvviefam %>%
+  kable(caption="Indicateurs de pauvreté subjective selon la situation familiale pour les personnes appartenant aux deux premiers quintiles de niveau de vie") %>%
+   kableExtra::column_spec(1, width = "6cm") %>%
+   kableExtra::column_spec(2:3, width = "4cm") %>%
+   kableExtra::row_spec(7, bold = TRUE)
+
+```
+
+:::{.note data-latex=""} 
+*Champ : Personnes dont le ménage appartient aux deux premiers quintiles de niveau de vie, d’au moins 18 ans résidant en France métropolitaine.*
+
+*Source : Baromètre d’opinion de la DREES, 2015-2019.*
 
 :::

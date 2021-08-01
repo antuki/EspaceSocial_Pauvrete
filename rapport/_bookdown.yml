@@ -1,8 +1,6 @@
 book_filename: "M2_ANTUNEZ_SQD"
 download: [
-    ["M2_ANTUNEZ_SQD.pdf", "PDF"],
-    ["M2_ANTUNEZ_SQD.epub", "EPUB"],
-    ["M2_ANTUNEZ_SQD.docx", "Word"]
+    ["M2_ANTUNEZ_SQD.pdf", "PDF"]
   ]
 delete_merged_file: true
 language:
@@ -10,7 +8,7 @@ language:
     fig: "Figure "
     tab: 'Tableau '
     eq: 'Équation '
-    thm: 'Théoreme '
+    thm: 'Encadré '
     lem: 'Lemme '
     cor: 'Corollaire '
     prp: 'Proposition '
