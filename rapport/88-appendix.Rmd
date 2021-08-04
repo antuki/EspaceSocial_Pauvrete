@@ -469,18 +469,17 @@ Cette intuition de Spearman est d’ordre psychologique et est peu basée sur la
 Une AF se définit par un système (équation \@ref(eq:eq1)) qui comporte autant d’équations linéaires que de variables observées ($p$ variables observées associées à $p$ facteurs uniques) appliquées aux $n$ individus. Chaque variable observée est une fonction linéaire de $m$ facteurs communs  (variables inobservables et latentes qui influencent des variables mesurées et tient comptent de leur corrélations) et d’un facteur unique (variables latentes qui influencent une unique variable mesurée et ne tient pas compte de leur corrélations) décomposé en une composante spécifique (facteur latent qui influence une variable mesurée) et d’une erreur de mesure. L’objectif est alors de comprendre la structure des corrélations entre variables mesurées en estimant les relations entre chaque variable mesurée et les facteurs communs. Mathématiquement :
 
 \begin{equation} 
-
-Y = \Lambda F + ΨE
+Y = \Lambda F + \Psi E
 (\#eq:eq1)
-
 \end{equation}
 
 Avec : 
 
 - $F[n, m]$ la matrice des scores aux m facteurs communs
-- $\Lambda[p, m]$ la matrice de saturation (en anglais *loadings*) dont chaque élément représente l’influence linéaire d’un facteur commun sur une variable observée
+- $\Lambda [p, m]$ la matrice de saturation (en anglais *loadings*) dont chaque élément représente l’influence linéaire d’un facteur commun sur une variable observée
 - $E[n, p]$ la matrice des scores aux p facteurs uniques
-- $Ψ[p, p]$ la matrice diagonale des variances uniques des variables observées (définies positives). 
+- $\Psi [p, p]$ la matrice diagonale des variances uniques des variables observées (définies positives). 
+
 
 Comme le nombre de variables inconnues (les $m$ facteurs communs et $p$ facteurs uniques) est supérieur au nombre de variables connues ($p$ variables observées), le modèle est indéterminé. Différentes hypothèses supplémentaires sont nécessaires pour obtenir une formule pour la matrice de corrélations $R$ : 
 
@@ -491,19 +490,14 @@ Comme le nombre de variables inconnues (les $m$ facteurs communs et $p$ facteurs
 L’équation fondamentale de l’AF s’écrit alors (@mulaik2009foundations) :
 
 \begin{equation} 
-R = \Lambda \Phi \Lambda’ + \Psi^2
+R = \Lambda \Phi \Lambda' + \Psi^2
 (\#eq:eq2)
 \end{equation}
 
-Avec : 
-
--	$R[p, n]$ la matrice de corrélation des p variables observées
--	$\Phi[p, p]$ la matrice de corrélation entre facteurs communs
-
-Si l’on suppose que les facteurs communs sont orthogonaux, alors $\Phi=I_p$ et les $\Lambda\Lambda’$ correspondent aux communautés des variables observées et on a :
+Si l’on suppose que les facteurs communs sont orthogonaux, alors $\Phi=I_p$ et les $\Lambda\Lambda'$ correspondent aux communautés des variables observées et on a :
 
 \begin{equation} 
-R = \Lambda \Lambda’ + \Psi^2
+R = \Lambda \Lambda' + \Psi^2
 (\#eq:eq3)
 \end{equation}
 
@@ -527,26 +521,34 @@ y = \Lambda f + e
 
 Avec : 
 
--	$y[p, 1]$ un vecteur aléatoire de p variables observées de moyenne $μ=0$ et de matrice de covariance $\Sigma$ sur la population
+-	$y[p, 1]$ un vecteur aléatoire de p variables observées de moyenne $\mu=0$ et de matrice de covariance $\Sigma$ sur la population
 -	$f [m, 1]$ un vecteur aléatoire de $m \leq p-1$ facteurs communs
 -	$\Lambda [p, m]$ une matrice des saturations des $p$ variables observées sur les m facteurs et
 -	$E[p, 1]$ un vecteur aléatoire des variances uniques des $p$ variables observées. 
 
 Avec les hypothèses supplémentaires suivantes : 
 
--	$E(f) = E(e) = E(fe’) = 0$
--	$E(ee’) = \Psi^2$
+-	$E(f) = E(e) = E(fe') = 0$
+-	$E(ee') = \Psi^2$
 
-Et si $E(ff’) = I_m$, alors on retrouve :
+Et si $E(ff') = I_m$, alors on retrouve :
 
 \begin{equation} 
-\Sigma = \Lambda \Lambda’ + \Psi^2
+\Sigma = \Lambda \Lambda' + \Psi^2
 (\#eq:eq5)
 \end{equation}
 
-Le modèle factoriel représente maintenant l’hypothèse statistique testable que la matrice de covariance de la population a la structure impliquée par l’équation \@ref(eq:eq5) pour un nombre prescrit $m$ de facteurs. Il s’agit alors, si l’on suppose correcte l’équation fondamentale de l’AF sur la population, de trouver les meilleures estimations au sens du maximum de vraisemblance qui minimisent la distance entre la matrice de covariance observée $S$ et la matrice de covariance  $\hat \Sigma = \hat{\Lambda}_m \hat{\Lambda}_m’ + \hat {\Psi}^2$ impliquée par le modèle en facteurs communs où $\hat{\Lambda}_m$ et $\hat {\Psi}^2$ sont les estimations des valeurs « vraies » de $\Lambda_m$ et $\Psi^2$ dans la population. 
+Le modèle factoriel représente maintenant l’hypothèse statistique testable que la matrice de covariance de la population a la structure impliquée par l’équation \@ref(eq:eq5) pour un nombre prescrit $m$ de facteurs. Il s’agit alors, si l’on suppose correcte l’équation fondamentale de l’AF sur la population, de trouver les meilleures estimations au sens du maximum de vraisemblance qui minimisent la distance entre la matrice de covariance observée $S$ et la matrice de covariance  $\hat \Sigma = \hat{\Lambda}_m \hat{\Lambda}_m' + \hat {\Psi}^2$ impliquée par le modèle en facteurs communs où $\hat{\Lambda}_m$ et $\hat {\Psi}^2$ sont les estimations des valeurs « vraies » de $\Lambda_m$ et $\Psi^2$ dans la population. 
+
+
+
+Avec : 
+
+-	$R[p, n]$ la matrice de corrélation des p variables observées
+-	$\Phi [p, p]$ la matrice de corrélation entre facteurs communs
 
 ####  La détermination du nombre de facteurs communs
+
 Il faut ensuite déterminer le nombre de facteurs communs nécessaires pour obtenir une matrice de saturation reconstruisant le mieux possible la matrice de corrélation entre variables observées (équation \@ref(eq:eq3)). Comme pour l’analyse en composantes principales, de nombreuses règles et procédures existent pour déterminer le nombre optimal de facteurs. Cette procédure est, en outre, ici d’autant plus importante que le nombre de facteurs choisis modifie les résultats obtenus alors que, dans une ACP, ce choix n’influe qu’au moment d’effectuer une interprétation des résultats puisqu’il est fait a posteriori. C’est pourquoi il est recommandé de s’appuyer sur plusieurs critères. En voici deux basés sur les valeurs propres de la matrice de corrélations :
 
 1. La règle de Kaiser-Guttman consiste à extraire un nombre de facteurs égal au nombre de valeurs propres supérieures ou égales à 1 (@guttman1954some; @kaiser1960application). 
@@ -567,6 +569,7 @@ Les méthodes analytiques de rotation qui apparurent par la suite reposent sur d
 ::::{.encadre data-latex=""} 
 A écrire ultérieurement. Plus ou moins développé en fonction de si on traite de ce sujet dans le mémoire. 
 ::::
+
 
 ## Méthodes d’Analyses factorielles {#sec:annexeAFACM}
 
@@ -617,9 +620,8 @@ Même s’il y a souvent assimilation entre analyse factorielle et analyse en fa
 
 Les méthodes d’analyse factorielle -- ACP pour les variables quantitatives et son équivalent ACM pour les variables qualitatives -- ont pour principal objectif la réduction de la dimension des données, c’est-à-dire construire de nouvelles variables, ordonnées par importance et résumant le plus d’information possible à partir des variables initiales. Dans ces méthodes, la variance unique est considérée inexistante et la variance commune devient alors la variance totale.  Chaque variable est simplement mesurée comme une fonction linéaire des composantes principales et la structure des corrélations entre variables n’est pas nécessairement conservée. 
 
-A l’inverse, l’AF différencie variances commune et unique afin de chercher à identifier des facteurs latents. En Elle cherche, contrairement aux méthodes d’analyse factorielle, à comprendre la structure des corrélations (termes non diagonaux de la matrice \Sigma) entre les variables mesurées dans la base de données et ne se focalisent pas principalement sur la variance (termes diagonaux). Les facteurs construits tiennent ainsi compte de la variance commune plutôt que totale comme dans une analyse factorielle et la corrélation entre deux variables dépend alors de la similarité de leur relation avec les facteurs latents.
+A l’inverse, l’AF différencie variances commune et unique afin de chercher à identifier des facteurs latents. En Elle cherche, contrairement aux méthodes d’analyse factorielle, à comprendre la structure des corrélations (termes non diagonaux de la matrice $\Sigma$) entre les variables mesurées dans la base de données et ne se focalisent pas principalement sur la variance (termes diagonaux). Les facteurs construits tiennent ainsi compte de la variance commune plutôt que totale comme dans une analyse factorielle et la corrélation entre deux variables dépend alors de la similarité de leur relation avec les facteurs latents.
 
 Malgré ces différences, les méthodes d’analyse factorielle peuvent dans certains cas se substituer à l’analyse en facteurs communs. De nombreux articles, comme @velicer1990component, indiquent même qu’il y a en pratique très peu de différences entre les deux approches dans la majeure partie des cas^[@velicer1990component vont même plus loin en indiquant que les différences entre méthodes se font surtout sentir quand les modèles s'estiment mal, avec des loadings très faibles et que ces différences sont souvent en défaveur de l'AF.] et que, même mathématiquement, ces méthodes sont voisines. Les méthodes d’analyse factorielle ont aussi comme gros avantage un fonctionnement computationnel simplifié car elles utilisent des méthodes d’estimations algébriques, plus simples que des méthodes types maximum de vraisemblance mobilisées en AF. Les méthodes d’AF se confrontent parfois aux « Heywood cases » (évoqués plus haut), c’est-à-dire des situations où les communautés des variables mesurées sont supérieures ou égales à 1 et faussent la modélisation (une variable ne peut pas résumer plus de 100 % de la variance).
 
 Mais même si ces deux approches produisent parfois des résultats similaires, ce n’est pas le cas dans de nombreux contextes : quand les données contiennent des erreurs de mesure (rendues compte dans les AF mais pas en analyse factorielle), ou des valeurs extrêmes (non supportées en analyse factorielle). Par ailleurs, les modèles en facteurs communs peuvent être testés car supposent certaines hypothèses structurelles sur les données. Le modèle est rejeté si mal estimé par les données, chose qui ne peut pas être faite avec des analyses factorielles. 
-
