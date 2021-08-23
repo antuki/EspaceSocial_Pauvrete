@@ -1914,8 +1914,8 @@ saveRDS(tab_compa,"../rapport/figures/tab_compa.RDS")
 tab_compa %>% 
   kable(caption="Réactualisation du modèle 1 de Duvoux et Papuchon (2018)",
         booktabs = TRUE, longtable = TRUE) %>%  
-   kableExtra::column_spec(1, width = "4cm") %>% 
-   kableExtra::column_spec(2, width = "6cm") %>% 
+   kableExtra::column_spec(1, width = "3cm") %>% 
+   kableExtra::column_spec(2, width = "5cm") %>% 
    kableExtra::column_spec(3:4, width = "2cm") %>% 
 kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
      kableExtra::footnote(paste0("Modèle 2015-2017 : N = ",
@@ -1963,8 +1963,8 @@ saveRDS(tab_pauvviefam,"../rapport/figures/tab_pauvviefam.RDS")
 
 tab_pauvviefam %>%
   kable(caption="Indicateurs de pauvreté subjective selon la situation familiale pour les personnes appartenant aux deux premiers quintiles de niveau de vie") %>%
-   kableExtra::column_spec(1, width = "6cm") %>%
-   kableExtra::column_spec(2:3, width = "4cm") %>%
+   kableExtra::column_spec(1, width = "3cm") %>% 
+   kableExtra::column_spec(2, width = "5cm") %>% 
    kableExtra::row_spec(7, bold = TRUE)
 
 tab_prestaviefam <- bind_cols(
