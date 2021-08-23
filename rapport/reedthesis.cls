@@ -165,10 +165,15 @@
                       \@afterheading
                     \fi}
 
+% \newcommand{\RTcleardoublepage}{
+% 	\clearpage\if@twoside \ifodd\c@page\else
+% 	\thispagestyle{empty}\hbox{}\newpage
+% 	\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+
+% Pour eviter les nombreux sauts de page entre chap.
 \newcommand{\RTcleardoublepage}{
-	\clearpage\if@twoside \ifodd\c@page\else
-	\thispagestyle{empty}\hbox{}\newpage
-	\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+	\clearpage
+ }
 
 \let\RToldcleardoublepage\cleardoublepage
 \renewcommand{\cleardoublepage}{\RTcleardoublepage}

@@ -5,9 +5,7 @@
 
 # Extraits du questionnaire du Baromètre d'opinion {#annexequestio}
 
-
 ## Pauvreté monétaire
-
 
 **SDREVCL** *filtre : non*  SOCLE 2012 -  
 
@@ -448,7 +446,7 @@ Parmi les situations suivantes, quelle est celle qui correspond à la vôtre ?
 # Analyses factorielles et Analyses en facteurs communs {#annexeAF}
 
 ::::{.encadre data-latex=""} 
-Les parties \@ref(sec:annexeAFAFE) et  \@ref(sec:annexeAFAFE) correspondent à une synthèse de @juhel2019quelques,  la partie \@ref(sec:annexeAFACMdescri) à une synthèse de la documentation wikipédia de l’ACM et la partie \@ref(sec:annexeAFACMcompa) de @fabrigar1999evaluating.
+Les parties \@ref(sec:annexeAFAFE) et  \@ref(sec:annexeAFAFC) correspondent à une synthèse de @juhel2019quelques,  la partie \@ref(sec:annexeAFACMdescri) à une synthèse de la documentation wikipédia de l’ACM et la partie \@ref(sec:annexeAFACMcompa) de @fabrigar1999evaluating.
 ::::
 
 ## Analyse en facteurs communs exploratoire (AFE) {#sec:annexeAFAFE}
@@ -466,7 +464,30 @@ Cette intuition de Spearman est d’ordre psychologique et est peu basée sur la
 
 ### Formalisation mathématique
 
-Une AF se définit par un système (équation \@ref(eq:eq1)) qui comporte autant d’équations linéaires que de variables observées ($p$ variables observées associées à $p$ facteurs uniques) appliquées aux $n$ individus. Chaque variable observée est une fonction linéaire de $m$ facteurs communs  (variables inobservables et latentes qui influencent des variables mesurées et tient comptent de leur corrélations) et d’un facteur unique (variables latentes qui influencent une unique variable mesurée et ne tient pas compte de leur corrélations) décomposé en une composante spécifique (facteur latent qui influence une variable mesurée) et d’une erreur de mesure. L’objectif est alors de comprendre la structure des corrélations entre variables mesurées en estimant les relations entre chaque variable mesurée et les facteurs communs. Mathématiquement :
+Une AF se définit par un système (équation \@ref(eq:eq1)) qui comporte autant d’équations linéaires que de variables observées ($p$ variables observées associées à $p$ facteurs uniques) appliquées aux $n$ individus. Chaque variable observée est une fonction linéaire de $m$ facteurs communs  (variables inobservables et latentes qui influencent des variables mesurées et tient comptent de leur corrélations).
+
+et d’un facteur unique (variables latentes qui influencent une unique variable mesurée et ne tient pas compte de leur corrélations) décomposé en une composante spécifique (facteur latent qui influence une variable mesurée) et d’une erreur de mesure. 
+
+De la même manière, la variance totale se décompose en une somme de deux variances (cf. figure \@ref(fig:decompovar)) :
+
+1. la variance commune (*communality*) qui correspond à la variance partagée par tous les indicateurs d'un même facteur ;
+
+2. la variance unique (inexistante dans le cas d'une ACM) : celle spécifique à chaque indicateur (par exemple la variance spécifique du fait de toucher le RSA au-delà de la variance attribuable à la pauvreté institutionnelle) et celle due aux éventuelles erreurs de mesure.  
+
+```{r decompovar, fig.cap="Décomposition de la variance", out.width="75%"}
+knitr::include_graphics("figures/decompo_var.png")
+```
+
+:::{.note data-latex=""} 
+
+*Source : inspiré du tutoriel de l'UCLA [A Practical Introduction to Factor Analysis: Exploratory Factor Analysis](https://stats.idre.ucla.edu/spss/seminars/introduction-to-factor-analysis/a-practical-introduction-to-factor-analysis/)*
+
+:::
+
+L’objectif est alors de comprendre la structure des corrélations entre variables mesurées en estimant les relations entre chaque variable mesurée et les facteurs communs. Mathématiquement :
+
+
+
 
 \begin{equation} 
 Y = \Lambda F + \Psi E
@@ -510,7 +531,7 @@ Par ailleurs, pour que le modèle soit bien déterminé, on doit avoir $p > \fra
 
 Les paramètres du modèle à estimer à partir des données observées correspondent aux $pm$ saturations des variables observées sur les $m$ facteurs et aux $p$ variances uniques des variables observées, soient en tout $p(m+1)$ paramètres^[Ce calcul suppose que la matrice de corrélation de la population est disponible]. 
 
-La méthode d’extraction la plus connue est algébrique (et non statistique). Il s’agit de l’analyse en axes principaux avec estimation des communautés initiales (*PAF : iterated Principal Axis Factoring*). Cette méthode est conditionnelle aux estimations a priori des communautés et est basée sur l’ACP (@hotelling1933analysis) de la matrice de corrélation réduite $R^* = R – \Psi^2$. Elle présente les avantages de ne nécessiter aucune hypothèse sur la distribution des variables observées, de pouvoir être employée quand la matrice de corrélation n’est pas régulière, de rencontrer moins de problèmes de convergence que des méthodes statistiques et de ne pas conduire à des « cas de Heywood » (variances uniques négatives).
+La méthode d’extraction la plus connue est algébrique (et non statistique). Il s’agit de l’analyse en axes principaux avec estimation des communautés initiales (*PAF : iterated Principal Axis Factoring*). Cette méthode est conditionnelle aux estimations a priori des communautés et est basée sur l’ACP (@hotelling1933analysis) de la matrice de corrélation réduite $R^* = R – \Psi^2$. Elle présente les avantages de ne nécessiter aucune hypothèse sur la distribution des variables observées, de pouvoir être employée quand la matrice de corrélation n’est pas régulière, de rencontrer moins de problèmes de convergence que des méthodes statistiques et de ne pas conduire à des « cas Heywood » (variances uniques négatives).
 
 A partir des années 1960, l’accroissement de la puissance de calcul computationnel rend possible une estimation plus rigoureuse des saturations et des variances uniques. Divers algorithmes d’estimation, désormais statistiques, sont développés pour trouver les valeurs de $\Lambda$ et de $\Psi^2$. Ils sont techniquement complexes mais faciles à mettre en œuvre dans la pratique pour estimer les paramètres d’une AFE. En particulier, @joreskog1967some propose un modèle statistique aléatoire accompagné d’une procédure d’optimisation numérique permettant l’estimation du maximum de vraisemblance^[L’avantage de l’estimation par maximum de vraisemblance est que cette méthode s’accompagne de nombreux indicateurs permettant de comparer la qualité de l’estimation du modèle et de mettre en place des tests de significativité et intervalles de confiance des saturations. Cette méthode repose toutefois sur une hypothèse de normalité multivariée. Pour ces raisons, il est parfois utile d’utiliser d’autres méthodes comme les principaux facteurs.] des paramètres du modèle en facteurs communs. 
 
@@ -566,10 +587,41 @@ Les méthodes analytiques de rotation qui apparurent par la suite reposent sur d
 
 ## Analyse en facteurs communs confirmatoire (AFC) {#sec:annexeAFAFC}
 
-::::{.encadre data-latex=""} 
-A écrire ultérieurement. Plus ou moins développé en fonction de si on traite de ce sujet dans le mémoire. 
-::::
+L’Analyse en facteurs communs confirmatoire (AFC^[A ne pas confondre avec l’acronyme de l’« Analyse factorielle des correspondances », une autre méthode, cette fois-ci d’analyse factorielle, non utilisée ici.] ; @joreskog1969general et @joreskog1971simultaneous) cherche comme l’AFE à reproduire les relations entre des variables observées avec un plus petit nombre de facteurs mais les deux méthodes diffèrent dans leur philosophie. Alors que l’objectif de l’AFE est de déterminer le nombre de facteurs communs, corrélés ou pas par hypothèse, et d’identifier des indicateurs notoires des facteurs parmi les variables observées (approche *data-driven*), celui de l’AF confirmatoire est de tester empiriquement l’hypothèse d’une structure factorielle prédéfinie par le chercheur. Le cadre théorique doit donc être suffisamment explicite pour pouvoir incorporer des hypothèses structurales dans la spécification et l’estimation du modèle afin de tester celles-ci directement. 
 
+Il est parfois utile de mobiliser AFE et AFC dans une même recherche. En pratique, on utilise souvent une AFE avec rotation oblique avant une AFC pour voir si les hypothèses structurales théoriques que l’on formule se confirment bien empiriquement. On peut également utiliser une AFE sur une première moitié de l’échantillon pour spécifier un modèle confirmatoire que l’on estime sur la deuxième partie de l’échantillon par une AFC.
+
+Le modèle de l’AF confirmatoire est le même que celui de l’AF exploratoire en facteurs obliques. On considère toujours $m$ facteurs communs (dont on fixe cette fois-ci le nombre) pour lesquels il faut estimer la matrice de saturation $\Lambda$.
+
+\begin{equation} 
+\Sigma = \Lambda \Phi \Lambda' + \Theta 
+(\#eq:eq6)
+\end{equation}
+
+Avec : 
+
+-	$\Sigma [p, p]$ la matrice de covariance des p variables observées ;
+-	$\Lambda [p, m]$ la matrice creuse^[On fixe à 0 les saturations des variables observées sur les facteurs dont elles ne sont pas des indicateurs. Les paramètres estimés sont dits libérés.] de saturation des p variables observées sur les m facteurs ;
+-	$\Phi[p, p]$ la matrice de covariance entre facteurs communs (qui peuvent ou non être corrélés) ;
+-	$\Theta [p, p]$ la matrice de covariance des erreurs des p variables observées^[Pour rappel, dans l’expression de $\Sigma$ en AFE, $\Theta$ était remplacé par $\Psi^2$ telle que $\Psi [p, p]$ était la matrice diagonale des variances uniques des variables observées, l’AF confirmatoire accepte l’hypothèse d’erreurs corrélées, par exemple en cas d’erreurs de mesures.].
+
+A ces restrictions structurales, dont le bien-fondé peut être testé, s’ajoutent des contraintes d’identification du modèle qui sont nécessaires à l’obtention d’une solution unique. La métrique des facteurs est identifiée en imposant $m$, par exemple en fixant une saturation par facteur à une constante non nulle (1 en général) ou en fixant à 1 les variances des facteurs comme dans l’AF exploratoire. L’indétermination de la rotation est résolue en imposant au moins $m(m-1)$ contraintes, par exemple en libérant les éléments sous-diagonaux de $\Phi$ et en fixant $(m-1)$ saturations à 0 par facteur. Le nombre de contraintes d’identification et de restrictions structurales est donc plus élevé dans l’AF confirmatoire que dans l’AF exploratoire (cf. figure \@ref(fig:afeafc)).
+
+```{r afeafc, fig.cap="Analyses en facteurs communs exploratoire (AFE) et confirmatoire (AFC)", out.width="75%"}
+knitr::include_graphics("figures/AFE_AFC.png")
+```
+
+:::{.note data-latex=""} 
+
+*Source : inspiré de @juhel2019quelques*
+
+:::
+
+L’AFC comporte plusieurs étapes. Il faut d’abord, comme dans l’AF exploratoire, sélectionner les variables et les individus. L’étape de spécification consiste à choisir un certain nombre de facteurs et à fixer à 0, éventuellement à contraindre à l’égalité, certains paramètres des matrices $\Lambda$, $\Phi$ et $\Theta$, en s’assurant que le nombre de paramètres à estimer est inférieur ou égal au nombre de degrés de liberté du modèle, lui-même fonction du nombre d’éléments de la matrice de covariance des variables observées. Une fois ces restrictions spécifiées, le modèle est ajusté aux données en employant l’une ou l’autre des méthodes d’estimation offertes par des programmes de modélisation structurale, le plus souvent le maximum de vraisemblance (*ML*), de telle sorte que la matrice de covariance impliquée par le modèle $\hat \Sigma = \hat{\Lambda} \hat{\Phi}  \hat{\Lambda}’ + \hat {\Theta}$ reproduise le mieux possible la matrice de covariance de l’échantillon. L’étape de rotation de $\Lambda$ est ici impossible car elle conduirait à une modification des valeurs des saturations fixées à 0 lors de la spécification du modèle.
+
+L’ajustement du modèle est ensuite évalué au niveau global et au niveau de l’estimation de chaque paramètre. L’ajustement global est mesuré avec un test du $\chi^2$  du rapport de vraisemblance qui conduit au rejet du modèle lorsqu’il est significatif. L’évaluation de l’ajustement global prend également appui sur divers indices d’ajustement (le *Goodness-of-FIt statistic*, le *Root Mean Square Error of Approximation*, le *Standardised Root Mean square Residual*…). Des critères d’information (par exemple l’*Akaike  Information  Criterion*, le *Bayesian Information Criterion*, le Cross-Validation index…) peuvent aussi servir à comparer plusieurs alternatives plausibles du modèle. Si l’ajustement du modèle est de bonne qualité, il est possible d’affirmer que la structure factorielle spécifiée est compatible avec les données sans pouvoir se prononcer pour autant sur l’existence d’autres modèles, non testés, également compatibles avec les données. Si l’ajustement du modèle n’est pas satisfaisant, la structure factorielle pré-spécifiée peut être rejetée avec certitude et l’analyse s’arrête dans une approche strictement confirmatoire. Mais en général, le modèle est à nouveau spécifié en fixant, contraignant à l’égalité ou libérant des paramètres sur la base d’arguments substantiels ou d’éléments empiriques comme les erreurs-types des estimations et les indices de modification (par exemple, en fixant à 0 les paramètres non statistiquement significatifs). Cette « mise à jour » du modèle est alors estimée et son ajustement évalué. Lorsque ces étapes sont répétées jusqu’à obtenir un ajustement acceptable, la différence entre l’AF exploratoire et l’AF confirmatoire s’estompe.
+
+Ces dernières années, les modèles d’AFC ont été intégrés dans des modèles d’équations structurelles pour lesquels les facteurs sont régressés sur d’autres variables observées (« covariables externes »). Ces modèles MIMIC (*multiple indicators multiple causes model* ; @joreskog1975estimation) présentent l’avantage de permettre l’estimation de l’influence statistique de variables observées sur des facteurs sans avoir à calculer de scores factoriels. 
 
 ## Méthodes d’Analyses factorielles {#sec:annexeAFACM}
 

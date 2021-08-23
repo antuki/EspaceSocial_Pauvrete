@@ -9,7 +9,7 @@ output:
   thesisdown::thesis_gitbook: 
     anchor_sections: false
   bookdown::gitbook:
-    css: style.css
+    css: ["style.css", "aqltcss.css"]
     config:
       toc:
         before: |
@@ -42,7 +42,7 @@ twitter-handle: antuki13
 prenom: "Kim"
 nom: "ANTUNEZ"
 lieu: "Paris"
-date: "version du 28/06/2021"
+date: ""
 date_jma: "septembre 2021"
 title: "Construire l'espace social de la pauvreté avec un Baromètre d'opinion"
 subtitle: "Mémoire de Master 2  --- Sociologie Quantitative & Démographie"
@@ -89,8 +89,6 @@ params:
 # (e.g., abstract, acknowledgements) below or use code similar to line 25-26 
 # for the .RMD files. If you are NOT producing a PDF, delete or silence
 # lines 25-39 in this YAML header.
-abstract: '`r if(knitr:::is_latex_output()) paste(readLines(here::here("prelims", "00-abstract.Rmd")), collapse = "\n  ")`'
-acknowledgements: '`r if(knitr:::is_latex_output()) paste(readLines(here::here("prelims", "00--prelim.Rmd")), collapse = "\n  ")`'
 # Specify the location of the bibliography below
 bibliography: bib/thesis.bib
 # Download your specific csl file and refer to it in the line below.
@@ -146,13 +144,14 @@ options(width = 70)
 
 knitr::opts_chunk$set(echo=FALSE,
 	             cache=FALSE,
-               prompt=FALSE,
+               prompt=FALSE, eval = TRUE,
                tidy=FALSE,
                comment=NA,
                message=FALSE,
                warning=FALSE,
                fig.width = 6,
                fig.height = 5,
+	             fig.pos = "!ht", #!H encore plus fort
 	             fig.align = 'center',
 	             dev = c("svg","pdf")
                )
@@ -188,8 +187,164 @@ library(tidyr) #pour pivot_longer
 library(ggplot2) #pour les graphiques
 library(RColorBrewer) #pour les palettes de couleur
 library(ggrepel)
+library(DiagrammeRsvg)
 ```
 
+```{r aqltsetup, include=FALSE, eval = TRUE}
+is_html <- knitr::is_html_output()
+is_latex <- knitr::is_latex_output()
+################################
+########## KNITR ###############
+################################
+library(htmltools)
+latex_emph <- function(entete = "Note", x, sep = "\n\n"){
+  txt <- paste(sprintf("\\emph{%s}", x), collapse = sep)
+  if(length(x)>1){
+    entete <- paste0(entete,"s")
+  }
+  sprintf("\n\\emph{%s} : %s", entete, txt)
+}
+md_framed <- function(x, options){
+  if (!is_latex || is.null(options$mdframed) || !options$mdframed || 
+      is.null(options$fig.cap))
+    return (x)
+  # cap <- options$fig.cap
+  # label <- fig$label
+  # \label{fig:filtersdafcoefs}
+  # \includegraphics[width=3cm,height=3cm]{example-image-a}
+  #     \captionof{figure}{exampleimg}
+  x <- gsub("\\\\begin\\{figure\\}(\\[!?\\w*\\])?",
+            "", x)
+  x <- gsub("\\caption","\\captiontmp", x, fixed = TRUE)
+  # x <- gsub("^(\\n)*", "", x)
+  x <- gsub("\n\n{\\centering",
+            "\\begin{center}", x, fixed = TRUE)
+  x <- sub("} \n\n}","}", x, fixed = TRUE)
+  x <- gsub("\\end{figure}",
+            "\\end{center}", x, fixed = TRUE)
+  x
+}
+
+add_fig_opt_html <- function(x, options, nom_opt){
+  nom_opt_complet <- sprintf("fig.%s", tolower(nom_opt))
+  opt <- options[[nom_opt_complet]]
+  if(!is.null(opt)){
+    first_txt <- tags$p(opt[1], id = nom_opt, class = "title caption")
+    all_txt <- c(list(first_txt),
+                 lapply(opt[-1], tags$p, class = "caption"))
+    txt <- withTags(
+      div(class = "caption", id = nom_opt,
+          tagList(all_txt)
+      )
+    )
+    x <- paste(x,
+               as.character(txt),
+               sep = "\n")
+  }
+  x
+}
+
+add_fig_opt_latex <- function(x, options, nom_opt, 
+                              prefix = nom_opt,
+                              sep_multi = "---", sep_fichier = "\n\n"){
+  if(is.null(prefix)){
+    prefix <- nom_opt
+  }
+  if(is.null(sep_multi)){
+    sep_multi <- "---"
+  }
+  if(is.null(sep_fichier)){
+    sep_fichier <- "\n\n"
+  }
+  nom_opt_complet <- sprintf("fig.%s", tolower(nom_opt))
+  opt <- options[[nom_opt_complet]]
+  if(!is.null(opt)){
+    x <- paste(x,
+               latex_emph(prefix, opt, sep = sep_multi),
+               sep = sep_fichier)
+  }
+  x
+}
+add_footnote_latex <- function(x, options, envir = "figure", remove_envir = TRUE){
+  
+  fin_envir <- sprintf("\\end{%s}", envir)
+  if(length(grep(fin_envir, x, fixed = TRUE)) == 0){
+    return(x)
+  }
+  
+  params <- list(Source = list(),
+                 Champ = list(),
+                 Note = list(sep_multi = "\n\n"),
+                 Lecture = list(prefix = "Note de lecture"))
+  ajouts <- "\\footnotesize"
+  for (opt in names(params)){
+    ajouts <- add_fig_opt_latex(ajouts, options, opt,
+                                prefix = params[[opt]]$prefix,
+                                sep_multi = params[[opt]]$sep_multi,
+                                sep_fichier = params[[opt]]$sep_fichier)
+  }
+  x <- paste0(x, ajouts, "\n\\normalsize")
+  if(remove_envir){
+    x <- sub(fin_envir, "", x, fixed = TRUE)
+    x <- paste0(x, fin_envir)  
+  }
+  x  
+}
+
+add_footnote_html <- function(x, options){
+  for (opt in c("source", "champ", "note", "lecture")){
+    x <- add_fig_opt_html(x, options, opt)
+  }
+  x
+}
+add_footnote_perso <- function(x, options, envir = "figure", remove_envir = TRUE){
+  if(is_latex){
+    res <-  add_footnote_latex(x, options, envir = envir, remove_envir = remove_envir)
+  }else if(is_html){
+    res <-  add_footnote_html(x, options)
+  }else{
+    res <-  x
+  }
+  res
+}
+add_footnote_kable <- function(x, options = knitr::opts_current$get()){
+  if(length(grep("\\end{table}", x, fixed = TRUE)) >0){
+    envir = "table"
+    remove_envir = TRUE
+  } else if(length(grep("\\end{longtable}", x, fixed = TRUE)) >0){
+    envir = "longtable"
+    remove_envir = FALSE
+  } 
+  x <- add_footnote_perso(x, options = options, envir = envir, remove_envir = remove_envir)
+  class(x) <- "knitr_kable"
+  if(is_latex){
+    attr(x, "format") <- "latex"
+  }else if(is_html){
+    attr(x, "format") <- "html"
+  }
+  x
+}
+
+local({
+  hook_plot2 <- knitr::knit_hooks$get('plot')
+  knitr::knit_hooks$set(plot = function(x, options) {
+    if(is.null(options$fig.cap))
+      return(hook_plot2(x, options))
+    if(is_latex){
+      res <-  knitr:::hook_plot_tex(x, options)
+      # res <- md_framed(res, options)
+      # res <- add_footnote_latex(res, options)
+    }else if(is_html){
+      res <- hook_plot2(x, options)
+      # res <- add_footnote_html(res, options)
+    }else{
+      res <-  hook_plot2(x, options)
+    }
+    res <- add_footnote_perso(res, options)
+    md_framed(res, options)
+  })
+})
+```
 <!--
 The ackowledgements, preface, dedication, and abstract are added into the PDF
 version automatically by inputing them in the YAML at the top of this file.
@@ -202,37 +357,19 @@ Alternatively, you can put that content in files like 00--prelim.Rmd and
 "Chapter 0." You can also use {-} for no numbers on chapters.
 -->
 
-# Introduction {.unnumbered}
 
-<!-- - Objet de recherche -->
-<!-- - Problématique -->
-<!-- - Méthodologie -->
-<!-- - Plan (qui spoile les résultats) -->
+# Préface {.unnumbered}
 
+Ce mémoire de recherche a été réalisé dans le cadre de mon **double diplôme** de troisième année à l’École nationale de la statistique et de l'administration économique (**ENSAE**) et de **Master 2 de Sociologie**, parcours Sociologie Quantitative & Démographie (SQD) accrédité Université Paris-Saclay.
 
-Il existe de nombreuses façons de définir et donc de mesurer la pauvreté. On mesure tout d’abord la pauvreté monétaire, indicateur célèbre d’inégalité mesuré notamment par les revenus, le niveau de vie, le patrimoine immobilier et financier. Il y a également en France la pauvreté institutionnelle, c’est-à-dire la relation d’assistance nouée avec l’Etat (bénéficier de prestations sociales). Il existe enfin une approche subjective de la pauvreté, selon laquelle les ménages indiquent par exemple se considérer pauvre (sentiment de pauvreté) ou craindre de le devenir, ou indiquent disposer d’un revenu inférieur au revenu minimum nécessaire pour vivre convenablement.
+J’ai souhaité, au moment du choix de mon sujet et durant la réalisation de mes travaux, allier les compétences acquises par mes deux formations. Les chercheurs en sciences sociales trouveront peut-être que la technique prend un peu trop le pas sur le raisonnement sociologique. Les statisticiens seront peut-être avides d’en savoir plus sur la théorie mathématique sur laquelle repose les méthodes d’analyses en classes latentes. En tous cas, j’ai construit mes travaux dans l’idée de satisfaire ces deux types de profils et j’espère m’en être sortie convenablement !
 
-```{r figintro, fig.cap="Sentiment de pauvreté en fonction du niveau de vie en 2019", fig.height=3, fig.width=6}
-fig_intro <- readRDS("figures/fig_intro.RDS")
-fig_intro
+Côté **sciences sociales**, j’ai fait le choix d’éclairer le phénomène de la pauvreté. Premièrement car c’était un sujet adapté à la méthodologie que je souhaitais découvrir et utiliser. Deuxièmement car le sujet était suffisamment vaste pour que je puisse découvrir la littérature sur le sujet en autodidaxie. Troisièmement car cette revue de littérature me servira probablement dans un de mes futurs postes de statisticienne publique. Quatrièmement parce que j’ai occupé dans le passé un poste de chargée d’étude sur le Baromètre d’opinion de la Drees, qui m’a procuré l’avantage de bien connaître la base de données et les thématiques qui y sont traitées.
 
-```
+Côté **méthodologie statistique**, le cours introductif que j’ai suivi à l’ENSAE m’a donné l’envie de creuser les méthodes à variables latentes. Introduites par les sciences humaines dès le début du XXe siècle mais très peu enseignées en France, vous verrez dans ce mémoire que ces techniques sont un complément de grande valeur aux méthodes plus classiques (économétrie tout comme analyses factorielles). Elles ont pour hypothèse fondamentale l’existence de variables non observables directement dans la base de données (typiquement l’intelligence, et dans notre cas la pauvreté) mais dont on peut mesurer des effets ou des conséquences. Elles sont toutefois complexes, ce qui pose parfois des difficultés de convergence des algorithmes et d’interprétation des résultats ou des différents modèles. 
+Ces travaux n’auraient pas pu voir le jour sans mon directeur de mémoire, **Ivaylo Petev**, qui a su m’encourage à me lancer dans la recherche en sciences sociales tout en développant mon goût pour la technique en partant à la découverte des méthodes en variables latentes. Pour tout cela, je le remercie chaleureusement. Je remercie également **Nicolas Robette** pour avoir accepté d’être le second membre de mon jury et d’avoir manifesté sa curiosité sur ces méthodes. 
 
-:::{.note data-latex=""} 
-*Champ : Personnes d’au moins 18 ans résidant en France métropolitaine.*
+Enfin, j’ai voulu montrer également par ce mémoire que la **science reproductible** concerne tout autant les sciences sociales que l’informatique et la statistique. Même si je comprends les freins qui limitent parfois sa mise en œuvre (données non ouvertes, technicité des outils…), je trouve qu’elle est gage de confiance puisqu’elle permet de fournir aux lecteurs l’ensemble des clefs de compréhension des résultats d’une recherche, de les critiquer (au sens noble du terme), voire de les améliorer. Même si la reproductibilité ne s’adresse pas qu’aux adaptes de la ligne de commande, elle est tout de même facilitée par certains logiciels et environnements : dans mon cas R, son arsenal Rmarkdown, et git sans lesquels rien n’aurait non plus été possible. Les codes et ce présent rapport sont disponibles sur [mon github](https://github.com/antuki/). Ils manquent hélas à ce jour encore un peu de tri et de documentation : les deadlines de mon année scolaire ne m’ont pas permis d’aller au bout de mes ambitions avant mes congés d’été. 
 
-*Source : Baromètre d’opinion de la DREES, 2019.*
-:::
-
-La considération de cette dimension subjective a permis à @duvoux2018qui de mettre en exergue dans leur article de 2018 certains non-recoupements entre celle-ci et les dimensions objectives de la pauvreté traditionnellement analysées (monétaire et institutionnelle). En effet, certaines populations, bien que non pauvres monétairement, s’estiment pauvres. C’est notamment le cas de 2 % des personnes appartenant à des ménages du dernier quintile de niveau de vie en 2019 (figure \@ref(fig:figintro), Baromètre d’opinion de la Drees). A l’inverse, certaines personnes bien qu’objectivement pauvres, ne se déclarent pas comme telles (plus de la moitié des personnes appartenant au premier quintile de niveau de vie). On parle alors d’un « halo » de la pauvreté qui illustre la difficulté, du fait de la complexité du phénomène de pauvreté, de capter uniquement par des mesures statistiques traditionnelles les personnes pauvres ou celles risquant de le devenir. Ce halo peut être approché par un certain nombre d’indicateurs de précarité, présents dans les bases de données, c’est-à-dire des facteurs de risques, comme la pauvreté institutionnelle, étant susceptibles de faire basculer certaines populations dans la pauvreté ou de la rendre durable comme la situation par rapport au marché du travail (contrat précaire, temps partiel, chômage…), le statut d’occupation du logement (locataire, logé gratuitement…), ou encore certaines configurations familiales (vivre seul, familles monoparentales...).
-
-La pauvreté subjective est un autre moyen de réfléchir aux contours de ce halo de la pauvreté. Elle peut en effet apporter des informations implicites complémentaires aux mesures institutionnelle et monétaire de la pauvreté : par exemple sur les expériences antérieures de précarité des individus, ou sur la crainte de devoir (à nouveau) y faire face (insécurité sociale), en lien également avec le contexte socio-économique dans lequel ils vivent (période de crise...).
-
-Dans ce mémoire de Master 2 en sociologie quantitative, nous étudierons la nature et l’étendue du phénomène de pauvreté en France en objectivant empiriquement les contours du halo grâce aux dimensions monétaire, institutionnelle et subjective de la pauvreté identifiées dans la littérature. Nous modéliserons statistiquement les interactions entre ces différentes dimensions, en mettant en exergue des caractéristiques de la pauvreté non observées lorsque que ces dimensions sont étudiées individuellement.
-
-Pour répondre à ces objectifs, nous mobiliserons les données du Baromètre d’opinion de la Drees. Cette enquête suit chaque année depuis 2000 l’évolution de la perception des inégalités sociales et du système de protection sociale en France. Elle permet de mesurer la plupart des dimensions de la pauvreté évoquées plus haut, objectives comme subjectives. 
-
-Après une revue de littérature dressant le contexte et la problématique de ce mémoire (chapitre \@ref(sec:chap1)), les méthodes économétriques classiques que nous mobiliserons dans un premier temps décèleront les variables expliquant le mieux la pauvreté subjective et en particulier le sentiment de pauvreté (chapitre \@ref(sec:nonreducnv)). Puis, dans un deuxième temps, nous pousserons notre analyse un peu plus loin en modélisant l’espace social de la pauvreté (chapitre \@ref(sec:esexplo)), d’abord grâce à une méthode d’Analyse des Correspondances Multiples (ACM) puis grâce à une Analyse en Facteurs communs exploratoire (AFE) qui a pour avantages de modéliser les dimensions latentes de la pauvreté et de conserver la structure des corrélations entre indicateurs. Enfin, les modèles latents confirmatoires (AFC), mis en place dans le chapitre \@ref(sec:esconfi), montreront l’influence relative de chacune des trois dimensions sur le phénomène de pauvreté et les groupes sociaux concernés.
-
-La vision synthétique de la pauvreté proposée prolonge les travaux de @duvoux2018qui car elle quantifie et situe socialement différents pans de la pauvreté. L’identification du rôle joué par ces différents facteurs des populations principalement concernées est  en effet utile pour décrypter les leviers sur lesquels agir pour lutter contre la pauvreté et l’exclusion sociale.
+Tout cela étant dit, je vous souhaite une bonne lecture !
 

@@ -27,12 +27,15 @@
 % voir https://facile.cines.fr#latex
 % \documentclass{<something>} must begin each LaTeX document
 \documentclass[12pt,a4paper]{reedthesis}
+\usepackage[framemethod=tikz]{mdframed}
+
 % Packages are extensions to the basic LaTeX functions. Whatever you
 % want to typeset, there is probably a package out there for it.
 % Chemistry (chemtex), screenplays, you name it.
 % Check out CTAN to see: https://www.ctan.org/
 %%
-\usepackage{graphicx,latexsym}
+%\usepackage{graphicx,latexsym} % déplacé
+\usepackage{latexsym} % déplacé
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{amsfonts}
 \usepackage{longtable,booktabs,setspace}
@@ -65,6 +68,13 @@
 \usepackage{hyperref}
 %\usepackage[pagebackref=true]{hyperref}
 
+% Theoreme : piste ecartee
+%\theoremstyle{remark} % enlever l'italique
+%\tcbuselibrary{theorems}
+%\newtcbtheorem{theorem}{Encadré}%
+%{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+%\renewenvironment{theorem}{\begin{mytheo}}{\end{mytheo}}
+
 % Next line commented out by CII
 %%% \usepackage{natbib}
 % Comment out the natbib line above and uncomment the following two lines to use the new
@@ -82,6 +92,7 @@
 }
 
 % new tcolorbox environment Kim
+
 \newtcolorbox{encadre}{
   colback=Pink,
   colframe=Prune,
@@ -90,19 +101,62 @@
   arc=4pt
 }
 
-\NewEnviron{encadre_num}[2][true]{%
+% encadre alain
+\usepackage{environ}
+\usepackage{varwidth}
+\newcommand{\captiontmp}[2][1]{\captionof{figure}[#1]{#2}}
+
+\tikzset{
+    max width/.style args={#1}{
+        execute at begin node={\begin{varwidth}{#1}},
+        execute at end node={\end{varwidth}}
+    }
+}
+\tikzstyle{titlestyle} =[draw=black!80,fill=black!20, text=black,
+ right=10pt, rounded corners, max width = \textwidth]
+\mdfdefinestyle{symmaryboxstyle}{
+	linecolor=black!80, backgroundcolor = black!5,
+	skipabove=\baselineskip, innertopmargin=\baselineskip,
+	innerbottommargin=\baselineskip,
+	userdefinedwidth=\textwidth,
+	middlelinewidth=1.2pt, roundcorner=5pt,
+	skipabove={\dimexpr0.5\baselineskip+\topskip\relax},
+	frametitleaboveskip=\dimexpr-\ht\strutbox\relax,
+	innerlinewidth=0pt,
+}
+
+% \NewEnviron{summary_box}[2][true]{%
+% \begin{mdframed}[style=symmaryboxstyle,
+% nobreak=#1,
+% frametitle={%
+%       \tikz[baseline=(current bounding box.east),outer sep=0pt]
+%       \node[titlestyle,anchor=east]
+%     {Encadré --- #2};}
+% ]
+% \vspace{-0.5em}
+% \BODY
+% \end{mdframed}
+% }
+% 
+% \NewEnviron{cadre}[2][true]{%
+% \begin{mdframed}
+% \end{mdframed}
+% }
+
+\newcounter{summarybox} % NOUVEAU
+\NewEnviron{summary_box}[2][true]{%
+\refstepcounter{summarybox} % NOUVEAU on incrémente le compteur
 \begin{mdframed}[style=symmaryboxstyle,
 nobreak=#1,
 frametitle={%
       \tikz[baseline=(current bounding box.east),outer sep=0pt]
       \node[titlestyle,anchor=east]
-    {Summary --- #2};}
+    {Encadré \thesummarybox{} --- #2};} %NOUVEAU on met le numéro +{} pour l'espace
 ]
 \vspace{-0.5em}
 \BODY
 \end{mdframed}
 }
-
 
 % Enlever les sous-titres des annexes dans le toc Kim
 % \newcommand{\stoptocwriting}{%
@@ -403,20 +457,21 @@ $body$
 \end{small}
 \end{mdframed}
 
-\begin{mdframed}[linecolor=Prune,linewidth=1]
-\vspace{-.25cm}
-\paragraph*{Title:} $titre_anglais$
-
-\begin{small}
-\vspace{-.25cm}
-\paragraph*{Keywords:} $mots_clefs_anglais$
-
-\vspace{-.5cm}
-\begin{multicols}{2}
-\paragraph*{Abstract:} $resume_anglais$
-\end{multicols}
-\end{small}
-\end{mdframed}
+% Titre anglais
+% \begin{mdframed}[linecolor=Prune,linewidth=1]
+% \vspace{-.25cm}
+% \paragraph*{Title:} $titre_anglais$
+% 
+% \begin{small}
+% \vspace{-.25cm}
+% \paragraph*{Keywords:} $mots_clefs_anglais$
+% 
+% \vspace{-.5cm}
+% \begin{multicols}{2}
+% \paragraph*{Abstract:} $resume_anglais$
+% \end{multicols}
+% \end{small}
+% \end{mdframed}
 
 
 \vfill
