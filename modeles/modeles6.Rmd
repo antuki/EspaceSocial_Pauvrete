@@ -50,12 +50,6 @@ L'objectif de cette sixième série de modèles est de ...
 
 # Analyses
 
-::::{.tcolorbox data-latex= } 
-TODO
-::::
-
-
-
 # Code et résultats
 
 ```{r}
@@ -71,6 +65,7 @@ library(RColorBrewer) #palettes de couleur
 library(ggplot2) #graphiques corrplot
 library(tidyr) #pour pivot_longer / wider
 library(tibble) #pour rownames_to_column
+library(DiagrammeR) #pour refaire les graphiques de path
 ```
 ```{r, echo=FALSE}
 poLCA.makeplot.poly.oneclass <- function(x,r,noms_classes=1:length(x$P)){
@@ -1155,10 +1150,14 @@ bdd_CFA_rmnasup  <- bdd_logit %>%
          i_bourse = as.numeric(presta_etudes),
          i_hlm = as.numeric(presta_hlm),
          cov_sexe_femme = ifelse(sexe=="-Femme",1,0),
+         cov_sexe_homme = ifelse(sexe=="-Homme",1,0),
          cov_statut_occup0_proprio = ifelse(statut_occup0=="-Propriétaire",1,0),
+          cov_statut_occup0_locataire = ifelse(statut_occup0=="-Locataire ou hébergé",1,0),
          cov_diplome_sans = ifelse(diplome=="-CAP, BEP ou moins",1,0),
+         cov_diplome_bac = ifelse(diplome=="-Baccalauréat",1,0),
          cov_diplome_bacplus2 = ifelse(diplome=="-Bac + 2",1,0), 
          cov_diplome_bacplus3 = ifelse(diplome=="-Bac + 3 ou plus",1,0),
+         cov_prof_statut_act_inter = ifelse(prof_statut_act=="-Profession intermédiaire",1,0),
          cov_prof_statut_act_chom = ifelse(prof_statut_act=="-Chômeur",1,0),
          cov_prof_statut_act_ouv = ifelse(prof_statut_act=="-Ouvrier",1,0),
          cov_prof_statut_act_commer = ifelse(prof_statut_act=="-Artisan commerçant",1,0),
@@ -1170,12 +1169,14 @@ bdd_CFA_rmnasup  <- bdd_logit %>%
          cov_prof_statut_act_agri = ifelse(prof_statut_act=="-Agriculteur",1,0),
          cov_prof_statut_act_commer = ifelse(prof_statut_act=="-Artisan commerçant",1,0),
          cov_age_tranche_1829 = ifelse(age_tranche=="-18 à 29 ans",1,0),
+         cov_age_tranche_3039 = ifelse(age_tranche=="-30 à 39 ans",1,0),
          cov_age_tranche_4049 = ifelse(age_tranche=="-40 à 49 ans",1,0),
          cov_age_tranche_5059 = ifelse(age_tranche=="-50 à 59 ans",1,0),
          cov_age_tranche_6069 = ifelse(age_tranche=="-60 à 69 ans",1,0),
          cov_age_tranche_70 = ifelse(age_tranche=="-70 ans et plus",1,0),
          cov_vie_fam_mono = ifelse(vie_fam=="-Chef famille monoparentale",1,0),
          cov_vie_fam_seul = ifelse(vie_fam=="-Vit seul",1,0),
+         cov_vie_fam_coupsansenf = ifelse(vie_fam=="-Membre du couple (pas d’enfants à charge)",1,0),
          cov_vie_fam_coupenf = ifelse(vie_fam=="-Membre du couple (enfants à charge)",1,0),
          cov_vie_fam_autre = ifelse(vie_fam=="-Autre situation familiale",1,0),
          cov_vie_fam_enf = ifelse(vie_fam=="-Enfant",1,0)
@@ -1183,31 +1184,42 @@ bdd_CFA_rmnasup  <- bdd_logit %>%
   filter(ident%in%num_indiv) %>% 
   dplyr::select(s_sentpauvrisque, s_infminidecla,
 m_quantilenivie_inv, m_locatif_inv, m_financier_inv,
-i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm, cov_sexe_femme, cov_statut_occup0_proprio, cov_diplome_sans, cov_diplome_bacplus2, cov_diplome_bacplus3, cov_prof_statut_act_chom, cov_prof_statut_act_ouv, cov_prof_statut_act_commer, cov_prof_statut_act_employ, cov_prof_statut_act_autrinac, cov_prof_statut_act_foyer, cov_prof_statut_act_cadre, cov_prof_statut_act_retr, cov_prof_statut_act_agri, cov_prof_statut_act_commer, cov_age_tranche_1829, cov_age_tranche_4049, cov_age_tranche_5059, cov_age_tranche_6069, cov_age_tranche_70, cov_vie_fam_mono, cov_vie_fam_seul, cov_vie_fam_coupenf, cov_vie_fam_autre, cov_vie_fam_enf)
-
-
+i_log, i_rsa, i_chom, i_handi, i_bourse, i_hlm, cov_sexe_femme, cov_sexe_homme, cov_statut_occup0_locataire, cov_statut_occup0_proprio, cov_diplome_sans, cov_diplome_bac, cov_diplome_bacplus2, cov_diplome_bacplus3, cov_prof_statut_act_inter, cov_prof_statut_act_chom, cov_prof_statut_act_ouv, cov_prof_statut_act_commer, cov_prof_statut_act_employ, cov_prof_statut_act_autrinac, cov_prof_statut_act_foyer, cov_prof_statut_act_cadre, cov_prof_statut_act_retr, cov_prof_statut_act_agri, cov_prof_statut_act_commer, cov_age_tranche_1829, cov_age_tranche_3039, cov_age_tranche_4049, cov_age_tranche_5059, cov_age_tranche_6069, cov_age_tranche_70, cov_vie_fam_mono, cov_vie_fam_seul, cov_vie_fam_coupenf, cov_vie_fam_coupsansenf, cov_vie_fam_autre, cov_vie_fam_enf) %>% 
+  mutate(s_sentpauvrisque_std = scale(s_sentpauvrisque))
 ```
 
 
 
 ### Modèle avec 3 dimensions de la pauvreté (i,m,s) ORTHOGONALES + SANS hiérarchie
 
-```{r, echo=FALSE}
+=> Le modèle avec les dimensions de la pauvreté orthogonales peut être qualifié de très mauvais. C'est pourquoi on teste juste après le même modèle avec rotation oblique. 
+
+```{r, echo=FALSE, eval=TRUE}
 pauv_model1 <- '
 s =~ s_sentpauvrisque + s_infminidecla
 m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
+i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
 '
 
 fit1 <- lavaan::cfa(pauv_model1, data = bdd_CFA_rmnasup,
 ordered = TRUE, orthogonal=TRUE) #estimator = "WLSMV"
 
+fit1_var <- lavaan::cfa(pauv_model1, data = bdd_CFA_rmnasup,
+ordered = TRUE, orthogonal=TRUE,std.lv = TRUE) #estimator = "WLSMV"
 
-semPaths(fit1, what = "est", edge.label.cex = 0.7,
+semPaths(fit1_var, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
 intercepts = FALSE, rotation = 4, thresholdColor = "red",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
+# fitMeasures
+print("fit1_var: ")
+fitMeasures(fit1_var)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
 # # Error variance of indicators
  diag(inspect(fit1, what = "est")$theta)
 # # Loadings and standardized loadings
@@ -1220,7 +1232,43 @@ mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
  parameterEstimates(fit1, standardized = TRUE)
 # Summary
 summary(fit1, standardized = TRUE, fit.measures = TRUE, ci=TRUE)
+
 ```
+
+### Modèle avec 3 dimensions de la pauvreté (i,m,s) OBLIQUES + SANS hiérarchie
+
+#### Sans covariates avec dimension subjective
+
+Graphique 
+
+```{r, echo=FALSE}
+pauv_model2 <- '
+s =~ s_sentpauvrisque + s_infminidecla
+m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
+'
+
+fit2 <- lavaan::cfa(pauv_model2, data = bdd_CFA_rmnasup,
+ordered = TRUE, orthogonal=FALSE) #estimator = "WLSMV"
+
+fit2_var <- lavaan::cfa(pauv_model2, data = bdd_CFA_rmnasup,
+ordered = TRUE, orthogonal=FALSE,std.lv = TRUE) #estimator = "WLSMV"
+
+semPaths(fit2_var, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+# Summary
+#summary(fit2_var, standardized = TRUE, fit.measures = TRUE, ci=TRUE)
+
+# fitMeasures
+print("fit2_var: ")
+fitMeasures(fit2_var)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+
+```
+
+
 
 **Règles pour être un modèle acceptable** : 
 
@@ -1229,46 +1277,153 @@ summary(fit1, standardized = TRUE, fit.measures = TRUE, ci=TRUE)
 - Le RMSEA doit être dans l'intervalle [0.05,0.10].
 - Le SRMR doit être inférieur à 0.08.
 
-=> Le modèle avec les dimensions de la pauvreté orthogonales peut être qualifié de très mauvais. C'est pourquoi on teste juste après le même modèle avec rotation oblique. 
-
-
-### Modèle avec 3 dimensions de la pauvreté (i,m,s) OBLIQUES + SANS hiérarchie
-
-```{r, echo=FALSE}
-pauv_model2 <- '
-s =~ s_sentpauvrisque + s_infminidecla
-m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-'
-
-fit2 <- lavaan::cfa(pauv_model2, data = bdd_CFA_rmnasup,
-ordered = TRUE, orthogonal=FALSE) #estimator = "WLSMV"
-
-
-semPaths(fit2, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-# Summary
-summary(fit2, standardized = TRUE, fit.measures = TRUE, ci=TRUE)
-
-```
-
 Confirmément à ce à quoi on s'attendait, fit2 a des indicateurs de qualité du modèle bien meilleurs que fit1 : il faut introduire des corrélations entre facteurs (oblique).
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
  semTools::compareFit(fit1, fit2)@fit %>% 
    dplyr::select(chisq, df, pvalue, cfi, tli, rmsea, srmr) 
 ```
 
-Ci-dessous quelques moyens de voir comment on pourrait améliorer le modèles pour le rendre encore meilleur. 
 
-- Les résidus qui ont une covariance supérieure à 0.1 peuvent être à regarder de plus près : (i_handi, i_rsa), (i_hlm, i_rsa), (i_log, i_bourse), (i_bourse, m_foncier), (i_rsa, m_foncier), (m_foncier, m_locatif), (i_rsa, m_locatif), (i_bourse, s_infminidecla), 
-- Il semblerait que d'intégrer le sentiment de pauvreté non pas dans la dimension subjective mais dans les 3 dimensions de la pauvreté améliorerait potentiellement le modèle... Ce qui interroge sur le statut de cette variable. Idem un peu plus bas pour s_infminidecla qui pourrait loadé m et i...
-- Il faudrait également éventuellement corréler s_infminidecla avec m_quantilenivie, on a vu dans les stats desc que c'était 2 variables très corrélées ensemble et ce ne serait effectivement pas idiot de le faire ! 
+
+#### Sans covariates sans dimension subjective
+
+Graphique
 
 ```{r, echo=FALSE}
+pauv_model3 <- '
+m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
+m ~~ s_sentpauvrisque_std
+i ~~ s_sentpauvrisque_std
+'
+
+fit3_var <- lavaan::cfa(pauv_model3, data = bdd_CFA_rmnasup,
+ordered = TRUE, orthogonal=FALSE,std.lv = TRUE) #estimator = "WLSMV"
+
+semPaths(fit3_var, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+print("fit2_var : ")
+fitMeasures(fit2_var)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+print("fit3_var : ")
+fitMeasures(fit3_var)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+```
+
+
+#### CFA avec des covariables (MIMIC)
+
+MIMIC stands for multiple indicators multiple independent causes (Jöreskog and Goldberger, 1975) and is a general structural latent variable concept where CFA is extended in terms of linking covariates with latent variables. MIMIC models can be used to control for sociodemographic or other types of covariates in CFA and more
+general SEM specifications.
+
+Remarque : ne marche qu'avec les covariates exogènes de moins de 2 facteurs (c'est pourquoi nous avons transformé toutes les covariate en indicatrices du type : indicatrice d'être un couple sans enfant, etc.)
+
+Remarque : le contrôle "Propriétaire" n'a pas été ajouté en raison de sa colinéarité avec l'indicateur de pauvreté institutionnelle de locataire d'un HLM. L'intégrer ne permettait pas aux modèles de converger. 
+
+```{r, echo=FALSE}
+#pauv_model_mimic_inter <- '
+# s =~ s_sentpauvrisque + s_infminidecla
+# m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+# i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
+# # Controles intermediaires
+# i ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+# cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+# cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+# cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+# cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+# m ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+# cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+# cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+# cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+# cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+# s ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+# cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+# cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+# cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+# cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+# '
+
+pauv_model_mimic_inter <- '
+m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
+m ~~ s_sentpauvrisque_std
+i ~~ s_sentpauvrisque_std
+# Controles intermediaires
+i ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+m ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+s_sentpauvrisque_std ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+'
+
+fit_mimic_inter <- lavaan::cfa(pauv_model_mimic_inter, data = bdd_CFA_rmnasup,ordered=TRUE, orthogonal=FALSE,std.lv = TRUE)
+
+
+semPaths(fit_mimic_inter, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+sum2 <- summary(fit_mimic_inter, standardized = TRUE, fit.measures = TRUE)
+
+print("fit3_var : ")
+fitMeasures(fit2_var)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+
+print("fit_mimic_inter : ")
+fitMeasures(fit_mimic_inter)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+
+
+
+```
+
+
+
+Effet souvent plus faible du subjectif par rapport aux deux autres dimensions. 
+
+Le sentiment de pauvreté est celui qui a l’effet le moins prononcé. 
+
+**PCS**
+
+- Ouvrier (subjectif très fort). Dans une moindre mesure employés
+- Chômeur, au foyer et autres inactifs : monétaire et institutionnel très fort. Subjectif fort également mais bien moindre comparé aux deux autres dimensions. 
+
+**Diplôme**
+
+- RAS
+
+**Âge**
+
+- 18-29 ans : effet proche de la référence mais élément étrange : l’effet du subjectif est légèrement négatif alors que monétaire et institutionnel est légèrement positif
+- 70 ans et + : faible pauvreté sur l’ensemble des dimensions mais plus particulièrement sur les dimensions monétaires et institutionnel. Ils peuvent parfois se sentir pauvres
+
+**Situation familiale**
+
+- Couple avec enfant : monétaire et institutionnel relativement fort mais subjectif très proche des couples avec enfants
+- Chef famille mono : Effet très fort de toutes les dimensions mais plus particulièrement institutionnelle
+- Vie seul, l’effet du subjectif est presque aussi fort que l’effet institutionnel et monétaire qui est de moyenne ampleur. 
+
+
+<!-- Ci-dessous quelques moyens de voir comment on pourrait améliorer le modèles pour le rendre encore meilleur.  -->
+
+<!-- - Les résidus qui ont une covariance supérieure à 0.1 peuvent être à regarder de plus près : (i_handi, i_rsa), (i_hlm, i_rsa), (i_log, i_bourse), (i_bourse, m_foncier), (i_rsa, m_foncier), (m_foncier, m_locatif), (i_rsa, m_locatif), (i_bourse, s_infminidecla),  -->
+<!-- - Il semblerait que d'intégrer le sentiment de pauvreté non pas dans la dimension subjective mais dans les 3 dimensions de la pauvreté améliorerait potentiellement le modèle... Ce qui interroge sur le statut de cette variable. Idem un peu plus bas pour s_infminidecla qui pourrait loadé m et i... -->
+<!-- - Il faudrait également éventuellement corréler s_infminidecla avec m_quantilenivie, on a vu dans les stats desc que c'était 2 variables très corrélées ensemble et ce ne serait effectivement pas idiot de le faire !  -->
+
+<!-- Ce nouveau modèle étrange est effectivement meilleur ! -->
+
+```{r, echo=FALSE, eval=FALSE}
 #head(parameterEstimates(fit2))
 # Quels résidus sont supérieurs à 0.1 ?
 residuals(fit2, type = "cor")$cov
@@ -1279,13 +1434,11 @@ head(modificationIndices(fit2, sort.=TRUE, minimum.value=3))
 
 ```
 
-Juste pour l'expérience on teste ces modifications pour voir ! 
-
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 pauv_model2_mi <- '
 s =~ s_sentpauvrisque + s_infminidecla
 m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv + s_sentpauvrisque + s_infminidecla
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm + s_sentpauvrisque + s_infminidecla
+i =~ i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm + s_sentpauvrisque + s_infminidecla
 s_infminidecla ~~ m_quantilenivie_inv
 '
 
@@ -1299,7 +1452,7 @@ intercepts = FALSE, rotation = 4, thresholdColor = "red",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 # Summary
-summary(fit2_mi, standardized = TRUE, fit.measures = TRUE, ci=TRUE)
+# summary(fit2_mi, standardized = TRUE, fit.measures = TRUE, ci=TRUE)
 
 print("fit2_mi : ")
 fitMeasures(fit2_mi)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
@@ -1309,18 +1462,17 @@ fitMeasures(fit2)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
 
 ```
 
-Ce nouveau modèle étrange est effectivement meilleur !
 
-### Modèle avec 3 dimensions de la pauvreté (i,m,s) OBLIQUES + AVEC hiérarchie
+### Modèle avec 2 dimensions de la pauvreté (i,m) et le sentiment de pauvreté (s tronqué) ORTHOGONALES + AVEC hiérarchie
 
-Il y a un problème avec le modèle, avec des NA pour les standard-error. Comme si le modèle n'était pas bien identifié... Cela semble être dû à l'intégration des corrélations entre s,m et i.
+En oblique, il y a un problème avec le modèle, avec des NA pour les standard-error. Comme si le modèle n'était pas bien identifié... Cela semble être dû à l'intégration des corrélations entre s,m et i. Je pense que le fait d'intégrer une hiérarchie intègre de fait une corrélation entre les dimensions s,m et i et que si on les rajoute en plus le modèle n'a plus de sens.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 pauv_model_hier2 <- '
 s =~ s_sentpauvrisque + s_infminidecla
 m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete =~ s + m + i
+i =~  i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm 
+pauvrete =~ m + i + s
 # non orthogonal factors
    s ~~ m
    s ~~ i
@@ -1330,75 +1482,93 @@ pauvrete =~ s + m + i
 fit_hier2 <- lavaan::cfa(pauv_model_hier2, data = bdd_CFA_rmnasup,
 ordered = TRUE, orthogonal=FALSE)
 
-semPaths(fit_hier2, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-summary(fit_hier2, standardized = TRUE, fit.measures = TRUE)
-
 ```
 
 
-### Modèle avec 3 dimensions de la pauvreté (i,m,s) ORTHOGONALES + AVEC hiérarchie
+Du coup on enlève les corrélations entre i,m et s pour voir ce que ça donne... Le modèle est pas mal.  Deux corrections sont effectuées
+- On fixe un loading de chaque catégorie à une valeur de référence (celle trouvée dans le précédent modèle)
+- Il y a juste une variance négative (Heywood case) de m que nous corrigeons en remplaçant la variance légèrement négative de m par une variance légèrement positive (la variance nulle fait aussi bugger le modèle). Le modèle n'est que légèrement moins bien mais permet d'estimer les scores des facteurs latents (avec la fonction predict)
 
-Du coup on enlève les corrélations entre i,m et s pour voir ce que ça donne... Le modèle est pas mal. Je pense que le fait d'intégrer une hiérarchie intègre de fait une corrélation entre les dimensions s,m et i et que si on les rajoute en plus le modèle n'a plus de sens. 
-
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
+# Ce modèle est en fait équivalent à fit2 !
 pauv_model_hier1 <- '
 s =~ s_sentpauvrisque + s_infminidecla
 m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete =~ s + m + i
+i =~  i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm 
+pauvrete =~ m + i + s
 '
-
-fit_hier1 <- lavaan::cfa(pauv_model_hier1, data = bdd_CFA_rmnasup,
-ordered = TRUE, orthogonal=TRUE)
-
-semPaths(fit_hier1, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-summary(fit_hier1, standardized = TRUE, fit.measures = TRUE)
-```
-
-fit_hier1 semble être équivalent à fit2 !
-
-```{r, echo=FALSE}
- semTools::compareFit(fit_hier1, fit2)@fit %>% 
-   dplyr::select(chisq, df, pvalue, cfi, tli, rmsea, srmr) 
-```
-
-Il y a juste une variance négative (Heywood case) que nous corrigeons en remplaçant la variance légèrement négative de m par une variance légèrement positive (la variance nulle fait aussi bugger le modèle). Le modèle n'est que légèrement moins bien mais permet d'estimer les scores des facteurs latents (avec la fonction predict)
-
-```{r, echo=FALSE}
-pauv_model_hier1_corr <- '
-s =~ s_sentpauvrisque + s_infminidecla
-m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete =~ s + m + i
+pauv_model_hier1_var <- '
+s =~ 0.67*s_sentpauvrisque + s_infminidecla
+m =~ 0.85*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~  0.75*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm 
+pauvrete =~ NA*m + i + s
 # Correction de la variance négative
 m ~~ 0.01*m
+pauvrete ~~ 1 * pauvrete
 '
 
-fit_hier1_corr <- lavaan::cfa(pauv_model_hier1_corr, data = bdd_CFA_rmnasup,
-ordered = TRUE, orthogonal=TRUE)
+fit_hier1_var <- lavaan::cfa(pauv_model_hier1_var, data = bdd_CFA_rmnasup,
+ordered = TRUE, orthogonal=TRUE, std.lv=FALSE)
 
-semPaths(fit_hier1_corr, what = "est", edge.label.cex = 0.7,
+semPaths(fit_hier1_var, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
 intercepts = FALSE, rotation = 4, thresholdColor = "red",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
-summary(fit_hier1, standardized = TRUE, fit.measures = TRUE)
+summary(fit_hier1_var, standardized = TRUE, fit.measures = TRUE)
 
-semTools::compareFit(fit_hier1, fit_hier1_corr)@fit %>% 
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+ semTools::compareFit(fit_hier1_var, fit2)@fit %>% 
    dplyr::select(chisq, df, pvalue, cfi, tli, rmsea, srmr) 
 ```
 
+Mais on veut rester dans le cadre précédent et ne garder que le sentiment de pauvreté dans la dimension subjective de la pauvreté. 
+
+```{r, echo=FALSE}
+# pauv_model_hier3_var <- '
+# m =~ 0.85*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+# i =~  0.75*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm 
+# pauvrete =~ NA*m + i + s_sentpauvrisque_std
+# # Correction de la variance négative
+# m ~~ 0.01*m
+# pauvrete ~~ 1 * pauvrete
+# '
+
+pauv_model_hier3_var <- '
+m =~ 0.83*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ 0.74*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm
+pauvrete =~ NA*m + i + s_sentpauvrisque_std
+# Correction de la variance négative
+m ~~ 0.04*m
+pauvrete ~~ 1 * pauvrete
+'
+
+fit_hier3_var <- lavaan::cfa(pauv_model_hier3_var, data = bdd_CFA_rmnasup,
+ordered = TRUE, orthogonal=TRUE, std.lv=FALSE)
+
+semPaths(fit_hier3_var, what = "est", edge.label.cex = 0.7,
+edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
+intercepts = FALSE, rotation = 4, thresholdColor = "red",
+mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
+
+# Pour m
+#sqrt(0.830^2*0.284+0.597^2*0.629+0.597^2*0.629+0.04)
+# Pour pvrt
+#sqrt(0.93^2*?+1^2*?+0.65^2*0.58)
+
+
+```
+
+
+
 ```{r, echo=FALSE, eval=FALSE}
-predictions <- predict(fit_hier1_corr)
-saveRDS(pred,"../data/predictions.rds")
+predictions <- predict(fit_hier3_var)
+predictions <- cbind(predictions,bdd_CFA_rmnasup$s_sentpauvrisque_std) 
+colnames(predictions) <- c("m","i","pauvrete","s_sentpauvrisque_std")
+saveRDS(predictions,"../data/predictions.rds")
 ```
 
 ```{r, echo=FALSE}
@@ -1411,81 +1581,77 @@ Graphiques des résultats où on projette les scores latents de tous les individ
 J'affiche aussi les anciennes classes latentes pour montrer que les résultats sont conformes à l'intuition.
 
 ```{r, echo=FALSE}
-scatterplot3d(predictions[,1:3],
-              pch=16,
-              color="steelblue")
+ scatterplot3d(predictions[,c("m","i","s_sentpauvrisque_std")],
+               pch=16,
+               color="steelblue")
+ scatterplot3d(predictions[,c("m","i","s_sentpauvrisque_std")],
+               pch=16,
+               color="steelblue")
 
 library(ggplot2)
 df_troisgraphes <- data.frame(predictions) %>% mutate(typo=result$predclass)
 palette <- c("#2166ac","#67a9cf","#9970ab","#762a83","#e9a3c9","#c51b7d")
 noms_classes <- c("A","B","C.1","C.2","D.1","D.2")
 
-gg_m_s <- ggplot(df_troisgraphes, aes(x=m, y=s)) +
-  stat_ellipse(aes(fill=factor(typo)),type = "t", color="black", cex=0.5, geom="polygon", alpha=0.6) +
-  scale_fill_manual(name="Classe", values=palette, labels=noms_classes) +
-  geom_point(aes(color=pauvrete),size=2) +
-  scale_colour_gradientn(name= "Score de\npauvreté",colours = brewer.pal(11,"RdYlGn"))+
-  ggnewscale::new_scale("color") +
-  stat_ellipse(aes(color=factor(typo)),type = "t",  cex=1, geom="polygon",fill=NA) +
-  scale_color_manual(name="Classe", values=palette, labels=noms_classes, guide="none") +
+gg_m_s <- ggplot(df_troisgraphes, aes(x=m, y=s_sentpauvrisque_std)) +
+ # stat_ellipse(aes(fill=factor(typo)),type = "t", color="black", cex=0.5, geom="polygon", alpha=0.6) +
+  #scale_fill_manual(name="Classe", values=palette, labels=noms_classes) +
+  geom_point(aes(color=pauvrete),size=1) +
+  scale_colour_gradientn(name= "Score de\npauvreté",colours = rev(brewer.pal(11,"RdYlGn")))+
+  #ggnewscale::new_scale("color") +
+#  stat_ellipse(aes(color=factor(typo)),type = "t",  cex=1, geom="polygon",fill=NA) +
+#  scale_color_manual(name="Classe", values=palette, labels=noms_classes, guide="none") +
   xlab("Score de pauvreté monétaire") +
-  ylab("Score de pauvreté subjective") + 
+  ylab("Sentiment de pauvreté (3 modalités)") + 
   theme_minimal()
 gg_m_s
 
 gg_m_i <- ggplot(df_troisgraphes, aes(x=m, y=i)) +
-  stat_ellipse(aes(fill=factor(typo)),type = "t", color="black", cex=0.5, geom="polygon", alpha=0.6) +
-  scale_fill_manual(name="Classe", values=palette, labels=noms_classes) +
-  geom_point(aes(color=pauvrete),size=2) +
-  scale_colour_gradientn(name= "Score de\npauvreté",colours = brewer.pal(11,"RdYlGn"))+
-  ggnewscale::new_scale("color") +
-  stat_ellipse(aes(color=factor(typo)),type = "t",  cex=1, geom="polygon",fill=NA) +
-  scale_color_manual(name="Classe", values=palette, labels=noms_classes, guide="none") +
+  # stat_ellipse(aes(fill=factor(typo)),type = "t", color="black", cex=0.5, geom="polygon", alpha=0.6) +
+  # scale_fill_manual(name="Classe", values=palette, labels=noms_classes) +
+   geom_point(aes(color=pauvrete),size=1) +
+  scale_colour_gradientn(name= "Score de\npauvreté",colours = rev(brewer.pal(11,"RdYlGn")))+
+  # ggnewscale::new_scale("color") +
+  # stat_ellipse(aes(color=factor(typo)),type = "t",  cex=1, geom="polygon",fill=NA) +
+  # scale_color_manual(name="Classe", values=palette, labels=noms_classes, guide="none") +
   xlab("Score de pauvreté monétaire") +
   ylab("Score de pauvreté institutionnelle") + 
   theme_minimal()
 
 gg_m_i
 
-gg_s_i <- ggplot(df_troisgraphes, aes(x=s, y=i)) +
-  stat_ellipse(aes(fill=factor(typo)),type = "t", color="black", cex=0.5, geom="polygon", alpha=0.6) +
-  scale_fill_manual(name="Classe", values=palette, labels=noms_classes) +
+gg_i_s <- ggplot(df_troisgraphes, aes(x=i, y=s_sentpauvrisque_std)) +
+#  stat_ellipse(aes(fill=factor(typo)),type = "t", color="black", cex=0.5, geom="polygon", alpha=0.6) +
+#  scale_fill_manual(name="Classe", values=palette, labels=noms_classes) +
   geom_point(aes(color=pauvrete),size=2) +
-  scale_colour_gradientn(name= "Score de\npauvreté",colours = brewer.pal(11,"RdYlGn"))+
-  ggnewscale::new_scale("color") +
-  stat_ellipse(aes(color=factor(typo)),type = "t",  cex=1, geom="polygon",fill=NA) +
-  scale_color_manual(name="Classe", values=palette, labels=noms_classes, guide="none") +
-  xlab("Score de pauvreté subjective") + 
-  ylab("Score de pauvreté institionnelle") +
+  scale_colour_gradientn(name= "Score de\npauvreté",colours = rev(brewer.pal(11,"RdYlGn")))+
+#  ggnewscale::new_scale("color") +
+#  stat_ellipse(aes(color=factor(typo)),type = "t",  cex=1, geom="polygon",fill=NA) +
+ # scale_color_manual(name="Classe", values=palette, labels=noms_classes, guide="none") +
+   ylab("Sentiment de pauvreté (3 modalités)") + 
+   xlab("Score de pauvreté institionnelle") +
   theme_minimal()
 
-gg_s_i
+gg_i_s
 
 ```
 
-### CFA avec des covariables (MIMIC)
-
-MIMIC stands for multiple indicators multiple independent causes (Jöreskog and Goldberger, 1975) and is a general structural latent variable concept where CFA is extended in terms of linking covariates with latent variables. MIMIC models can be used to control for sociodemographic or other types of covariates in CFA and more
-general SEM specifications.
-
-Remarque : ne marche qu'avec les covariates exogènes de moins de 2 facteurs (c'est pourquoi nous avons transformé toutes les covariate en indicatrices du type : indicatrice d'être un couple sans enfant, etc.)
-
-Remarque : le contrôle "Propriétaire" n'a pas été ajouté en raison de sa colinéarité avec l'indicateur de pauvreté institutionnelle de locataire d'un HLM. L'intégrer ne permettait pas aux modèles de converger. 
-
-
 #### Ajout des contrôles uniquement sur l'indicateur global de pauvreté
-
 
 ```{r, echo=FALSE}
 pauv_model_mimic_global <- '
-s =~ s_sentpauvrisque + s_infminidecla
-m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete =~ s + m + i
+m =~ 0.83*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ 0.74*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm
+pauvrete =~ NA*m + i + s_sentpauvrisque_std
 # Correction de la variance négative
-m ~~ 0.01*m
+m ~~ 0.04*m
+pauvrete ~~ 1 * pauvrete
 # Controles globaux
-pauvrete ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
+pauvrete ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
 '
 
 fit_mimic_global <- lavaan::cfa(pauv_model_mimic_global, data = bdd_CFA_rmnasup,ordered=TRUE)
@@ -1501,155 +1667,13 @@ sum <- summary(fit_mimic_global, standardized = TRUE, fit.measures = TRUE)
 print("fit_mimic_global : ")
 fitMeasures(fit_mimic_global)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
 
-print("fit_hier1_corr : ")
-fitMeasures(fit_hier1_corr)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
+print("fit_mimic_inter : ")
+fitMeasures(fit_mimic_inter)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
 
 ```
 
 Le modèle avec contrôles devient moins bien que le précédent.
 
-Voici le détail de l'effet des différents contrôles sur la pauvreté : 
-
-```{r, echo=FALSE}
-tab_covariates_global_cfa <- sum$PE %>% 
-  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
-  mutate(variable=gsub("cov_","",rhs),
-         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
-                                      include.lowest = TRUE,
-                                      labels = c('***', '**', '*', '')),
-         estimateur=paste0(round(est,2),pvaleur) 
-         )%>% 
-  arrange(desc(est)) %>% 
-  dplyr::select(lhs,variable,estimateur) 
-
-kable(tab_covariates_global_cfa)
-
-```
-
-
-#### Ajout des contrôles sur les indicateurs de pauvretés i,m et s uniquement
-
-```{r, echo=FALSE}
-pauv_model_mimic_inter <- '
-s =~ s_sentpauvrisque + s_infminidecla
-m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete =~ s + m + i
-# Correction de la variance négative
-m ~~ 0.01*m
-# Controles intermediaires
-i ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-m ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-s ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-'
-
-fit_mimic_inter <- lavaan::cfa(pauv_model_mimic_inter, data = bdd_CFA_rmnasup,ordered=TRUE)
-
-
-semPaths(fit_mimic_inter, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-sum2 <- summary(fit_mimic_inter, standardized = TRUE, fit.measures = TRUE)
-
-print("fit_mimic_inter : ")
-fitMeasures(fit_mimic_inter)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
-
-print("fit_mimic_global : ")
-fitMeasures(fit_mimic_global)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
-
-
-
-```
-
-
-Le modèle avec contrôles à un niveau intermédiaire est meilleur que le modèle avec contrôles globaux selon les indicateurs de performance. Il y a aussi moins de degrés de liberté. 
-
-Voici le détail de l'effet des différents contrôles sur la pauvreté : 
-
-
-```{r, echo=FALSE}
-tab_covariates_inter_cfa <- sum2$PE %>% 
-  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
-  mutate(variable=gsub("cov_","",rhs),
-         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
-                                      include.lowest = TRUE,
-                                      labels = c('***', '**', '*', '')),
-         estimateur=paste0(round(est,2),pvaleur) 
-         )%>% 
-  dplyr::select(lhs,variable,estimateur) %>%
-  pivot_wider(
-    names_from = lhs,
-    values_from = estimateur
-  )
-kable(tab_covariates_inter_cfa[,c("variable","m","i","s")])
-```
-
-En général pour tous les contrôles : effet sur s < effet sur i < effet sur m
-
-**Sexe**
-
-Effet non significatif dans la dimension institutionnelle mais significatif et positif dans dimension monétaire (le montant des salaires a un rôle mais pas le fait de toucher une prestation)
-
-**Diplôme**
-
-RAS, effet assez constant
-
-**Vie professionnelle**
-
-- Chômeur : tout est très élevé mais c'est eux qui ont le s le plus élevé de toutes les variables sociodémo. Fort ressenti subjectif
-- Ouvrier : subjectif très fort, presque au même niveau que m et i. Idem pour employé dans une moindre mesure. 
-
-**Âge (ref : 30-39)**
-
-- 18-29 : effet positif pour m et i et négatif pour s (les jeunes ne se sentent pas pauvres). 
-- 70 : effet très négatif de i (touchent peu de prestations sociales)
-
-**Structure familiale (ref : couple sans enfant)**
-
-- mono : effet bien moins fort du subjectif (on l'avait vu pour la variable s_infminidecla surtout).
-- vit seul : c'est l'inverse subjectif presque aussi fort que les deux autres. 
-- couple avec enfants : subjectif quasiment nul par rapport à couple sans enfant.  
-
-#### Ajout des contrôles sur les indicateurs de pauvretés i,m et s ET à un niveau global
-
-```{r, echo=FALSE}
-
-pauv_model_mimic_inter_global <- '
-s =~ s_sentpauvrisque + s_infminidecla
-m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete =~ s + m + i
-# Correction de la variance négative
-m ~~ 0.01*m
-# Controles intermediaires
-i ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-m ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-s ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-pauvrete ~ cov_sexe_femme  + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_prof_statut_act_chom + cov_prof_statut_act_ouv + cov_prof_statut_act_commer + cov_prof_statut_act_employ + cov_prof_statut_act_autrinac + cov_prof_statut_act_foyer + cov_prof_statut_act_cadre + cov_prof_statut_act_retr + cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 + cov_vie_fam_mono + cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_autre + cov_vie_fam_enf
-'
-
-fit_mimic_inter_global <- lavaan::cfa(pauv_model_mimic_inter_global, data = bdd_CFA_rmnasup,ordered=TRUE)
-
-
-semPaths(fit_mimic_inter_global, what = "est", edge.label.cex = 0.7,
-edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
-mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
-
-summary(fit_mimic_inter_global, standardized = TRUE, fit.measures = TRUE)
-
-print("fit_mimic_inter : ")
-fitMeasures(fit_mimic_inter)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
-
-print("fit_mimic_inter_global : ")
-fitMeasures(fit_mimic_inter_global)[c("chisq","df","pvalue","cfi","tli","rmsea", "srmr")]
-```
-
-Le modèle est légèrement moins bien que précédemment.
-
-Par ailleurs les intervalles de confiance ne sont plus estimés (The information matrix could not be inverted. It may be a symptom that the model is not identified). Comme si cela posait un problème méthodologique d'ajouter les mêmes contrôles aux 2 niveaux. De la même manière que cela posait problème d'ajouter des corrélations entre les 3 dimensions de la pauvreté tout à l'heure. 
 
 
 ##  Structural equation models (SEM) [pas utilisé dans le mémoire]
@@ -1665,9 +1689,9 @@ Remarque : estimator ML for ordered data is not supported yet. Use WLSMV instead
 pauv_model_sem <- '
 s =~ s_sentpauvrisque + s_infminidecla
 m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
-i =~ i_log + i_rsa +  i_chom + i_handi + i_bourse + i_hlm 
-pauvrete ~ s + m + i
-pauvrete =~ cov_sexe_femme
+i =~ i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm 
+pauvrete ~ m + i + s
+pauvrete =~ cov_sexe_homme
 '
 
 fit_sem <- lavaan::sem(pauv_model_sem,
@@ -1896,6 +1920,510 @@ gg_latentclass_bar
 # questionr::cprop(table(bdd_poLCA_rmnasup$s_infminidecla,bdd_poLCA_rmnasup$m_quantilenivie_inv))
 
 ```
+
+
+
+```{r, echo=FALSE}
+tab_modfit_afc <- data.frame(rbind(
+round(fitMeasures(fit1_var)[c("chisq","df","cfi","rmsea", "srmr")],3),
+round(fitMeasures(fit2_var)[c("chisq","df","cfi","rmsea", "srmr")],3),
+round(fitMeasures(fit3_var)[c("chisq","df","cfi","rmsea", "srmr")],3),
+round(fitMeasures(fit_hier3_var)[c("chisq","df","cfi","rmsea", "srmr")],3)
+)) %>% 
+  mutate(chisq=round(chisq)) %>% 
+  mutate(modele = paste0("Modèle ",1:4)) %>% 
+  dplyr::select(c("modele","chisq","df","cfi","rmsea", "srmr")) %>%
+  mutate(cfi = gsub("\\.",",",cfi)) %>% 
+  mutate(rmsea = gsub("\\.",",",rmsea)) %>% 
+  mutate(srmr = gsub("\\.",",",srmr)) %>% 
+  setNames(c("Modèle","Chi2","Degrés de liberté","CFI","RMSEA","SRMR")) 
+
+saveRDS(tab_modfit_afc,"../rapport/figures/tab_modfit_afc.RDS")
+  
+tab_modfit_afc %>%
+  kable(caption="Indices d'ajustement des 4 modèles d'AFC")
+
+```
+
+
+
+```{r, echo=FALSE}
+grviz1 <- grViz("
+digraph boxes_and_circles {
+  
+  # a 'graph' statement
+  graph [overlap = true, fontsize = 20,rankdir = LR,
+  bgcolor=transparent, splines=true]
+  
+   node [shape = circle, width=1.5,
+        fontcolor=black, fixedsize=true, fontsize=25]
+   subgraph {
+    rank = same;
+    I [label='Institutio.'];
+    M [label='Monétaire'];
+    S [label='Subjectif'];
+   }
+   
+   # liens entre facteurs
+  #edge [shape = circle, alpha=1 color=black style=filled penwidth=1 arrowsize=.75 minlen=2]
+  #subgraph {
+    #rank = same;
+  #S -> M [label = 1.03 penwidth=1.15  dir=both];
+  #M -> I [label = 0.92 penwidth=1.15  dir=both];
+  #S -> I [label = 0.78 penwidth=1.15  dir=both];
+  #}
+  
+  node [shape = box, fixedsize = true,width = 3, fontsize=20]
+   subgraph {
+    #rank = same;
+  1 [label='Sentiment de pauvreté'];
+  2 [label='Diff. fin. perçues'];
+  3 [label='(-) Quintile niveau de vie'];
+  4 [label='(-) Revenus locatifs'];
+  5 [label='(-) Revenus financiers'];
+  6 [label='RSA'];
+  7 [label='Chômage'];
+  8 [label='APL'];
+  9 [label='Hand./Dépend.'];
+  10 [label='Bourse étude'];
+  11 [label='HLM'];
+   }
+  
+  # loadings
+  I->6 [ label = 0.60 penwidth=1.15];
+  I->7 [ label = 0.31 penwidth=1.15];
+  I->8 [ label = 1.09 penwidth=1.15 color=red];
+  I->9 [ label = 0.34 penwidth=1.15];
+  I->10 [ label = 0.44 penwidth=1.15];
+  I->11 [ label = 0.56 penwidth=1.15];
+  M->3 [ label = 0.63 penwidth=1.15];
+  M->4 [ label = 0.73 penwidth=1.15];
+  M->5 [ label = 0.77 penwidth=1.15];
+  S->1 [ label = 1.00 penwidth=1.15];
+  S->2 [ label = 0.51 penwidth=1.15];
+  
+  # variances
+  edge [shape = circle, alpha=.5 color=gray50 style=dashed penwidth=1.15 arrowsize=.75 minlen=2 dir=both]
+  1:e -> 1:e [label = 1.00];
+  2:e -> 2:e [label = 0.74];
+  3:e -> 3:e [label = 0.60];
+  4:e -> 4:e [label = 0.47];
+  5:e -> 5:e [label = 0.41];
+  6:e -> 6:e [label = 0.63];
+  7:e -> 7:e [label = 0.90];
+  8:e -> 8:e [label = -0.18  color=red];
+  9:e -> 9:e [label = 0.89];
+  10:e -> 10:e [label = 0.81];
+  11:e -> 11:e [label = 0.68];
+  S -> S [label = 1.00];
+  M -> M [label = 1.00];
+  I -> I [label = 1.00];
+
+  }
+", height=600, width=600)
+
+saveRDS(grviz1,"../rapport/figures/grviz1.RDS")
+
+grviz1
+```
+
+```{r, echo=FALSE}
+grviz2 <- grViz("
+digraph boxes_and_circles {
+  
+  # a 'graph' statement
+  graph [overlap = true, fontsize = 20,rankdir = LR,
+  bgcolor=transparent, splines=true]
+  
+   node [shape = circle, width=1.5,
+        fontcolor=black, fixedsize=true, fontsize=25]
+   subgraph {
+    rank = same;
+    I [label='Institutio.'];
+    M [label='Monétaire'];
+    S [label='Subjectif'];
+   }
+   
+   # liens entre facteurs
+  edge [shape = circle, alpha=1 color=black style=filled penwidth=1 arrowsize=.75 minlen=2]
+  subgraph {
+    #rank = same;
+  S -> M [label = 1.03 penwidth=1.15  dir=both color=red];
+  M -> I [label = 0.92 penwidth=1.15  dir=both];
+  S -> I [label = 0.78 penwidth=1.15  dir=both];
+  }
+  
+  node [shape = box, fixedsize = true,width = 3, fontsize=20]
+   subgraph {
+    #rank = same;
+  2 [label='Diff. fin. perçues'];
+  1 [label='Sentiment de pauvreté'];
+  3 [label='(-) Quintile niveau de vie'];
+  4 [label='(-) Revenus locatifs'];
+  5 [label='(-) Revenus financiers'];
+  6 [label='RSA'];
+  7 [label='Chômage'];
+  8 [label='APL'];
+  9 [label='Hand./Dépend.'];
+  10 [label='Bourse étude'];
+  11 [label='HLM'];
+   }
+  
+  # loadings
+  I->6 [ label = 0.75 penwidth=1.15];
+  I->7 [ label = 0.35 penwidth=1.15];
+  I->8 [ label = 0.88 penwidth=1.15 color=red];
+  I->9 [ label = 0.35 penwidth=1.15];
+  I->10 [ label = 0.44 penwidth=1.15];
+  I->11 [ label = 0.66 penwidth=1.15];
+  M->3 [ label = 0.85 penwidth=1.15 color=red];
+  M->4 [ label = 0.59 penwidth=1.15];
+  M->5 [ label = 0.60 penwidth=1.15];
+  S->1 [ label = 0.67 penwidth=1.15];
+  S->2 [ label = 0.76 penwidth=1.15 color=red];
+  
+  # variances
+  edge [shape = circle, alpha=.5 color=gray50 style=dashed penwidth=1.15 arrowsize=.75 minlen=2 dir=both]
+1:e -> 1:e [label = 0.55];
+  2:e -> 2:e [label = 0.42];
+  3:e -> 3:e [label = 0.28];
+  4:e -> 4:e [label = 0.65];
+  5:e -> 5:e [label = 0.63];
+  6:e -> 6:e [label = 0.44];
+  7:e -> 7:e [label = 0.88];
+  8:e -> 8:e [label = 0.23];
+  9:e -> 9:e [label = 0.87];
+  10:e -> 10:e [label = 0.81];
+  11:e -> 11:e [label = 0.57];
+  S -> S [label = 1.00];
+  M -> M [label = 1.00];
+  I -> I [label = 1.00];
+
+  }
+", height=600, width=600)
+
+saveRDS(grviz2,"../rapport/figures/grviz2.RDS")
+
+grviz2
+```
+
+```{r, echo=FALSE}
+grviz3 <- grViz("
+digraph boxes_and_circles {
+  
+  # a 'graph' statement
+  graph [overlap = true, fontsize = 20,rankdir = LR,
+  bgcolor=transparent, splines=true]
+  
+   node [shape = circle, width=1.5,
+        fontcolor=black, fixedsize=true, fontsize=25]
+   subgraph {
+    rank = same;
+    I [label='Institutio.'];
+    M [label='Monétaire'];
+    S [label='Sentiment\nde\npauvreté' shape = square];
+   }
+   
+   # liens entre facteurs
+  edge [shape = circle, alpha=1 color=black style=filled penwidth=1 arrowsize=.75 minlen=2]
+  subgraph {
+    #rank = same;
+  S -> M [label = 0.66 penwidth=1.15  dir=both];
+  M -> I [label = 0.93 penwidth=1.15  dir=both];
+  S -> I [label = 0.59 penwidth=1.15  dir=both];
+  }
+  
+  node [shape = box, fixedsize = true,width = 3, fontsize=20]
+   subgraph {
+    #rank = same;
+  #2 [label='Diff. fin. perçues'];
+  #1 [label='Sentiment de pauvreté'];
+  3 [label='(-) Quintile niveau de vie'];
+  4 [label='(-) Revenus locatifs'];
+  5 [label='(-) Revenus financiers'];
+  6 [label='RSA'];
+  7 [label='Chômage'];
+  8 [label='APL'];
+  9 [label='Hand./Dépend.'];
+  10 [label='Bourse étude'];
+  11 [label='HLM'];
+   }
+  
+  # loadings
+  I->6 [ label = 0.74 penwidth=1.15];
+  I->7 [ label = 0.35 penwidth=1.15];
+  I->8 [ label = 0.89 penwidth=1.15];
+  I->9 [ label = 0.35 penwidth=1.15];
+  I->10 [ label = 0.44 penwidth=1.15];
+  I->11 [ label = 0.65 penwidth=1.15];
+  M->3 [ label = 0.83 penwidth=1.15];
+  M->4 [ label = 0.61 penwidth=1.15];
+  M->5 [ label = 0.61 penwidth=1.15];
+  #S->1 [ label = 0.67 penwidth=1.15];
+  #S->2 [ label = 0.76 penwidth=1.15];
+  
+  # variances
+  edge [shape = circle, alpha=.5 color=gray50 style=dashed penwidth=1.15 arrowsize=.75 minlen=2 dir=both]
+  #1:e -> 1:e [label = 0.55];
+  #2:e -> 2:e [label = 0.42];
+  3:e -> 3:e [label = 0.31];
+  4:e -> 4:e [label = 0.63];
+  5:e -> 5:e [label = 0.63];
+  6:e -> 6:e [label = 0.45];
+  7:e -> 7:e [label = 0.88];
+  8:e -> 8:e [label = 0.22];
+  9:e -> 9:e [label = 0.87];
+  10:e -> 10:e [label = 0.80];
+  11:e -> 11:e [label = 0.58];
+  S -> S [label = 1.00];
+  M -> M [label = 1.00];
+  I -> I [label = 1.00];
+
+  }
+", width=600,height=600)
+
+saveRDS(grviz3,"../rapport/figures/grviz3.RDS")
+
+grviz3
+```
+
+
+```{r, echo=FALSE}
+tab_covariates_inter_cfa <- sum2$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+         ) %>% 
+  dplyr::select(lhs,variable,estimateur) %>%
+  pivot_wider(
+    names_from = lhs,
+    values_from = estimateur
+  ) %>% dplyr::right_join(
+    data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+"Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+ "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+           libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+) ,
+    by="variable") %>% 
+     arrange(match(variable,c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"))) %>% 
+  #dplyr::select(libelle_var,libelle_mod,m,i,s) %>%
+  dplyr::select(libelle_var,libelle_mod,m,i,s_sentpauvrisque_std) %>%
+  replace(is.na(.), "Réf.") %>% 
+#  setNames(c("","Pauvreté...","Monétaire","Institutionnelle","Subjective"))
+  setNames(c("","Pauvreté...","Monétaire","Institutionnelle","Sentiment de pauvreté"))
+
+
+saveRDS(tab_covariates_inter_cfa,"../rapport/figures/tab_covariates_inter_cfa.RDS")
+
+tab_covariates_inter_cfa %>% 
+  kable(caption="Effets des covariables sur les différentes dimensions de la pauvreté", booktabs = TRUE, longtable = TRUE) %>%
+   kableExtra::column_spec(1, width = "4cm") %>%
+   kableExtra::column_spec(2, width = "5cm") %>%
+   kableExtra::column_spec(3:5, width = "2cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+
+
+
+```
+
+```{r, echo=FALSE}
+tab_radar <- sum2$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                     include.lowest = TRUE,
+                     labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+  ) %>%  dplyr::select(lhs,variable,est) %>%
+  rbind(subset(., lhs == "i")) %>% 
+  mutate(lhs=toupper(lhs)) %>% 
+  mutate(lhs=ifelse(lhs=="S_SENTPAUVRISQUE_STD","SP",lhs)) #NEW
+
+coord_radar <- 
+  function(theta='x', start=0, direction=1){
+    match.arg(theta, c('x','y'))
+    ggproto(
+      NULL, CoordPolar, 
+      theta=theta, r=ifelse(theta=='x','y','x'),
+      start=start, direction=sign(direction),
+      is_linear=function() TRUE)
+  }
+
+variables_gardees <- c("vie_fam_coupsansenf","vie_fam_coupenf",
+                       "vie_fam_seul", "vie_fam_mono",
+                  "prof_statut_act_inter", "prof_statut_act_ouv",
+                  "prof_statut_act_chom","prof_statut_act_foyer",
+                  "age_tranche_3039","age_tranche_1829","age_tranche_70")
+variable.labs <-  c("Couple sans enf. (Réf.)","Couple avec enf.","Vit seul","Famille monop.","Prof. inter (Réf.)", "Ouvier","Chômeur","Au foyer","30-39 ans (Réf.)","18-29 ans","70 ans et + ")
+names(variable.labs) <- variables_gardees
+  
+gg_radar <- ggplot(data=tab_radar %>% 
+         filter(variable%in%variables_gardees) %>% 
+           add_row(lhs=rep(c("I","SP","M"),3),
+                   variable=c(rep("vie_fam_coupsansenf",3),rep("prof_statut_act_inter",3),rep("age_tranche_3039",3)),
+                   est=rep(0,3*3)) %>% 
+           mutate(variable=factor(variable,levels=variables_gardees,
+                                  labels=variable.labs)),
+       aes(x=lhs, y=est, group=variable)) +  # colour=variable
+  #geom_path(data=data.frame(lhs=c("I","S","M","S","I","M"),
+  geom_path(data=data.frame(lhs=c("I","SP","M","SP","I","M"),
+                            est=rep(0,6)), group=NA,colour="black",size=1,linetype="solid")  +
+  geom_point(size=1) + 
+  geom_path(color="red") +
+  coord_radar() +
+  theme_bw() +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.x = element_blank()) + 
+  facet_wrap(~ variable, nrow=3)  #,labeller = labeller(variable = variable.labs)
+
+gg_radar
+
+saveRDS(gg_radar,"../rapport/figures/gg_radar.RDS")
+
+```
+
+```{r, echo=FALSE}
+grviz4 <- grViz("
+digraph boxes_and_circles {
+  
+  # a 'graph' statement
+  graph [overlap = true, fontsize = 20,rankdir = LR,
+  bgcolor=transparent, splines=true]
+  
+   node [shape = circle, width=1.5,
+        fontcolor=black, fixedsize=true, fontsize=25]
+   subgraph {
+    rank = same;
+    P [label='Pauvreté'];
+    }
+   subgraph {
+    rank = same;
+    S [label='Sentiment\nde\npauvreté' shape = square];
+    M [label='Monétaire'];
+    I [label='Institutio.'];
+   }
+   
+  
+  node [shape = box, fixedsize = true,width = 3, fontsize=20]
+   subgraph {
+  3 [label='(-) Quintile niveau de vie'];
+  4 [label='(-) Revenus locatifs'];
+  5 [label='(-) Revenus financiers'];
+  6 [label='RSA'];
+  7 [label='Chômage'];
+  8 [label='APL'];
+  9 [label='Hand./Dépend.'];
+  10 [label='Bourse étude'];
+  11 [label='HLM'];
+   }
+  
+  # loadings
+  I->6 [ label = 0.74 penwidth=1.15];
+  I->7 [ label = 0.35 penwidth=1.15];
+  I->8 [ label = 0.88 penwidth=1.15];
+  I->9 [ label = 0.35 penwidth=1.15];
+  I->10 [ label = 0.44 penwidth=1.15];
+  I->11 [ label = 0.65 penwidth=1.15];
+  M->3 [ label = 0.83 penwidth=1.15];
+  M->4 [ label = 0.60 penwidth=1.15];
+  M->5 [ label = 0.60 penwidth=1.15];
+  P -> S [label = 0.65 penwidth=2.5];
+  P -> I [label = 0.93 penwidth=2.5];
+  P -> M [label = 1.00 penwidth=2.5];
+  
+  # variances
+  edge [shape = circle, alpha=.5 color=gray50 style=dashed penwidth=1.15 arrowsize=.75 minlen=2 dir=both]
+  3:e -> 3:e [label = 0.28];
+  4:e -> 4:e [label = 0.63];
+  5:e -> 5:e [label = 0.63];
+  6:e -> 6:e [label = 0.45];
+  7:e -> 7:e [label = 0.88];
+  8:e -> 8:e [label = 0.22];
+  9:e -> 9:e [label = 0.87];
+  10:e -> 10:e [label = 0.80];
+  11:e -> 11:e [label = 0.58];
+  S -> S [label = 0.58];
+  M -> M [label = 0.03];
+  I -> I [label = 0.15];
+  P -> P [label = 1.00];
+
+
+  }
+", width=600,height=600)
+
+saveRDS(grviz4,"../rapport/figures/grviz4.RDS")
+
+grviz4
+```
+
+
+```{r, echo=FALSE}
+tab_covariates_global_cfa <- sum$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+         ) %>% arrange(desc(abs(est))) %>% 
+  dplyr::select(lhs,variable,estimateur) %>%
+  pivot_wider(
+    names_from = lhs,
+    values_from = estimateur
+  ) %>% dplyr::left_join(
+    data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+"Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+ "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+           libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+) ,
+    by="variable")  %>% 
+  dplyr::select(libelle_mod,pauvrete) %>%
+  setNames(c("","Effet sur l'indice global de pauvreté"))
+
+
+saveRDS(tab_covariates_global_cfa,"../rapport/figures/tab_covariates_global_cfa.RDS")
+
+tab_covariates_global_cfa %>% 
+  kable(caption="Effets des covariables sur l'indice global de pauvreté", booktabs = TRUE, longtable = TRUE) %>%
+   kableExtra::column_spec(1, width = "5cm") %>%
+   kableExtra::column_spec(2, width = "5cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+
+
+```
+
+
+ 
+
 
 # Notes méthodologiques
 
