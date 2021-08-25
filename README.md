@@ -3,7 +3,7 @@
 
 Ce mémoire de recherche a été réalisé dans le cadre de mon double diplôme de troisième année à l’École nationale de la statistique et de l'administration économique (**ENSAE**) et de **Master 2 de Sociologie**, parcours Sociologie Quantitative & Démographie (SQD) accrédité Université Paris-Saclay.
 
-<img src="rapport/logos/accueil.png" height=300 align="center" />
+<center><img src="rapport/logos/accueil.png" height=300 /></center>
 
 ### Résumé
 
