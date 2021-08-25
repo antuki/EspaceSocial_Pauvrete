@@ -1,5 +1,7 @@
 # Construire l'espace social de la pauvreté avec un Baromètre d'opinion
 
+<img src="rapport/logos/accueil.png" height=600 align="center" />
+
 Ce mémoire de recherche a été réalisé dans le cadre de mon double diplôme de troisième année à l’École nationale de la statistique et de l'administration économique (**ENSAE**) et de **Master 2 de Sociologie**, parcours Sociologie Quantitative & Démographie (SQD) accrédité Université Paris-Saclay.
 
 ### Résumé
@@ -12,19 +14,19 @@ Ces méthodes ont pu montrer que les dimensions de la pauvreté sont non seuleme
 
 ### Liens utiles
 
-- **Rapport de stage** aux formats [web]() et [PDF]()
+- **Rapport de stage** aux formats [web](https://antuki.github.io/EspaceSocial_Pauvrete/rapport/_book/index.html) et [PDF](https://antuki.github.io/EspaceSocial_Pauvrete/rapport/_book/M2_ANTUNEZ_SQD.pdf)
 
 - **Travaux statistiques associés** 
   
-  *	**Fiche 1** [Lasso exploratoire](https://antuki.github.io/stage_3A/modeles/modeles1.pdf) 
+  *	*Fiche 1* : [Lasso exploratoire](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles1.pdf) 
   
-  *	**Fiche 2** [Statistique bi-variée](https://antuki.github.io/stage_3A/modeles/modeles2.pdf) 
+  *	*Fiche 2* : [Statistique bi-variée](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles2.pdf) 
   
-  *	**Fiche 3** [Réplication et reproduction de Duvoux, Papuchon 2018](https://antuki.github.io/stage_3A/modeles/modeles3.pdf)
+  *	*Fiche 3* [Réplication et reproduction de Duvoux, Papuchon 2018](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles3.pdf)
   
-  *	**Fiche 4** [Modélisations économétriques des déterminants du sentiment de pauvreté](https://antuki.github.io/stage_3A/modeles/modeles4.pdf)
+  *	*Fiche 4* : [Modélisations économétriques des déterminants du sentiment de pauvreté](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles4.pdf)
   
   
-  *	**Fiche 5** [Constuction de l'espace social de la pauvreté par Analyse des Correspondances Multiples](https://antuki.github.io/stage_3A/modeles/modeles5.html)
+  *	*Fiche 5* : [Constuction de l'espace social de la pauvreté par Analyse des Correspondances Multiples](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles5.html)
   
-  *	**Fiche 6** [Constuction de l'espace social de la pauvreté par analyses en facteurs communs exploratoire et confirmatoire](https://antuki.github.io/stage_3A/modeles/modeles6.pdf) 
+  *	**Fiche 6** [Constuction de l'espace social de la pauvreté par Analyses en Facteurs communs Exploratoire et Confirmatoire](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles6.pdf) 
