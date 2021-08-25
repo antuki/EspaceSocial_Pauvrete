@@ -1,8 +1,9 @@
 # Construire l'espace social de la pauvreté avec un Baromètre d'opinion
 
-<img src="rapport/logos/accueil.png" height=600 align="center" />
 
 Ce mémoire de recherche a été réalisé dans le cadre de mon double diplôme de troisième année à l’École nationale de la statistique et de l'administration économique (**ENSAE**) et de **Master 2 de Sociologie**, parcours Sociologie Quantitative & Démographie (SQD) accrédité Université Paris-Saclay.
+
+<img src="rapport/logos/accueil.png" height=300 align="center" />
 
 ### Résumé
 
@@ -29,4 +30,4 @@ Ces méthodes ont pu montrer que les dimensions de la pauvreté sont non seuleme
   
   *	*Fiche 5* : [Constuction de l'espace social de la pauvreté par Analyse des Correspondances Multiples](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles5.html)
   
-  *	**Fiche 6** [Constuction de l'espace social de la pauvreté par Analyses en Facteurs communs Exploratoire et Confirmatoire](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles6.pdf) 
+  *	*Fiche 6* : [Constuction de l'espace social de la pauvreté par Analyses en Facteurs communs Exploratoire et Confirmatoire](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles6.pdf) 
