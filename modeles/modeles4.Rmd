@@ -1725,7 +1725,8 @@ RSA : individu / ménage
 #                kable=TRUE)
 #14634 8,3%
 
-tab_rsa1 <- bind_cols(run_regression(y="subj_pauvrete", 
+tab_rsa1 <- bind_cols(
+  run_regression(y="subj_pauvrete", 
                        x= c("est_rsa","vie_fam"),
                kable=FALSE)  %>%
   mutate(odds_ratio = ifelse(
@@ -1735,7 +1736,8 @@ tab_rsa1 <- bind_cols(run_regression(y="subj_pauvrete",
   slice(-1) %>%
   mutate(modalite = c("Pas de RSA", "RSA", modalite[3:8])
          ) %>% 
-  arrange(match(modalite, c(modalite[1:3],modalite[5],modalite[4],modalite[6:8]))),
+  arrange(match(modalite, c(modalite[1:2],modalite[4],modalite[3],modalite[5],modalite[6:8]))),
+  
   run_regression(y="subj_pauvrete", 
                        x= c("presta_rsa","vie_fam"),
                kable=FALSE)  %>%
@@ -1746,8 +1748,8 @@ tab_rsa1 <- bind_cols(run_regression(y="subj_pauvrete",
   slice(-1) %>%
   mutate(modalite = c("N'a personne dans son ménage au RSA", "A quelqu'un dans son ménage au RSA", modalite[3:8])
          ) %>% 
-  arrange(match(modalite, c(modalite[1:3],modalite[5],modalite[4],modalite[6:8]))) %>% 
-    pull(odds_ratio)
+      arrange(match(modalite, c(modalite[1:2],modalite[4],modalite[3],modalite[5],modalite[6:8])))
+  %>% pull(odds_ratio)
 ) %>% 
   setNames(c("Modèle logit. Variable dépendante : se déclarer pauvre", "Odds ratio (individu)","Odds ratio (ménage)")) 
 

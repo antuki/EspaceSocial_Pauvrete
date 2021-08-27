@@ -2,24 +2,21 @@
 
 Dans nos sociétés, tout bien ou service se mesure monétairement. C’est pourquoi la **dimension monétaire** est directement liée à la privation matérielle des ménages. Elle est ainsi omniprésente dans la mesure de la pauvreté, et ce malgré les limites évoquées dans le chapitre \@ref(chap1) (mesure relative, non prise en compte des dépenses pré-engagées...). 
 
-Dans le précédent chapitre \@ref(nonreducnv), nous avons montré que, même si pauvreté matérielle objective et sentiment de pauvreté sont très corrélés, certaines zones de flous demeurent. C’est le halo de pauvreté. Le niveau de vie -- et les indicateurs de pauvreté monétaire en général -- ne suffisent pas à eux seuls à expliquer le sentiment de pauvreté des Français entre 2015 et 2019. Même à niveau de vie fixé, certaines situations sur le marché du travail (inactivité ou chômage, ouvriers et employés dans une moins mesure), d’occupation de son logement (être locataire plutôt que propriétaire) et de vie familiale (vivre seul(e)) augmentent les risques de se sentir pauvre. Ces résultats remettent alors en cause l’usage unique des seuils stricts et intangibles de pauvreté monétaire et confirment l’intérêt de mobiliser quand cela est possible la **dimension subjective** pour rendre compte de certains aspects du halo de la pauvreté.
+Dans le précédent chapitre \@ref(nonreducnv), nous avons montré que, même si pauvreté matérielle objective et sentiment de pauvreté sont très corrélés, certaines zones de flous demeurent. C’est le halo de pauvreté. Le niveau de vie -- et les indicateurs de pauvreté monétaire en général -- ne suffisent pas à eux seuls à expliquer le sentiment de pauvreté des Français entre 2015 et 2019. Même à niveau de vie fixé, certaines situations sur le marché du travail (inactivité ou chômage, ouvriers et employés dans une moins mesure), d’occupation de son logement (être locataire plutôt que propriétaire) et de vie familiale (vivre seul(e)) augmentent les risques de se sentir pauvre. Ces résultats remettent alors en cause l’usage exclusif de seuils stricts et intangibles de pauvreté monétaire et confirment l’intérêt de mobiliser, quand cela est possible, la **dimension subjective** pour rendre compte de certains aspects du halo de la pauvreté.
 
-Enfin, même si l’accès aux différentes prestations sociales est déterminé selon des critères monétaires, la **dimension institutionnelle** structure également à elle-seule la pauvreté subjective puisque recevoir des aides sociales, et donc être en situation d’assistance vis-à-vis de l’État français, augmente les risques de se sentir pauvre à niveau de vie fixé. Elle constitue alors une nouvelle dimension à part entière de la pauvreté, assimilable à un statut social spécifique dépendant des aides de l’État présentant un risque accru d’exclusion sociale (@paugam1991disqualification).
+Enfin, même si l’accès aux différentes prestations sociales est déterminé selon des critères monétaires, la **dimension institutionnelle** structure également la pauvreté subjective puisque recevoir des aides sociales, et donc être en situation d’assistance vis-à-vis de l’État français, augmente les risques de se sentir pauvre à niveau de vie fixé. Elle constitue alors une nouvelle dimension à part entière de la pauvreté, assimilable à un statut social spécifique dépendant des aides de l’État présentant un risque accru d’exclusion sociale (@paugam1991disqualification).
 
-Nous chercherons donc dans cette partie à analyser comment se structure globalement l’espace social de la pauvreté. Nous utiliserons pour cela des indicateurs appartenant aux trois dimensions de la pauvreté mises en exergue précédemment : les dimensions objectives traditionnelles (monétaire et institutionnelle) ainsi que la dimension subjective, toutes mesurées dans le Baromètre d’opinion de la Drees. Proposer cette démarche englobante et connaître les interactions entre ces différentes dimensions permet, dans un second temps, d’identifier la manière dont les différents groupes sociaux sont exposés aux différentes formes de pauvreté.
+Nous chercherons donc dans ce chapitre à analyser comment se structure globalement l’espace social de la pauvreté. Nous utiliserons pour cela des indicateurs appartenant aux trois dimensions de la pauvreté mises en exergue précédemment : les dimensions objectives traditionnelles (monétaire et institutionnelle) ainsi que la dimension subjective, toutes mesurées dans le Baromètre d’opinion de la Drees. Proposer cette démarche englobante et connaître les interactions entre ces différentes dimensions permet, dans un second temps, d’identifier la manière dont les différents groupes sociaux sont exposés aux différentes formes de pauvreté.
 
 ## Modèle descriptif : les indicateurs mesurables de la pauvreté {#sec:esexplodescri}
 
 ### Pauvretés monétaire, institutionnelle et subjective par Analyse des Correspondances Multiples {#sec:esexplodescriACM}
 
-Nous avons cherché dans un premier temps à représenter grâce à une Analyse des Correspondances Multiples (ACM) (voir encadré 1) l’espace social de la pauvreté issu des données du Baromètre d’opinion de la Drees.
-
-\vfill
+Dans un premier temps, nous avons représenté l’espace social de la pauvreté issu des données du Baromètre d’opinion de la Drees grâce à une Analyse des Correspondances Multiples (ACM ; voir encadré 1).
 
 La figure \@ref(fig:acm1) représente le nuage des variables actives projeté sur les deux premiers axes de l’ACM. Le premier axe conserve à lui seul un cinquième de l’inertie totale. Le positionnement parabolique des différentes modalités révèle l’existence d’un effet Guttman (voir annexe \@ref(sec:annexeAFACMguttman)), c’est-à-dire une forte redondance entre les variables étudiées, et donc entre les différentes dimensions de la pauvreté. Les différentes modalités se positionnent le long de cette parabole qui oppose en haut à gauche les modalités signalant des situations de richesse à des situations de pauvreté en haut à droite. En bas au centre se situent les modalités fortement contributives de l’axe 2, qui renseignent sur des situations médianes : en particulier indiquer ne pas se sentir pauvre mais penser risquer le devenir dans les cinq années à venir ou appartenir au troisième quintile de niveau de vie des ménages.
 
-
-\newpage
+Les ACM à effet Guttman sont souvent présentées comme étant sans grand intérêt interprétatif mais elles signalent pourtant des informations majeures, ici le fait que les différentes dimensions de la pauvreté ont comme principal point commun le fait d’aller globalement dans le même sens, ce qui n’aurait pas été le cas s’il y avait eu des variables vraiment à part qui auraient alors fait l’objet d’un axe de différenciation spécifique. Ce nuage permet également de distinguer les indicateurs de pauvreté dont les modalités sont situées en haut à droite et en bas (dans cet ordre : bénéficier du RSA, d’une bourse d’étude, appartenir au premier quintile de niveau de vie, bénéficier d’une APL ou d’une allocation chômage). A l’inverse, certaines modalités indiquent davantage les situations de richesse (dans cet ordre : disposer de revenus financiers ou locatifs, appartenir au dernier quintile de niveau de vie, indiquer avoir un revenu supérieur au minimum déclaré pour vivre). 
 
 :::{.summary_box data-latex="[false]{Analyse des Correspondances Multiples et Classification Ascendante Hiérarchique}"}
 `r if (is_html) '
@@ -33,6 +30,7 @@ Analyse des Correspondances Multiples et Classification Ascendante Hiérarchique
 L’Analyse des Correspondances Multiples (ACM) (voir détails méthodologiques en annexe \@ref(sec:annexeAFACM)) est un outil quantitatif, rendu particulièrement célèbre en sociologie par Pierre Bourdieu en France, qui permet une représentation visuelle de l’espace social des variables mobilisées et contribue à l’amélioration de la compréhension du monde social.
 
 Les **variables actives** correspondent à l’ensemble des variables appartenant aux dimensions monétaire, institutionnelle et subjective de la pauvreté et identifiées comme pertinentes dans le chapitre \@ref(nonreducnv). Elles sont représentées en figure \@ref(fig:acm1). Les autres variables mobilisées dans les régressions du chapitre \@ref(nonreducnv) ont été placées en **variables supplémentaires**.
+
 Les résultats signalent la présence d’un **effet Guttman** (voir annexe \@ref(sec:annexeAFACMguttman)) due à la forte inertie résumée par le premier axe (figure \@ref(fig:inertie1)). 
 
 Par ailleurs, l’analyse des axes suivants ne laisse pas apparaître des oppositions claires dans l’espace social : 
@@ -99,11 +97,9 @@ gg_acm_actives
 ```
 
 
-Les ACM à effet Guttman sont souvent présentées comme étant sans grand intérêt interprétatif mais elles signalent pourtant des informations majeures, ici le fait que les différentes dimensions de la pauvreté ont comme principal point commun le fait d’aller globalement dans le même sens (ce qui n’aurait pas été le cas s’il y avait eu des variables vraiment à part qui auraient alors fait l’objet d’un axe de différenciation spécifique). Ce nuage permet également de distinguer les indicateurs de pauvreté dont les modalités sont situées en haut à droite et en bas (dans cet ordre : bénéficier du RSA, d’une bourse d’étude, appartenir au premier quintile de niveau de vie, bénéficier d’une APL ou d’une allocation chômage). A l’inverse, certaines modalités indiquent davantage les situations de richesse (dans cet ordre : disposer de revenus financiers ou locatifs, appartenir au dernier quintile de niveau de vie, indiquer avoir un revenu supérieur au minimum déclaré pour vivre). 
-
 La figure \@ref(fig:acm2) projette sur le nuage des variables les modalités de quatre variables supplémentaires particulièrement intéressantes à analyser : l’année, le niveau de diplôme, la situation vis-à-vis du marché du travail et la structure du ménage. Leur position situe les différents groupes sociaux dans l’espace de pauvreté.
 
-Tout d’abord, les différentes années se situent au centre des deux axes, indiquant que, même si les années 2018 et 2019 se distinguent par une hausse du sentiment de pauvreté (comme vu dans la section \@ref(sec:augmentesubj)), globalement aucune année ne se distingue par une situation de pauvreté plus importante sur l’ensemble des variables actives. Ainsi, l’espace social de la pauvreté est globalement structuré chaque année de la même manière depuis 2015^[Nous avons également réalisé en plus de cette ACM, deux ACM identiques à cette première mais une s’intéressant uniquement aux données avant 2018 (exclu) et l’autre après 2018 (inclus). Les deux nuages obtenus étaient très semblables à celui-ci, ce qui va dans le sens de l’analyse faite à partir de la figure \@ref(fig:acm2).].
+Tout d’abord, les différentes années se situent au centre des deux axes, indiquant que, même si les années 2018 et 2019 se distinguent par une hausse du sentiment de pauvreté (comme vu dans la section \@ref(sec:augmentesubj)), globalement aucune année ne se distingue par une situation de pauvreté plus importante sur l’ensemble des variables actives. Ainsi, l’espace social de la pauvreté est globalement structuré chaque année de la même manière depuis 2015^[Nous avons également réalisé, en plus de cette ACM, deux ACM identiques à cette première mais une s’intéressant uniquement aux données avant 2018 (exclu) et l’autre après 2018 (inclus). Les deux nuages obtenus étaient très semblables à celui-ci, ce qui va dans le sens de l’analyse faite à partir de la figure \@ref(fig:acm2).].
 
 ```{r, include = FALSE}
 champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
@@ -120,7 +116,7 @@ gg_acm_passives
 ```
 
 
-Par ailleurs, les personnes particulièrement exposées à la pauvreté (toutes dimensions confondues) semblent être les chef(fe)s de famille monoparentales, les chômeurs et autres inactifs non retraités et, dans une moindre mesure, les ouvriers et employés. Si un faible niveau de diplôme ne se confond pas avec la pauvreté telle qu’identifiée dans cet espace social, un très haut niveau de diplôme assure en revanche d’appartenir aux ménages les plus aisés.
+Par ailleurs, les personnes particulièrement exposées à la pauvreté (toutes dimensions confondues) semblent être les chefs de famille monoparentales, les chômeurs et autres inactifs non retraités et, dans une moindre mesure, les ouvriers et employés. Si un faible niveau de diplôme ne se confond pas avec la pauvreté telle qu’identifiée dans cet espace social, un très haut niveau de diplôme assure en revanche d’appartenir aux ménages les plus aisés.
 
 ### Cinq classes ordonnées de pauvreté par Classification Ascendante Hiérarchique {#sec:esexplodescriCAH}
 
@@ -148,14 +144,14 @@ champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
 source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
 
 if(knitr:::is_latex_output()){
-note <- c("Dans la classe 3, 35 \\% des individus appartiennent à des ménages du troisième quintile de niveau de vie, aucun individu n’appartient à un ménage qui reçoit des revenus locatifs, 1 \\% indiquent se sentir pauvre et 12 \\% indiquent risquer le devenir dans les cinq prochaines années.")
+note <- c("Dans la classe 3 qui rassemble 28,6 \\% de l'échantillon, 35 \\% des individus appartiennent à des ménages du troisième quintile de niveau de vie, aucun individu n’appartient à un ménage qui reçoit des revenus locatifs, 1 \\% indiquent se sentir pauvre et 12 \\% indiquent risquer le devenir dans les cinq prochaines années.")
 } else{
- note <- c("Dans la classe 3, 35 % des individus appartiennent à des ménages du troisième quintile de niveau de vie, aucun individu n’appartient à un ménage qui reçoit des revenus locatifs, 1 % indiquent se sentir pauvre et 12 % indiquent risquer le devenir dans les cinq prochaines années.")  
+ lecture <- c("Dans la classe 3 qui rassemble 28,6 % de l'échantillon, 35 % des individus appartiennent à des ménages du troisième quintile de niveau de vie, aucun individu n’appartient à un ménage qui reçoit des revenus locatifs, 1 % indiquent se sentir pauvre et 12 % indiquent risquer le devenir dans les cinq prochaines années.")  
 }
 
 ```
 
-```{r cah2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 5 classes de la CAH', echo=FALSE, fig.width=7, fig.height=6, out.width="100%",fig.source=source, fig.champ=champ, fig.note = note}
+```{r cah2, fig.show='hold', fig.cap='Indicateurs des différentes dimensions de la pauvreté pour chacune des 5 classes de la CAH', echo=FALSE, fig.width=7, fig.height=6, out.width="100%",fig.source=source, fig.champ=champ, fig.lecture = lecture}
 
 gg_cah_bar <- readRDS("figures/gg_cah_bar.RDS")
 
@@ -208,9 +204,9 @@ Sans surprise, ces 5 classes s’alignent et s’ordonnent selon la parabole de 
 
 ### Deux dimensions latentes par analyse en facteurs communs exploratoire {#sec:esexplostructuefa}
 
-L’effet Guttman observé en figure \@ref(fig:acm1) suggère une corrélation globale entre l’ensemble des indicateurs de pauvreté. On pourrait alors en théorie classer les individus selon une échelle unidimensionnelle de la pauvreté (typiquement le premier axe de l’ACM). Toutefois, le chapitre \@ref(nonreducnv) a montré que cette corrélation entre indicateurs et dimensions de la pauvreté n’est pas parfaite puisqu’à niveau de vie constant, la pauvreté institutionnelle et d’autres facteurs sociodémographiques influent sur le sentiment de pauvreté.
+L’effet Guttman observé en figure \@ref(fig:acm1) suggère une corrélation globale entre l’ensemble des indicateurs de pauvreté. On pourrait alors en théorie classer les individus selon une échelle unidimensionnelle de la pauvreté (typiquement selon le premier axe de l’ACM). Toutefois, le chapitre \@ref(nonreducnv) a montré que cette corrélation entre indicateurs et dimensions de la pauvreté n’est pas parfaite puisqu’à niveau de vie constant, la pauvreté institutionnelle et d’autres facteurs sociodémographiques influent sur le sentiment de pauvreté.
 
-Remarquons par ailleurs que les corrélations de Spearman^[La corrélation de Spearman permet de comparer deux variables sans que la relation soit nécessairement affine. Elle est égale au coefficient de corrélation de Pearson calculé sur les variables de rang. $r_s = \mathrm{corr}(\mathrm{rg}_X, \mathrm{rg}_Y) = \frac{\mathrm{cov}(\mathrm{rg}_X, \mathrm{rg}_Y)}{\sigma_{\mathrm{rg}_X} \sigma_{\mathrm{rg}_Y}}$. La variable de rang $\mathrm{rg}_{X_i}$ est définie telle que $\mathrm{rg}_{X_i}=j \iff X_i = X_{(j)}$ ($X_i$ est la $j$ème plus petite variable).] (figure \@ref(fig:corrplot)) entre les différentes variables de pauvreté, ne sont, étonnamment, pas très élevées. Seule la corrélation entre niveau de vie (dimension monétaire) et difficultés financières perçues (dimension subjective) est significative au seuil de 5 %. En abaissant le seuil de tolérance et en représentant l’ensemble des corrélations supérieures au seuil de corrélation (arbitraire) de 0,3 (figure \@ref(fig:corrplot)), les deux indicateurs subjectifs ont une corrélation au-dessus de ce seuil, de même pour les corrélations entre variables institutionnelles de RSA, APL et de location d’un logement social prises deux à deux (sauf entre RSA et location d’un logement social). Conformément aux observations du chapitre précédent, le niveau de vie est corrélé avec les deux variables de pauvreté subjective et certaines variables de pauvreté institutionnelle (APL, location d’un logement social). 
+Remarquons par ailleurs que les corrélations de Spearman^[La corrélation de Spearman permet de comparer deux variables sans que la relation soit nécessairement affine. Elle est égale au coefficient de corrélation de Pearson calculé sur les variables de rang. $r_s = \mathrm{corr}(\mathrm{rg}_X, \mathrm{rg}_Y) = \frac{\mathrm{cov}(\mathrm{rg}_X, \mathrm{rg}_Y)}{\sigma_{\mathrm{rg}_X} \sigma_{\mathrm{rg}_Y}}$. La variable de rang $\mathrm{rg}_{X_i}$ est définie telle que $\mathrm{rg}_{X_i}=j \iff X_i = X_{(j)}$ ($X_i$ est la $j$ème plus petite variable).] (figure \@ref(fig:corrplot)) entre les différentes variables de pauvreté, ne sont, étonnamment, pas très élevées. Seule la corrélation entre niveau de vie (dimension monétaire) et difficultés financières perçues (dimension subjective) est significative au seuil de 5 %. En abaissant le seuil de tolérance et en représentant l’ensemble des corrélations supérieures au seuil de corrélation (arbitraire) de 0,3 (figure \@ref(fig:corrplot)), les deux indicateurs subjectifs ont une corrélation au-dessus de ce seuil, de même pour les corrélations entre variables institutionnelles de RSA, APL et de location d’un logement social prises deux à deux (sauf entre RSA et location d’un logement social). Conformément aux observations du chapitre précédent, le niveau de vie est central dans l'analyse de la pauvreté puisque corrélé avec les deux variables de pauvreté subjective et certaines variables de pauvreté institutionnelle (APL, location d’un logement social). 
 
 
 
@@ -227,25 +223,25 @@ gg_corrplot <- readRDS("figures/gg_corrplot.RDS")
 gg_corrplot
 ```
 
-La figure \@ref(fig:corrplot) illustre donc assez bien la complexité de l’espace social de la pauvreté, c’est-à-dire à la fois la corrélation qu’il existe entre certains indicateurs au sein d’une même dimension (mais pas tous !) mais aussi celle qui lie certains indicateurs appartenant à des dimensions différentes, en particulier le niveau de vie et les indicateurs de pauvreté subjective ainsi qu’avec le bénéfice de certaines prestations sociales. 
+
+La figure \@ref(fig:corrplot) illustre donc assez bien la complexité de l’espace social de la pauvreté, c’est-à-dire à la fois la corrélation qu’il existe entre certains indicateurs au sein d’une même dimension (mais pas tous !) mais aussi celle qui lie certains indicateurs appartenant à des dimensions différentes, en particulier le niveau de vie et les indicateurs de pauvreté subjective ainsi qu’avec le fait d'être bénéficiaire de certaines prestations sociales. 
 
 
-C’est pourquoi nous chercherons dans les parties qui suivent à aller plus loin dans la recherche d’axes de structuration / différenciation dans l’espace social de la pauvreté, dans l’idée d’analyser empiriquement en quoi elle est multidimensionnelle. Cette étude plus en profondeur de la structuration de l’espace social est permise par l’analyse en facteurs communs (AF) exploratoire (AFE) (encadré 2) qui permet de modéliser des variables latentes, c’est-à-dire, dans le cadre qui nous intéresse, les dimensions de la pauvreté.
+<!-- \vspace{1mm} -->
 
-\newpage
 
 :::{.summary_box data-latex="[false]{Analyse en Facteurs communs et classes latentes}"}
 `r if (is_html) '
 :::{.title}
-Analyse des Correspondances Multiples et Classification Ascendante Hiérarchique
+Analyse en Facteurs communs et classes latentes
 :::
 '`
 
 **Analyse en Facteurs communs Exploratoire**
 
-Alors que l’ACM avait pour principal objectif la réduction de dimension des données, l’AFE cherche en outre à identifier des dimensions latentes -- typiquement les différentes dimensions de la pauvreté -- qui se cachent derrière les variables mesurées et disponibles dans notre base de données. Par ailleurs, contrairement à l’ACM, elle conserve la structure des corrélations entre variables observée en figure \@ref(fig:corrplot) et ne s’intéresse pas uniquement à la variance. La variance totale se décompose en effet en une somme de deux variances : 
+Alors que l’ACM avait pour principal objectif la réduction de la dimension des données, l’AFE cherche en outre à identifier des variables latentes -- typiquement les différentes dimensions de la pauvreté -- qui se cachent derrière les indicateurs mesurés dans la base de données. Par ailleurs, contrairement à l’ACM, elle conserve la structure des corrélations entre indicateurs (figure \@ref(fig:corrplot)) et ne s’intéresse pas uniquement à la variance. La variance totale se décompose en effet en une somme de deux variances : 
 
-1. la variance commune (*communality*) qui correspond à la variance partagée par tous les indicateurs d'un même facteur ;
+1. la variance commune (*communality*) qui correspond à la variance partagée par tous les indicateurs d'un même facteur (c'est-à-dire d'une même variable latente) ;
 
 2. la variance unique (inexistante dans le cas d'une ACM) : celle spécifique à chaque indicateur (par exemple la variance spécifique du fait de toucher le RSA au-delà de la variance attribuable à la pauvreté institutionnelle) et celle due aux éventuelles erreurs de mesures.  
 
@@ -267,17 +263,18 @@ tab_modfit <- round(readRDS("figures/tab_modfit.RDS")[,c(1,2,3,4,6,8,9)])
 tab_modfit %>%
   kable() %>% #caption="Qualité des modèles de 2 à 8 classes"
   kableExtra::column_spec(1, width = "1.2cm") %>% 
-  kableExtra::column_spec(2, width = "1.7cm") %>% 
-  kableExtra::column_spec(3:4, width = "1.5cm") %>% 
-  kableExtra::column_spec(5:6, width = "1.1cm") %>% 
-  kableExtra::column_spec(7, width = "1.5cm") 
+  kableExtra::column_spec(2:3, width = "2cm") %>% 
+  kableExtra::column_spec(4:5, width = "1.1cm") %>% 
+  kableExtra::column_spec(6:7, width = "1.5cm") 
 ```
 
 :::
 
 
+C’est pourquoi nous chercherons dans les parties qui suivent à aller plus loin dans la recherche d’axes de structuration / différenciation dans l’espace social de la pauvreté, dans l’idée d’analyser empiriquement en quoi elle est multidimensionnelle. Cette étude plus en profondeur de la structuration de l’espace social est permise par l’analyse en facteurs communs (AF) exploratoire (AFE) (encadré 2) qui permet de modéliser des variables latentes, c’est-à-dire, dans le cadre qui nous intéresse, les dimensions de la pauvreté.
 
-La figure \@ref(fig:afe) représente une AFE en deux facteurs (c’est-à-dire deux dimensions latentes) dont les résultats sont nets et facilement interprétables : le premier facteur rassemble les indicateurs de pauvretés monétaire et subjective et le second les indicateurs de pauvreté institutionnelle^[ L’indicatrice d’être bénéficiaire du RSA est relativement proche de la première bissectrice (saturation ou *loading* de 0,52 pour le second axe et 0,23 pour le premier), de même pour la variable de location d’un logement social (0,46 contre 0,24), ce qui signifie qu’elles sont relativement proches également du premier facteur (dimensions monétaire ou subjective de la pauvreté).]. Les dimensions de la pauvreté sont ainsi non seulement théoriquement construites (cf. partie \@ref(chap1)) mais sont également validées empiriquement par AFE. 
+
+La figure \@ref(fig:afe) représente une AFE en deux facteurs (c’est-à-dire deux variables latentes) dont les résultats sont nets et facilement interprétables : le premier facteur rassemble les indicateurs de pauvretés monétaire et subjective et le second les indicateurs de pauvreté institutionnelle^[L’indicatrice d’être bénéficiaire du RSA est relativement proche de la première bissectrice (saturation ou *loading* de 0,52 pour le second axe et 0,23 pour le premier), de même pour la variable de location d’un logement social (0,46 contre 0,24), ce qui signifie qu’elles sont relativement proches également du premier facteur (dimensions monétaire ou subjective de la pauvreté).]. Les dimensions de la pauvreté sont ainsi non seulement théoriquement construites (cf. partie \@ref(chap1)) mais sont également validées empiriquement par AFE. 
 
 
 ```{r, include = FALSE}
@@ -287,14 +284,14 @@ lecture <- c("Pour la variable « HLM » (être locataire d’un logement social
 ```
 
 
-```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et sujective (Analyse en Facteurs Communs)', echo=FALSE, fig.width=7, fig.height=5, out.width="100%",fig.source=source, fig.champ=champ, fig.lecture=lecture}
+```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et sujective (Analyse en Facteurs Communs Exploratoire)', echo=FALSE, fig.width=7, fig.height=5, out.width="100%",fig.source=source, fig.champ=champ, fig.lecture=lecture}
 
 gg_loadings <- readRDS("figures/gg_loadings.RDS")
 
 gg_loadings
 ```
 
-Deux principales conclusions sont à tirer de l’espace social dessiné par AFE : 
+Deux principales conclusions sont à tirer concernant l’espace social dessiné par AFE : 
 
 - La première est que ce résultat éclaire l’importance de la pauvreté institutionnelle soulignée par Paugam, puisque les indicateurs de pauvreté institutionnelle mesurés dans le Baromètre se rassemblent en une même dimension latente (le second facteur). Cette dimension est directement en lien avec les politiques publiques de lutte contre la pauvreté et la précarité. 
 
@@ -303,7 +300,7 @@ Deux principales conclusions sont à tirer de l’espace social dessiné par AFE
 
 ### Six classes non ordonnées de pauvreté par modèle en classes latentes {#sec:esexplostructutypo}
 
-À partir des résultats de l’analyse exploratoire en deux facteurs communs, nous avons réalisé un modèle en 6 classes latentes. Les résultats du modèle sont présentés en figure \@ref(fig:latentclass1). Afin de comparer la nouvelle typologie à celle obtenue précédemment par CAH et en analyser les différences, les classes ont été représentées sur le même nuage des individus : celui qui les projette sur les premiers axes de l’ancienne ACM.
+À partir des résultats de l’AFE en deux facteurs communs, nous avons réalisé un modèle en 6 classes latentes. Les résultats du modèle sont présentés en figure \@ref(fig:latentclass1). Afin de comparer la nouvelle typologie à celle obtenue précédemment par CAH et en analyser les différences, les classes ont été représentées sur le même nuage des individus : celui qui les projette sur les premiers axes de l’ancienne ACM.
 
 
 ```{r, include = FALSE}
@@ -321,7 +318,7 @@ gg_latentclass
 ```
 
 
-Les 6 classes obtenues s’ordonnent toujours globalement selon l’échelle de pauvreté qui correspond à la parabole de l’effet Guttman : les individus les plus à gauche (classes A et B) correspondent aux individus les plus aisés et à droite (classes C et D) aux individus les plus modestes. Toutefois, l’utilisation de l’analyse en facteurs communs permet d’ajouter de la nuance dans l’interprétation. En effet, deux paires de classes se situent au même niveau (pour C.1 et C.2) ou à un niveau proche (pour D.1 et D.2) sur l’échelle (horizontale) de pauvreté mais se distinguent en termes de structure de la pauvreté (position verticale différente).
+Les 6 classes obtenues s’ordonnent toujours globalement selon l’échelle de pauvreté qui correspond à la parabole de l’effet Guttman : les individus les plus à gauche (classes A et B) correspondent aux individus les plus aisés et à droite (classes C et D) aux individus les plus modestes. Toutefois, l’utilisation de l’analyse en facteurs communs permet d’ajouter de la nuance dans l’interprétation. En effet, deux paires de classes se situent au même niveau (pour C.1 et C.2) ou à un niveau proche (pour D.1 et D.2) sur l’échelle horizontale de pauvreté mais se distinguent en termes de structure de la pauvreté (positions verticales différentes).
 
 
 ```{r, include = FALSE}
@@ -354,7 +351,7 @@ La figure \@ref(fig:latentclass2) permet de décrire l’importance de chacune d
 tableau <- data.frame(Classe=c("Classe A","Classe B","Classe C.1","Classe C.2","Classe D.1","Classe D.2"),
  Description=c("Comme les classes 1 voire 2 précédemment, cette classe rassemble les individus les plus aisés de l’échantillon. Les trois quarts des individus appartiennent à un ménage du dernier quintile de niveau de vie.",
  "Comme les classes 2 voire 3 précédemment, cette classe rassemble également des individus aisés. Cette fois-ci 7 individus sur 10 appartiennent aux deux derniers quintiles de niveau de vie.",
- "Cette classe rassemble majoritairement des individus appartenant au **deuxième et troisième quintiles** de niveau de vie (7 individus sur 10) qui ne se sentent majoritairement pas pauvres (54 %) mais sont toutefois respectivement 32 % et 13 % à penser le devenir ou l’être déjà. Ils ont **presque tous** la sensation d’avoir un **revenu inférieur au minimum** pour vivre et **ne reçoivent pas** de **prestations sociales**.",
+ "Cette classe rassemble majoritairement des individus appartenant aux **deuxième et troisième quintiles** de niveau de vie (7 individus sur 10) qui ne se sentent majoritairement pas pauvres (54 %) mais sont toutefois respectivement 32 % et 13 % à penser le devenir ou l’être déjà. Ils ont **presque tous** la sensation d’avoir un **revenu inférieur au minimum** pour vivre et **ne reçoivent pas** de **prestations sociales**.",
  "Comme la classe C.1, cette classe rassemble majoritairement des individus appartenant au **deuxième et troisième quintiles** de niveau de vie (7 individus sur 10) mais sont toutefois respectivement 30 % et 7 % à penser le devenir ou l’être déjà. Ils sont **seulement un quart** à avoir la sensation d’avoir un **revenu inférieur au minimum** pour vivre et sont **assez nombreux à recevoir** des **prestations sociales**.",
  "Cette classe rassemble majoritairement des individus appartenant au **deuxième quintile** de niveau de vie (6 individus sur 10). 36 % se sentent pauvres et 37 % pensent risquer le devenir dans les cinq prochaines années et 78 % se sentent en difficultés financières. Ils sont **assez nombreux** à recevoir des **prestations sociales**.",
  "Cette classe rassemble majoritairement des individus appartenant au **premier quintile** de niveau de vie (9 individus sur 10). 47 % se sentent pauvres et 29 % pensent risquer le devenir dans les cinq prochaines années et 95 % se sentent en difficultés financières. Ils sont **très nombreux** à percevoir des **prestations sociales**."
@@ -386,15 +383,15 @@ tableau
 ```
 
 
-Les classes C.2 et D.2 sont donc caractérisées par une présence plus importante de la pauvreté institutionnelle que les classes C.1 et D.1 (respectivement) alors que le niveau de pauvreté monétaire y est pourtant relativement comparable. Ce résultat traduit le rôle particulier joué par la pauvreté institutionnelle évoqué plus haut.
+Les classes C.2 et D.2 sont caractérisées par une présence plus importante de la pauvreté institutionnelle que les classes C.1 et D.1 (respectivement) alors que le niveau de pauvreté monétaire y est pourtant relativement comparable. Ce résultat traduit le rôle particulier joué par la pauvreté institutionnelle évoqué plus haut.
 
-La comparaison des classes C.1 est C.2 est intéressante puisque, bien que la pauvreté institutionnelle soit plus forte dans la classe C.2 (en haut) que dans la classe C.1, cela ne se traduit pas par une plus forte perception de difficultés financières, bien au contraire. A l’inverse, les individus de la classe C.1 ne perçoivent pas de prestations sociales mais se sentent en difficulté financière. Contrairement à ce que l’on observe dans les classes populaires et aisées, dans les classes moyenne une opposition se crée entre pauvreté institutionnelle et subjective : ne pas être bénéficiaire de prestation sociale s’associe à un fort ressenti de difficulté financière, comme si ces prestations manquaient à une partie de la classe moyenne. 
+La comparaison des classes C.1 est C.2 est intéressante puisque, bien que la pauvreté institutionnelle soit plus forte dans la classe C.2 (en haut) que dans la classe C.1 (bas), cela ne se traduit pas par une plus forte perception de difficultés financières, bien au contraire. À l’inverse, les individus de la classe C.1 ne perçoivent pas de prestations sociales mais se sentent en difficulté financière. Contrairement à ce que l’on observe dans les classes populaires et aisées, dans les classes moyenne une opposition se crée entre pauvreté institutionnelle et subjective : ne pas être bénéficiaire de prestation sociale s’associe à un fort ressenti de difficulté financière, comme si ces prestations manquaient à une partie de la population des classes moyennes. 
 
-La comparaison entre les classes D.1 et D.2 se fait avec la même logique : la classe D.2 en situation de pauvreté institutionnelle plus importante. Toutefois, la classe D.2 se situe également plus à droite de la classe D.1 et son niveau de pauvreté global (en particulier monétaire) est alors également plus important, ce qui justifie donc une pauvreté institutionnelle plus forte que pour D.1.
+La comparaison entre les classes D.1 et D.2 se fait avec la même logique : la classe D.2 en situation de pauvreté institutionnelle plus importante. Toutefois, la classe D.2 se situe également plus à droite de la classe D.1 et son niveau de pauvreté global (en particulier monétaire) est alors également plus important, ce qui justifie une pauvreté institutionnelle plus forte que pour D.1.
 
 ### La structure familiale, variable clef de la structuration de l’espace social de la pauvreté {#sec:esexplostructufam}
 
-La classification en 6 classes obtenue en figure \@ref(fig:latentclass1) invite à s’interroger sur les différences sociales qui existent entre les deux classes moyennes C.2 (caractérisée par une forte présence de pauvreté institutionnelle mais par un ressenti de difficultés financières moindre) et C.1 (situation inverse). C’est pourquoi nous avons réalisé une nouvelle régression logistique pour laquelle la variable dépendante est l’appartenance à la classe C.2 plutôt que C.1. Les variables explicatives sont les différentes variables sociodémographiques déjà étudiées auparavant, en contrôlant également par le niveau de vie.
+La classification en 6 classes obtenue en figure \@ref(fig:latentclass1) invite à s’interroger sur les différences sociales qui existent entre les deux classes moyennes C.2 -caractérisée par une forte présence de pauvreté institutionnelle mais par un ressenti de difficultés financières moindre) et C.1 (situation inverse). C’est pourquoi nous avons réalisé une nouvelle régression logistique pour laquelle la variable dépendante est l’appartenance à la classe C.2 plutôt que C.1. Les variables explicatives sont les différentes variables sociodémographiques déjà étudiées auparavant, en contrôlant également par le niveau de vie.
 
 Le tableau \@ref(tab:tablatent) présente les résultats de cette régression. Les classes moyennes concernées par la pauvreté institutionnelle (et par des difficultés financières subjectives moindres) sont les ménages jeunes, locataires, inactifs ou indiquant occuper un emploi précaire. Mais c’est en particulier la situation familiale de ces ménages qui joue le plus grand rôle. La pauvreté institutionnelle concerne particulièrement les ménages avec enfants : que ce soit les couples ou, encore davantage, les familles monoparentales.
 
@@ -434,7 +431,7 @@ if(knitr:::is_latex_output()){
 ```
 
 
-Ces ménages avec enfants (un ou deux parents) sont en effet ceux qui bénéficient le plus des APL parmi les ménages aux deux premiers quintiles de niveau de vie (tableau \@ref(tab:tabprestaviefam)). Les familles monoparentales sont également très nombreuses en proportion à percevoir le RSA : trois fois plus que les personnes seules et que les couples avec enfants.
+Ces ménages avec enfants (qu'ils soient composés d'un ou deux parents) sont en effet ceux qui bénéficient le plus d'APL parmi les ménages modestes appartenant aux deux premiers quintiles de niveau de vie (tableau \@ref(tab:tabprestaviefam)). Les familles monoparentales sont également très nombreuses en proportion à percevoir le RSA : trois fois plus que les personnes seules et que les couples avec enfants.
 Cette forte influence de la structure du ménage sur la pauvreté institutionnelle se comprend aisément puisque la composition et les revenus des ménages pris en compte dans les critères d’éligibilité sont différents selon les prestations : prise en compte ou non des concubins ou uniquement des conjoints (PACS / mariage), prise en compte des ressources des autres membres du ménage, etc.
 
 Le tableau \@ref(tab:tabpauvviefam) avait montré plus haut que la pauvreté subjective (sentiment de pauvreté tout comme difficultés financières perçues) concerne également particulièrement les familles monoparentales. Toutefois, l’écart avec les autres types de ménages est moins fort que concernant la pauvreté institutionnelle. Notamment, les personnes vivant seules sont également très touchées par la pauvreté subjective, alors que bien moins souvent bénéficiaires d’APL ou de RSA, ce qui justifie l’effet positif et significatif de leur appartenance à la classe C.1 plutôt que C.2.
@@ -453,12 +450,3 @@ tab_prestaviefam %>%
    kableExtra::column_spec(2:3, width = "4cm") %>%
    kableExtra::row_spec(7, bold = TRUE) %>% add_footnote_kable()
 ```
-
-<!-- https://www.cairn.info/journal-informations-sociales-2015-2-page-19.htm Cercle familial et éligibilité des prestations (chap3).  -->
-
-<!-- Sur les nouvelles questions du baro : https://drees.solidarites-sante.gouv.fr/sites/default/files/2020-10/ER1149.pdf -->
-<!-- https://rcarto.github.io/spectre-reproductibilite-r/#3 -->
-<!-- https://statistics.ohlsen-web.de/latent-class-analysis-polca/ -->
-<!-- Piste : latent class estimates... https://www.jstor.org/stable/pdf/271121.pdf?refreqid=excelsior%3Adac2428cc0db12b7590abf2d9eaf8f4e -->
-<!-- https://stats.stackexchange.com/questions/362414/interpretation-of-regression-coefficients-in-latent-class-regression-using-polc -->
-

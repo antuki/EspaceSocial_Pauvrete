@@ -1408,7 +1408,7 @@ gg_cah_bar <- do.call("rbind",
   mutate(Var2=ifelse(var=="s_sentpauvrisque" & Var2==1,100,ifelse(var=="s_sentpauvrisque" & Var2==3,1,Var2))) %>% 
    mutate(Var2=ifelse(var=="s_sentpauvrisque" & Var2==100,5,Var2)) %>% 
    mutate(Var2=ifelse(var=="s_sentpauvrisque" & Var2==2,3,Var2)) %>%
-   filter(var=="m_quantilenivie_inv" | Var2!=5) %>% #NEW filtre 
+   filter(var=="m_quantilenivie_inv" | (Var2!=5 & !var%in%c("m_locatif_inv","m_financier_inv")) | (Var2==5 & var%in%c("m_locatif_inv","m_financier_inv"))) %>% #NEW filtre 
    mutate(Var2=factor(Var2)) %>% 
     mutate(var=factor(var,
     levels=c("m_quantilenivie_inv","m_locatif_inv","m_financier_inv","s_sentpauvrisque", "s_infminidecla", "i_rsa", "i_log", "i_hlm","i_chom","i_bourse","i_handi") ,
