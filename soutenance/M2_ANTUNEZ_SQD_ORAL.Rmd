@@ -1,0 +1,419 @@
+---
+title: | 
+    | Construire l'espace social de la pauvreté avec un Baromètre d'opinion
+subtitle: "Soutenance de Mémoire"
+author: | 
+    | Kim Antunez
+    |
+division: "ENSAE 3A, Master 2 SQD"
+departement: "septembre 2021"
+logo: "../rapport/logos/logo.png"
+automaticcontents: false
+output:
+    beamer_presentation:
+        template: template.tex
+        keep_tex: yes
+        theme: TorinoTh
+        slide_level: 3
+header-includes:
+- \usepackage{wrapfig}
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{animate}
+- \usepackage{fontawesome5}
+- \usepackage{caption}
+- \usepackage{graphicx}
+- \usepackage{tikz}
+- \usetikzlibrary{fit,arrows.meta}
+- \usepackage{pifont}
+- \usepackage[shortlabels]{enumitem}
+- \usepackage{dsfont}
+- \setlist[itemize,1]{label = --}
+- \setlist[itemize,2]{label = $\circ$}
+- \setlist[enumerate,1]{label={\arabic*}}
+- \usepackage{lmodern}
+- \usepackage{cancel}
+- \usepackage{array}
+- \usepackage{xspace}
+- \usepackage{tcolorbox}
+- \usepackage{bclogo}
+
+themeoptions: "coding=utf8,language=french"
+classoption: 'usepdftitle=false,french'
+fontsize: 10pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+	             cache=FALSE,
+               prompt=FALSE, eval = TRUE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.width = 3,
+               fig.height = 1,
+	             fig.pos = "!ht", #!H encore plus fort
+	             fig.align = 'center',
+	             dev = "pdf"
+	             )
+
+
+library(dplyr)
+library(kableExtra)
+```
+
+
+```{r aqltsetup, include=FALSE, eval = TRUE}
+is_html <- knitr::is_html_output()
+is_latex <- knitr::is_latex_output()
+################################
+########## KNITR ###############
+################################
+library(htmltools)
+latex_emph <- function(entete = "Note", x, sep = "\n\n"){
+  txt <- paste(sprintf("\\emph{%s}", x), collapse = sep)
+  if(length(x)>1){
+    entete <- paste0(entete,"s")
+  }
+  sprintf("\n\\emph{%s} : %s", entete, txt)
+}
+md_framed <- function(x, options){
+  if (!is_latex || is.null(options$mdframed) || !options$mdframed || 
+      is.null(options$fig.cap))
+    return (x)
+  # cap <- options$fig.cap
+  # label <- fig$label
+  # \label{fig:filtersdafcoefs}
+  # \includegraphics[width=3cm,height=3cm]{example-image-a}
+  #     \captionof{figure}{exampleimg}
+  x <- gsub("\\\\begin\\{figure\\}(\\[!?\\w*\\])?",
+            "", x)
+  x <- gsub("\\caption","\\captiontmp", x, fixed = TRUE)
+  # x <- gsub("^(\\n)*", "", x)
+  x <- gsub("\n\n{\\centering",
+            "\\begin{center}", x, fixed = TRUE)
+  x <- sub("} \n\n}","}", x, fixed = TRUE)
+  x <- gsub("\\end{figure}",
+            "\\end{center}", x, fixed = TRUE)
+  x
+}
+
+add_fig_opt_html <- function(x, options, nom_opt){
+  nom_opt_complet <- sprintf("fig.%s", tolower(nom_opt))
+  opt <- options[[nom_opt_complet]]
+  if(!is.null(opt)){
+    first_txt <- tags$p(opt[1], id = nom_opt, class = "title caption")
+    all_txt <- c(list(first_txt),
+                 lapply(opt[-1], tags$p, class = "caption"))
+    txt <- withTags(
+      div(class = "caption", id = nom_opt,
+          tagList(all_txt)
+      )
+    )
+    x <- paste(x,
+               as.character(txt),
+               sep = "\n")
+  }
+  x
+}
+
+add_fig_opt_latex <- function(x, options, nom_opt, 
+                              prefix = nom_opt,
+                              sep_multi = "---", sep_fichier = "\n\n"){
+  if(is.null(prefix)){
+    prefix <- nom_opt
+  }
+  if(is.null(sep_multi)){
+    sep_multi <- "---"
+  }
+  if(is.null(sep_fichier)){
+    sep_fichier <- "\n\n"
+  }
+  nom_opt_complet <- sprintf("fig.%s", tolower(nom_opt))
+  opt <- options[[nom_opt_complet]]
+  if(!is.null(opt)){
+    x <- paste(x,
+               latex_emph(prefix, opt, sep = sep_multi),
+               sep = sep_fichier)
+  }
+  x
+}
+add_footnote_latex <- function(x, options, envir = "figure", remove_envir = TRUE){
+  
+  fin_envir <- sprintf("\\end{%s}", envir)
+  if(length(grep(fin_envir, x, fixed = TRUE)) == 0){
+    return(x)
+  }
+  
+  params <- list(Source = list(),
+                 Champ = list(),
+                 Note = list(sep_multi = "\n\n"),
+                 Lecture = list(prefix = "Note de lecture"))
+  ajouts <- "\\footnotesize"
+  for (opt in names(params)){
+    ajouts <- add_fig_opt_latex(ajouts, options, opt,
+                                prefix = params[[opt]]$prefix,
+                                sep_multi = params[[opt]]$sep_multi,
+                                sep_fichier = params[[opt]]$sep_fichier)
+  }
+  x <- paste0(x, ajouts, "\n\\normalsize")
+  if(remove_envir){
+    x <- sub(fin_envir, "", x, fixed = TRUE)
+    x <- paste0(x, fin_envir)  
+  }
+  x  
+}
+
+add_footnote_html <- function(x, options){
+  for (opt in c("source", "champ", "note", "lecture")){
+    x <- add_fig_opt_html(x, options, opt)
+  }
+  x
+}
+add_footnote_perso <- function(x, options, envir = "figure", remove_envir = TRUE){
+  if(is_latex){
+    res <-  add_footnote_latex(x, options, envir = envir, remove_envir = remove_envir)
+  }else if(is_html){
+    res <-  add_footnote_html(x, options)
+  }else{
+    res <-  x
+  }
+  res
+}
+add_footnote_kable <- function(x, options = knitr::opts_current$get()){
+  if(length(grep("\\end{table}", x, fixed = TRUE)) >0){
+    envir = "table"
+    remove_envir = TRUE
+  } else if(length(grep("\\end{longtable}", x, fixed = TRUE)) >0){
+    envir = "longtable"
+    remove_envir = FALSE
+  } 
+  x <- add_footnote_perso(x, options = options, envir = envir, remove_envir = remove_envir)
+  class(x) <- "knitr_kable"
+  if(is_latex){
+    attr(x, "format") <- "latex"
+  }else if(is_html){
+    attr(x, "format") <- "html"
+  }
+  x
+}
+
+local({
+  hook_plot2 <- knitr::knit_hooks$get('plot')
+  knitr::knit_hooks$set(plot = function(x, options) {
+    if(is.null(options$fig.cap))
+      return(hook_plot2(x, options))
+    if(is_latex){
+      res <-  knitr:::hook_plot_tex(x, options)
+      # res <- md_framed(res, options)
+      # res <- add_footnote_latex(res, options)
+    }else if(is_html){
+      res <- hook_plot2(x, options)
+      # res <- add_footnote_html(res, options)
+    }else{
+      res <-  hook_plot2(x, options)
+    }
+    res <- add_footnote_perso(res, options)
+    md_framed(res, options)
+  })
+})
+```
+
+# Dimensions de la pauvreté : perspectives théoriques {#chap1}
+
+### Sommaire
+\tableofcontents[currentsection, hideothersubsections]
+
+###  La pauvreté est **multidimensionnelle**
+
+1.	**Monétaire** 
+* 	**Relative** : niveau de vie, seuil de pauvreté,
+
+\pause
+
+dépenses pré-engagées ?
+
+Ex : Les inégalités de niveau de vie sont encore plus marquées une fois que l’on déduit les dépenses pré-engagées (*Lelièvre, Rémila, 2018*).
+\pause
+
+* 	**Absolue** : privation matérielle
+
+\pause
+
+\bigskip
+
+\bigskip
+
+2.	**Institutionnelle** : bénéficier de minima sociaux (*Simmel*, *Paugam*)
+
+* 	Situation d’assistance qui lie l’individu à sa société (*Simmel*)
+
+*   Statut social dévalorisé (*Paugam*)
+
+
+<!-- \faArrowCircleRight{} **Halo de la pauvreté**  -->
+
+<!--   * Tout ce qui peut nous faire basculer dans la pauvreté (précarité) -->
+<!--   *	Tout ce qu’on n’arrive pas à mesurer  -->
+
+### Pauvreté subjective comme moyen d’approcher le halo
+
+3.	**Subjective** 
+
+  -	**pauvreté monétaire indirecte**
+  
+      * privation matérielle
+      
+      * difficultés financières perçues. 
+    \footnotesize 
+    	*« Selon vous, pour vivre, quel est le montant dont doit disposer au minimum un foyer comme le vôtre, par mois (en euros) ? »*
+    \normalsize
+  
+  \pause
+  
+  \bigskip
+  
+  \bigskip
+  
+  -	**pauvreté directe** = sentiment de pauvreté
+  
+    \footnotesize 
+    	*« Et vous personnellement, pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ? Oui, plutôt/Non, plutôt pas/Je suis déjà pauvre / NSP »*
+    \normalsize
+  
+\pause
+  
+\faArrowCircleRight{} **Duvoux, Papuchon 2018** 
+
+### Projet de recherche
+
+::::{.tcolorbox data-latex= } 
+
+\bigskip
+
+Quelles sont ces **interactions** entre les **différentes dimensions** de la **pauvreté** 
+
+\begin{center}
+\Huge \faQuestion \normalsize
+\end{center}
+::::
+
+Comment sont-elles chacune situées socialement et, lorsqu’elles sont analysées conjointement, que nous disent-elles sur l’étendue et la nature du phénomène de pauvreté ? 
+
+\bigskip
+
+\faArrowCircleRight{} Prolonger les travaux de Duvoux et Papuchon en proposant une **modélisation synthétique** du phénomène de pauvreté et ses différentes dimensions.
+
+### Données et méthodes
+
+**Données** : Baromètre d’opinion de la Drees (2017-2019)
+
+\bigskip
+
+\pause
+
+**Méthodes**
+
+1. Statistiques descriptives et modèles économétriques classiques afin de déterminer les variables qui permettent d'expliquer le sentiment de pauvreté
+
+2. Modèles à variables latentes afin de construire l'espace social de la pauvreté. 
+
+# Le sentiment de pauvreté ne se réduit pas au niveau de vie {#nonreducnv}
+
+### Résultat 1
+
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+
+if(knitr:::is_latex_output()){
+  note <- c("Les barres noires correspondent aux intervalles de confiance à 95 \\%. La borne d'erreur a été calculée avec la formule : $({z}_{\\frac{{\\alpha}}{{2}}})(\\sqrt{\\frac{{p'(1-p')}}{{n}}}$ avec $p' = \\frac{x}{n}$ la proportion estimée de réponses affirmatives à la question ($x$ étant le nombre de réponses affirmatives et $n$ la taille de l'échantillon). Pour plus de détails concernant le calcul voir \\href{https://courses.lumenlearning.com/atd-odessa-statistics/chapter/a-population-proportion/}{ici}. Grossièrement, on peut considérer que si l’on prend l’ensemble de l’échantillon d’un même millésime d’enquête (3 000 répondants), une évolution est significative si elle est supérieure au seuil de 4 points de pourcentage. Ce seuil est supérieur quand les effectifs sont plus petits : par exemple quand les valeurs manquantes sont nombreuses (typiquement pour le niveau de vie) ou lorsque l’on travaille sur des sous-populations.")
+} else{
+   note <- c("Les barres noires correspondent aux intervalles de confiance à 95 %. La borne d'erreur a été calculée avec la formule : $({z}_{\\frac{{\\alpha}}{{2}}})(\\sqrt{\\frac{{p'(1-p')}}{{n}}}$ avec $p' = \\frac{x}{n}$ la proportion estimée de réponses affirmatives à la question ($x$ étant le nombre de réponses affirmatives et $n$ la taille de l'échantillon). Pour plus de détails concernant le calcul voir [ici]( https://courses.lumenlearning.com/atd-odessa-statistics/chapter/a-population-proportion/). Grossièrement, on peut considérer que si l’on prend l’ensemble de l’échantillon d’un même millésime d’enquête (3 000 répondants), une évolution est significative si elle est supérieure au seuil de 4 points de pourcentage. Ce seuil est supérieur quand les effectifs sont plus petits : par exemple quand les valeurs manquantes sont nombreuses (typiquement pour le niveau de vie) ou lorsque l’on travaille sur des sous-populations.")
+
+}
+
+```
+
+```{r figchap1compa20152019, fig.cap="Différents indicateurs de pauvreté (2015 à 2019)", fig.height=2.5, fig.width=5.5, fig.source = source}
+fig_chap1_compa20152019 <- readRDS("../rapport/figures/fig_chap1_compa20152019.RDS")
+fig_chap1_compa20152019
+```
+
+### Résultat 2
+
+\footnotesize
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+```
+
+```{r tabfinal21,fig.source = source, fig.champ=champ}
+tab_final21 <- readRDS("../rapport/figures/tab_final21.RDS") 
+
+tab_final21 <- tab_final21 %>% 
+  kable(caption="Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues", booktabs = TRUE, longtable = TRUE) %>%
+   kableExtra::column_spec(1, width = "2.5cm") %>% 
+   kableExtra::column_spec(2, width = "3cm") %>% 
+   kableExtra::column_spec(3, width = "1.5cm") %>%
+   kableExtra::column_spec(4, width = "2cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::pack_rows("Pauvreté monétaire", 1, 9) %>%
+  kableExtra::pack_rows("Pauvreté institutionnelle", 10, 18) %>%
+  kableExtra::pack_rows("Contrôles", 19, 57) 
+
+if(knitr:::is_latex_output()){
+  tab_final21 %>% 
+    kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \\\\, \\\\%","Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \\\\, \\\\%",
+                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  %>% add_footnote_kable()
+} else{
+  tab_final21  %>%    kableExtra::footnote(c(paste0("Sentiment de pauvreté : N = ",
+                                 "13548"," et $R^2$ ajusté = ","26,0"," %",
+                                 " / Difficultés financières perçues : N = ",
+                                 "13678"," et $R^2$ ajusté = ",
+                              "28,6"," %."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
+                         ))  %>% add_footnote_kable()
+
+
+}
+
+```
+
+
+\normalsize
+
+# La pauvreté comme Espace social (analyse exploratoire) {#esexplo}
+
+# La pauvreté comme Espace social (analyse confirmatoire) {#esconfi}
+
+### Merci pour votre attention !
+
+
+\begin{center}
+\includegraphics[width = 1.5cm]{../rapport/logos/avatar_antuki_v2_small.png}
+\end{center}
+
+\bigskip 
+
+\begin{center}
+\includegraphics[width = 3cm]{../rapport/logos/logo.png}
+\includegraphics[width = 3cm]{../rapport/logos/saclay.png}
+\end{center}
