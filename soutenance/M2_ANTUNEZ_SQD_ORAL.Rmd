@@ -299,7 +299,7 @@ Ex : Les inégalités de niveau de vie sont encore plus marquées une fois que l
 
 ### Projet de recherche
 
-::::{.tcolorbox data-latex= } 
+::::{.encadre data-latex=""} 
 
 \bigskip
 
@@ -332,8 +332,7 @@ Comment sont-elles chacune situées socialement et, lorsqu’elles sont analysé
 
 # Le sentiment de pauvreté ne se réduit pas au niveau de vie {#nonreducnv}
 
-### Résultat 1
-
+### Décorrélation au cours du temps des pauvretés objective et subjective
 
 ```{r, include = FALSE}
 champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
@@ -353,19 +352,12 @@ fig_chap1_compa20152019 <- readRDS("../rapport/figures/fig_chap1_compa20152019.R
 fig_chap1_compa20152019
 ```
 
-### Résultat 2
-
-\footnotesize
-
-```{r, include = FALSE}
-champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
-source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
-```
-
-```{r tabfinal21,fig.source = source, fig.champ=champ}
+```{r tabfinal21}
 tab_final21 <- readRDS("../rapport/figures/tab_final21.RDS") 
 
-tab_final21 <- tab_final21 %>% 
+extrait_table <- function(rows=1:100){
+ tab <- tab_final21 %>% 
+   slice(rows) %>% 
   kable(caption="Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues", booktabs = TRUE, longtable = TRUE) %>%
    kableExtra::column_spec(1, width = "2.5cm") %>% 
    kableExtra::column_spec(2, width = "3cm") %>% 
@@ -375,45 +367,259 @@ tab_final21 <- tab_final21 %>%
   latex_options = c("hold_position", "repeat_header"),
   repeat_header_text = "\\textit{(suite)}",
   repeat_header_continued = "\\textit{(suite en page suivante...)}"
-  ) %>%
-  kableExtra::pack_rows("Pauvreté monétaire", 1, 9) %>%
-  kableExtra::pack_rows("Pauvreté institutionnelle", 10, 18) %>%
-  kableExtra::pack_rows("Contrôles", 19, 57) 
-
-if(knitr:::is_latex_output()){
-  tab_final21 %>% 
+  ) %>% 
     kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \\\\, \\\\%","Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \\\\, \\\\%",
-                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  %>% add_footnote_kable()
-} else{
-  tab_final21  %>%    kableExtra::footnote(c(paste0("Sentiment de pauvreté : N = ",
-                                 "13548"," et $R^2$ ajusté = ","26,0"," %",
-                                 " / Difficultés financières perçues : N = ",
-                                 "13678"," et $R^2$ ajusté = ",
-                              "28,6"," %."),"* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %."
-                         ))  %>% add_footnote_kable()
-
-
+                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)
+ 
+ return(tab)
+ 
 }
 
+
+```
+
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+```
+
+### Résultat 2
+
+\footnotesize
+
+```{r tabfinal21-1}
+  extrait_table(1:9) %>%
+  kableExtra::pack_rows("Pauvreté monétaire", 1, 9) %>%
+  add_footnote_kable()
+```
+
+### Résultat 2 {.noframenumbering}
+
+\addtocounter{table}{-1}
+
+\footnotesize
+
+
+```{r tabfinal21-2}
+  extrait_table(10:20) %>%
+   kableExtra::pack_rows("Pauvreté institutionnelle", 1,10) %>%
+  add_footnote_kable()
+```
+
+### Résultat 2 {.noframenumbering}
+
+\addtocounter{table}{-1}
+
+\footnotesize
+
+```{r tabfinal21-3}
+  extrait_table(21:32) %>%
+   kableExtra::pack_rows("Contrôles", 1, 11) %>% 
+  add_footnote_kable()
+```
+
+### Résultat 2 {.noframenumbering}
+
+\addtocounter{table}{-1}
+
+\footnotesize
+
+
+```{r tabfinal21-4}
+  extrait_table(33:42) %>%
+   kableExtra::pack_rows("Contrôles", 1, 9) %>% 
+  add_footnote_kable()
+```
+
+### Résultat 2 {.noframenumbering}
+
+\addtocounter{table}{-1}
+
+\footnotesize
+
+
+```{r tabfinal21-5}
+  extrait_table(43:51) %>%
+   kableExtra::pack_rows("Contrôles", 1, 8) %>% 
+  add_footnote_kable()
+```
+
+### Résultat 2 {.noframenumbering}
+
+\addtocounter{table}{-1}
+
+\footnotesize
+
+```{r tabfinal21-6,fig.source = source, fig.champ=champ}
+  extrait_table(52:57) %>%
+   kableExtra::pack_rows("Contrôles", 1, 6) %>% 
+  add_footnote_kable()
 ```
 
 
 \normalsize
 
+
 # La pauvreté comme Espace social (analyse exploratoire) {#esexplo}
 
+### Sommaire
+\tableofcontents[currentsection, hideothersubsections]
+
+### Titre 1
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+note <- c("Le nuage des individus comporte beaucoup moins de points qu’il y a d’individus dans la base de données. C’est parce que de nombreux individus ont répondu exactement les mêmes réponses aux questions correspondant aux variables actives. Ils sont donc superposés sur cette figure.")
+```
+
+```{r cah1, fig.show='hold', fig.cap="Nuage des individus de l'ACM et CAH sur les deux premiers axes", echo=FALSE,fig.width=7, fig.height=4.5, out.width="100%"}
+
+gg_cah <- readRDS("../rapport/figures/gg_cah.RDS")
+
+gg_cah
+```
+
+### Titre 2
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+```
+
+```{r corrplot, fig.show='hold', fig.cap='Corrélation de Spearman entreles différents indicateurs de pauvreté', echo=FALSE, fig.width=7, fig.height=4.6, out.width="100%"}
+
+gg_corrplot <- readRDS("../rapport/figures/gg_corrplot.RDS")
+
+gg_corrplot
+```
+
+
+### Titre 3
+
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+lecture <- c("Pour la variable « HLM » (être locataire d’un logement social), la saturation sur le premier facteur est de 0,24 et celle sur le second facteur est de 0,46.")
+```
+
+
+```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et subjective (Analyse en Facteurs Communs Exploratoire)', echo=FALSE, fig.width=7, fig.height=4.5, out.width="100%",fig.source=source, fig.champ=champ, fig.lecture=lecture}
+
+gg_loadings <- readRDS("../rapport/figures/gg_loadings.RDS")
+
+gg_loadings
+```
+
+### Titre 4
+
+```{r, include = FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+lecture <- c("Les modalités de chaque variables sont ordonnées telles que celles les plus à gauche (en rouge) soient les indicateurs de pauvreté et à droite (en vert) les indicateurs de richesse.")
+
+if(knitr:::is_latex_output()){
+   lecture <- c("Dans la classe B.1, 32 \\% des individus appartiennent à des ménages du troisième quintile de niveau de vie, 4 \\% des individus appartiennent à un ménage qui reçoit des revenus locatifs, 7 \\% indiquent se sentir pauvre et 30 \\% indiquent risquer le devenir dans les cinq prochaines années")
+
+} else{
+   lecture <- c("Par exemple, dans la classe B.1, 32 % des individus appartiennent à des ménages du troisième quintile de niveau de vie, 4 % des individus appartiennent à un ménage qui reçoit des revenus locatifs, 7 % indiquent se sentir pauvre et 30 % indiquent risquer le devenir dans les cinq prochaines années")
+
+}
+```
+
+
+```{r latentclass2, fig.show='hold', fig.cap='Indicateurs de pauvreté pour les 6 classes latentes', echo=FALSE, fig.width=7, fig.height=4.8, out.width="100%"}
+
+gg_latentclass_bar <- readRDS("../rapport/figures/gg_latentclass_bar.RDS")
+
+gg_latentclass_bar
+
+```
+
+
 # La pauvreté comme Espace social (analyse confirmatoire) {#esconfi}
+
+### Sommaire
+\tableofcontents[currentsection, hideothersubsections]
+
+### Titre A
+
+
+```{r include=FALSE}
+champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
+source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
+note <- c("Les variables encerclées correspondent aux variables latentes et les rectangulaires aux indicateurs observés dans la base de données. Les flèches en trait plein qui les relient correspondent aux saturations et les doubles flèches en pointillés aux variances. Les variances des facteurs fixées à 1 correspondent à des contraintes nécessaires pour que le modèle soit identifiable. Nous avons fixé comme contraintes supplémentaires la saturation du quintile de niveau de vie (0,83) et celle du RSA (0,74) pour rendre le modèle comparable au modèle 3. Nous avons également dû corriger la variance de la pauvreté monétaire qui était négative (nouveau cas Heywood) en l’imposant légèrement positive afin que la saturation associée à la dimension monétaire reste inférieure à 1 pour la validité du modèle. ")
+  
+```
+
+
+
+::::{.columns}
+:::{.column width="60%"}
+```{r grviz4, fig.cap="Modèle confirmatoire", echo=FALSE,out.width="200%"}
+
+grviz4 <- readRDS("../rapport/figures/grviz4.RDS")
+grviz4
+```
+:::
+:::{.column width="40%"}
+
+\footnotesize
+
+```{r tabglobal}
+tab_covariates_global_cfa <- readRDS("../rapport/figures/tab_covariates_global_cfa.RDS")
+
+tab_covariates_global_cfa %>% 
+  setNames(c("a","b")) %>%  #NEW
+  add_row(a="...",b="...") %>%  #NEW 
+  slice(c(1:4,6:8,24,10,9,5)) %>%  #NEW
+  setNames(c("","Effet sur l'indice global de pauvreté")) %>%  #NEW
+  kable(booktabs = TRUE, longtable = FALSE) %>%
+      kableExtra::column_spec(1, width = "2cm") %>%
+      kableExtra::column_spec(2, width = "2cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+ # kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.") %>% 
+  add_footnote_kable()
+                    
+```
+
+\normalsize
+
+:::
+::::
+
+### Titre B
+
+```{r ggradar, fig.cap="Représentation graphique de quelques coefficients du modèle 3 avec covariables", echo=FALSE, out.width="75%", fig.width=6, fig.height=5}
+library(ggplot2) #pour les graphiques
+
+gg_radar <- readRDS("../rapport/figures/gg_radar.RDS")
+
+gg_radar
+
+```
+
+
+# Conclusion et Discussion {-}
+
+
 
 ### Merci pour votre attention !
 
 
 \begin{center}
-\includegraphics[width = 1.5cm]{../rapport/logos/avatar_antuki_v2_small.png}
+\includegraphics[width = 2.5cm]{../rapport/logos/avatar_antuki_v2_small.png}
 \end{center}
 
 \bigskip 
 
 \begin{center}
-\includegraphics[width = 3cm]{../rapport/logos/logo.png}
-\includegraphics[width = 3cm]{../rapport/logos/saclay.png}
+\includegraphics[width = 2cm]{../rapport/logos/logo.png}
+\includegraphics[width = 4cm]{../rapport/logos/saclay_violet.png}
 \end{center}

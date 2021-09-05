@@ -11,6 +11,17 @@ $if(beamer)$
 \setbeamercolor{caption name}{fg=normal text.fg}
 \beamertemplatenavigationsymbols$if(navigation)$$navigation$$else$empty$endif$
 \usepackage{caption}
+% new tcolorbox environment Kim
+\usepackage{tcolorbox} %New Kim
+\definecolor{Prune}{RGB}{99,0,60}
+\definecolor{Pink}{RGB}{233,200,225} %new Kim
+\newtcolorbox{encadre}{
+  colback=Pink,
+  colframe=Prune,
+  coltext=Prune,
+  boxsep=5pt,
+  arc=4pt
+}
 \captionsetup{skip=0pt,belowskip=0pt}
 %\setlength\abovecaptionskip{-15pt}
 $endif$
@@ -453,4 +464,6 @@ $for(include-after)$
 $include-after$
 
 $endfor$
+
+
 \end{document}
