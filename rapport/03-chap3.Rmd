@@ -78,7 +78,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
 note <- c("Pour cette étude, 1 798 individus sur les 15 137 individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées (en variables actives ou supplémentaires).")
 ```
 
-```{r acm1, fig.show='hold', fig.cap='Espace des variables actives de la pauvreté monétaire, institutionnelle et sujective (ACM)', echo=FALSE, out.width="100%",fig.source=source, fig.champ=champ, fig.note = note}
+```{r acm1, fig.show='hold', fig.cap='Espace des variables actives de la pauvreté monétaire, institutionnelle et subjective (ACM)', echo=FALSE, out.width="100%",fig.source=source, fig.champ=champ, fig.note = note}
 
 gg_acm_actives <- readRDS("figures/gg_acm_actives.RDS")
 
@@ -107,7 +107,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
 note <- c("Pour cette étude, 1 798 individus sur les 15 137 individus étudiés au total ont été retirés du champ car ils ne se sont pas prononcés sur au moins une des questions étudiées (en variables actives ou supplémentaires).")
 ```
 
-```{r acm2, fig.show='hold', fig.cap='Espace de quelques variables supplémentaires de la pauvreté monétaire, institutionnelle et sujective (ACM)', echo=FALSE, out.width="100%",fig.source=source, fig.champ=champ, fig.note = note}
+```{r acm2, fig.show='hold', fig.cap='Espace de quelques variables supplémentaires de la pauvreté monétaire, institutionnelle et subjective (ACM)', echo=FALSE, out.width="100%",fig.source=source, fig.champ=champ, fig.note = note}
 
 gg_acm_passives <- readRDS("figures/gg_acm_passives.RDS")
 
@@ -284,7 +284,7 @@ lecture <- c("Pour la variable « HLM » (être locataire d’un logement social
 ```
 
 
-```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et sujective (Analyse en Facteurs Communs Exploratoire)', echo=FALSE, fig.width=7, fig.height=5, out.width="100%",fig.source=source, fig.champ=champ, fig.lecture=lecture}
+```{r afe, fig.show='hold', fig.cap='Espace des variables de pauvreté monétaire, institutionnelle et subjective (Analyse en Facteurs Communs Exploratoire)', echo=FALSE, fig.width=7, fig.height=5, out.width="100%",fig.source=source, fig.champ=champ, fig.lecture=lecture}
 
 gg_loadings <- readRDS("figures/gg_loadings.RDS")
 
