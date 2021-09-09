@@ -241,8 +241,6 @@ local({
 1.	**Monétaire** 
 * 	**Relative** : niveau de vie, seuil de pauvreté,
 
-\pause
-
 dépenses pré-engagées ?
 
 Ex : Les inégalités de niveau de vie sont encore plus marquées une fois que l’on déduit les dépenses pré-engagées (*Lelièvre, Rémila, 2018*).
@@ -256,7 +254,7 @@ Ex : Les inégalités de niveau de vie sont encore plus marquées une fois que l
 
 \bigskip
 
-2.	**Institutionnelle** : bénéficier de minima sociaux (*Simmel*, *Paugam*)
+2.	**Institutionnelle** : bénéficier de minima sociaux
 
 * 	Situation d’assistance qui lie l’individu à sa société (*Simmel*)
 
@@ -293,7 +291,6 @@ Ex : Les inégalités de niveau de vie sont encore plus marquées une fois que l
     	*« Et vous personnellement, pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ? Oui, plutôt/Non, plutôt pas/Je suis déjà pauvre / NSP »*
     \normalsize
   
-\pause
   
 \faArrowCircleRight{} **Duvoux, Papuchon 2018** 
 
@@ -310,27 +307,32 @@ Quelles sont ces **interactions** entre les **différentes dimensions** de la **
 \end{center}
 ::::
 
-Comment sont-elles chacune situées socialement et, lorsqu’elles sont analysées conjointement, que nous disent-elles sur l’étendue et la nature du phénomène de pauvreté ? 
+Comment sont-elles chacune situées socialement ? 
+
+Que nous disent-elles sur l’étendue et la nature du phénomène de pauvreté ?
 
 \bigskip
 
-\faArrowCircleRight{} Prolonger les travaux de Duvoux et Papuchon en proposant une **modélisation synthétique** du phénomène de pauvreté et ses différentes dimensions.
+\faArrowCircleRight{} Construction de l’**espace social de la pauvreté**
 
 ### Données et méthodes
 
-**Données** : Baromètre d’opinion de la Drees (2017-2019)
+**Données** : Baromètre d’opinion de la Drees (2015-2019)
 
 \bigskip
 
-\pause
-
 **Méthodes**
 
-1. Statistiques descriptives et modèles économétriques classiques afin de déterminer les variables qui permettent d'expliquer le sentiment de pauvreté
+- **Partie 2** :  Statistiques descriptives et modèles économétriques classiques
 
-2. Modèles à variables latentes afin de construire l'espace social de la pauvreté. 
+- **Partie 3** :  Construction exploratoire de l’espace social de la pauvreté (ACM + AFE)
+
+- **Partie 4** :  Construction confirmatoire de l’espace social de la pauvreté (AFC)
 
 # Le sentiment de pauvreté ne se réduit pas au niveau de vie {#nonreducnv}
+
+### Sommaire
+\tableofcontents[currentsection, hideothersubsections]
 
 ### Décorrélation au cours du temps des pauvretés objective et subjective
 
@@ -384,7 +386,7 @@ champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
 source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
 ```
 
-### Résultat 2
+### Les déterminants de la pauvreté subjective
 
 \footnotesize
 
@@ -394,7 +396,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
   add_footnote_kable()
 ```
 
-### Résultat 2 {.noframenumbering}
+### Les déterminants de la pauvreté subjective {.noframenumbering}
 
 \addtocounter{table}{-1}
 
@@ -407,7 +409,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
   add_footnote_kable()
 ```
 
-### Résultat 2 {.noframenumbering}
+### Les déterminants de la pauvreté subjective {.noframenumbering}
 
 \addtocounter{table}{-1}
 
@@ -419,7 +421,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
   add_footnote_kable()
 ```
 
-### Résultat 2 {.noframenumbering}
+### Les déterminants de la pauvreté subjective {.noframenumbering}
 
 \addtocounter{table}{-1}
 
@@ -432,7 +434,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
   add_footnote_kable()
 ```
 
-### Résultat 2 {.noframenumbering}
+### Les déterminants de la pauvreté subjective {.noframenumbering}
 
 \addtocounter{table}{-1}
 
@@ -440,20 +442,20 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
 
 
 ```{r tabfinal21-5}
-  extrait_table(43:51) %>%
-   kableExtra::pack_rows("Contrôles", 1, 8) %>% 
+  extrait_table(43:52) %>%
+   kableExtra::pack_rows("Contrôles", 1, 9) %>% 
   add_footnote_kable()
 ```
 
-### Résultat 2 {.noframenumbering}
+### Les déterminants de la pauvreté subjective {.noframenumbering}
 
 \addtocounter{table}{-1}
 
 \footnotesize
 
 ```{r tabfinal21-6,fig.source = source, fig.champ=champ}
-  extrait_table(52:57) %>%
-   kableExtra::pack_rows("Contrôles", 1, 6) %>% 
+  extrait_table(53:57) %>%
+   kableExtra::pack_rows("Contrôles", 1, 5) %>% 
   add_footnote_kable()
 ```
 
@@ -466,7 +468,7 @@ source <- c("Baromètre d’opinion de la DREES, 2015-2019.")
 ### Sommaire
 \tableofcontents[currentsection, hideothersubsections]
 
-### Titre 1
+### Modèle descriptif : indicateurs mesurables de pauvreté 
 
 ```{r, include = FALSE}
 champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
@@ -481,7 +483,7 @@ gg_cah <- readRDS("../rapport/figures/gg_cah.RDS")
 gg_cah
 ```
 
-### Titre 2
+### Corrélation pas si forte entre indicateurs de pauvreté !
 
 ```{r, include = FALSE}
 champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
@@ -495,8 +497,32 @@ gg_corrplot <- readRDS("../rapport/figures/gg_corrplot.RDS")
 gg_corrplot
 ```
 
+### Modèle structurel : les dimensions latentes de la pauvreté (Analyse en Facteurs communs Exploratoire)
 
-### Titre 3
+- Identifie des variables latentes (facteurs) cachées derrière les indicateurs mesurés
+
+-  Conserve la structure des corrélations entre ces indicateurs
+
+```{r, include = FALSE}
+if(knitr:::is_latex_output()){
+source <- c("inspiré du tutoriel de l'UCLA \\href{https://stats.idre.ucla.edu/spss/seminars/introduction-to-factor-analysis/a-practical-introduction-to-factor-analysis/}{ Practical Introduction to Factor Analysis: Exploratory Factor Analysis}")
+} else{
+source <- c("inspiré du tutoriel de l'UCLA [A Practical Introduction to Factor Analysis: Exploratory Factor Analysis](https://stats.idre.ucla.edu/spss/seminars/introduction-to-factor-analysis/a-practical-introduction-to-factor-analysis/)")
+}
+
+
+```
+
+\bigskip
+
+```{r decompovar, fig.cap="Décomposition de la variance", out.width="75%"}
+knitr::include_graphics("../rapport/figures/decompo_var.png")
+```
+
+
+
+
+### AFE en deux facteurs
 
 
 ```{r, include = FALSE}
@@ -513,7 +539,7 @@ gg_loadings <- readRDS("../rapport/figures/gg_loadings.RDS")
 gg_loadings
 ```
 
-### Titre 4
+###  6 classes non ordonnées de pauvreté
 
 ```{r, include = FALSE}
 champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
@@ -530,7 +556,7 @@ if(knitr:::is_latex_output()){
 ```
 
 
-```{r latentclass2, fig.show='hold', fig.cap='Indicateurs de pauvreté pour les 6 classes latentes', echo=FALSE, fig.width=7, fig.height=4.8, out.width="100%"}
+```{r latentclass2, fig.show='hold', echo=FALSE, fig.width=7, fig.height=5.3, out.width="100%"}
 
 gg_latentclass_bar <- readRDS("../rapport/figures/gg_latentclass_bar.RDS")
 
@@ -544,8 +570,7 @@ gg_latentclass_bar
 ### Sommaire
 \tableofcontents[currentsection, hideothersubsections]
 
-### Titre A
-
+###  Modèle confirmatoire de synthèse
 
 ```{r include=FALSE}
 champ <- c("Personnes d’au moins 18 ans résidant en France métropolitaine.")
@@ -567,6 +592,8 @@ grviz4
 :::{.column width="40%"}
 
 \footnotesize
+
+\pause
 
 ```{r tabglobal}
 tab_covariates_global_cfa <- readRDS("../rapport/figures/tab_covariates_global_cfa.RDS")
@@ -594,7 +621,7 @@ tab_covariates_global_cfa %>%
 :::
 ::::
 
-### Titre B
+###  La structure familiale structure l’espace social 
 
 ```{r ggradar, fig.cap="Représentation graphique de quelques coefficients du modèle 3 avec covariables", echo=FALSE, out.width="75%", fig.width=6, fig.height=5}
 library(ggplot2) #pour les graphiques
@@ -608,6 +635,21 @@ gg_radar
 
 # Conclusion et Discussion {-}
 
+**Bilan**
+
+- Construction d’un espace social des pauvretés monétaire, institutionnelle et subjective
+- Rôle prépondérant de la pauvreté monétaire mais corrélation globale de toutes les dimensions …
+- … avec toutefois des groupes sociaux particulièrement concernés par certaines formes de pauvreté
+
+\pause
+
+\bigskip
+
+**Prolongements possibles**
+
+- *Travail sur les données* : travail sur la non-réponse, sur l'impact de la formulation des questions, sources de données alternatives...
+
+- *Travail sur les méthodes* : les méthodes en variables latentes n’ont rien d’évident !
 
 
 ### Merci pour votre attention !

@@ -1,0 +1,791 @@
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[10pt,xcolor=table,color={dvipsnames,usenames},ignorenonframetext,usepdftitle=false,french]{beamer}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+\usepackage{caption}
+% new tcolorbox environment Kim
+\usepackage{tcolorbox} %New Kim
+\definecolor{Prune}{RGB}{99,0,60}
+\definecolor{Pink}{RGB}{233,200,225} %new Kim
+\newtcolorbox{encadre}{
+  colback=Pink,
+  colframe=Prune,
+  coltext=Prune,
+  boxsep=5pt,
+  arc=4pt
+}
+\captionsetup{skip=0pt,belowskip=0pt}
+%\setlength\abovecaptionskip{-15pt}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath,mathtools,multirow}
+\usepackage{float,hhline}
+\usepackage{tikz}
+\usepackage[tikz]{bclogo}
+\usepackage{mathtools}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usetheme[coding=utf8,language=french,
+,titlepagelogo=../rapport/logos/logo.png
+]{TorinoTh}
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\usepackage{hyperref}
+\hypersetup{
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\newif\ifbibliography
+% Prevent slide breaks in the middle of a paragraph:
+\widowpenalties 1 10000
+\raggedbottom
+\AtBeginPart{
+  \let\insertpartnumber\relax
+  \let\partname\relax
+  \frame{\partpage}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  %\setlength{\itemsep}{0pt}
+  \setlength{\parskip}{0pt}
+  }
+\setcounter{secnumdepth}{0}
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+\usepackage{wrapfig}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{animate}
+\usepackage{fontawesome5}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{fit,arrows.meta}
+\usepackage{pifont}
+\usepackage[shortlabels]{enumitem}
+\usepackage{dsfont}
+\setlist[itemize,1]{label = --}
+\setlist[itemize,2]{label = $\circ$}
+\setlist[enumerate,1]{label={\arabic*}}
+\usepackage{lmodern}
+\usepackage{cancel}
+\usepackage{array}
+\usepackage{xspace}
+\usepackage{tcolorbox}
+\usepackage{bclogo}
+
+\title{Construire l'espace social de la pauvreté avec un Baromètre
+d'opinion}
+\ateneo{Soutenance de Mémoire}
+\author{Kim Antunez\\}
+\date{}
+
+
+\setrellabel{}
+
+\setcandidatelabel{}
+
+\rel{}
+\division{ENSAE 3A, Master 2 SQD}
+
+\departement{septembre 2021}
+\makeatletter
+\let\@@magyar@captionfix\relax
+\makeatother
+
+\DeclareMathOperator{\Cov}{Cov}
+\newcommand{\E}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\V}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\cov}[2]{\Cov\left( #1\,,\,#2 \right)}
+
+\begin{document}
+\begin{frame}[plain,noframenumbering]
+\titlepage
+\end{frame}
+
+\hypertarget{chap1}{%
+\section{Dimensions de la pauvreté : perspectives
+théoriques}\label{chap1}}
+
+\begin{frame}{Sommaire}
+\protect\hypertarget{sommaire}{}
+\tableofcontents[currentsection, hideothersubsections]
+\end{frame}
+
+\begin{frame}{La pauvreté est \textbf{multidimensionnelle}}
+\protect\hypertarget{la-pauvretuxe9-est-multidimensionnelle}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Monétaire}
+\end{enumerate}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Relative} : niveau de vie, seuil de pauvreté,
+\end{itemize}
+
+dépenses pré-engagées ?
+
+Ex : Les inégalités de niveau de vie sont encore plus marquées une fois
+que l'on déduit les dépenses pré-engagées (\emph{Lelièvre, Rémila,
+2018}). \pause
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Absolue} : privation matérielle
+\end{itemize}
+
+\pause
+
+\bigskip
+
+\bigskip
+
+\begin{enumerate}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  \textbf{Institutionnelle} : bénéficier de minima sociaux
+\end{enumerate}
+
+\begin{itemize}
+\item
+  Situation d'assistance qui lie l'individu à sa société (\emph{Simmel})
+\item
+  Statut social dévalorisé (\emph{Paugam})
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Pauvreté subjective comme moyen d'approcher le halo}
+\protect\hypertarget{pauvretuxe9-subjective-comme-moyen-dapprocher-le-halo}{}
+\begin{enumerate}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  \textbf{Subjective}
+\end{enumerate}
+
+\begin{itemize}
+\item
+  \textbf{pauvreté monétaire indirecte}
+
+  \begin{itemize}
+  \item
+    privation matérielle
+  \item
+    difficultés financières perçues. \footnotesize  \emph{« Selon vous,
+    pour vivre, quel est le montant dont doit disposer au minimum un
+    foyer comme le vôtre, par mois (en euros) ? »} \normalsize
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\bigskip
+
+\bigskip
+
+\begin{itemize}
+\item
+  \textbf{pauvreté directe} = sentiment de pauvreté
+
+  \footnotesize
+
+  \emph{« Et vous personnellement, pensez-vous qu'il y a un risque que
+  vous deveniez pauvre dans les cinq prochaines années ? Oui,
+  plutôt/Non, plutôt pas/Je suis déjà pauvre / NSP »} \normalsize
+\end{itemize}
+
+\faArrowCircleRight{} \textbf{Duvoux, Papuchon 2018}
+\end{frame}
+
+\begin{frame}{Projet de recherche}
+\protect\hypertarget{projet-de-recherche}{}
+\begin{encadre}
+
+\bigskip
+
+Quelles sont ces \textbf{interactions} entre les \textbf{différentes
+dimensions} de la \textbf{pauvreté}
+
+\begin{center}
+\Huge \faQuestion \normalsize
+\end{center}
+
+\end{encadre}
+
+Comment sont-elles chacune situées socialement ?
+
+Que nous disent-elles sur l'étendue et la nature du phénomène de
+pauvreté ?
+
+\bigskip
+
+\faArrowCircleRight{} Construction de l'\textbf{espace social de la
+pauvreté}
+\end{frame}
+
+\begin{frame}{Données et méthodes}
+\protect\hypertarget{donnuxe9es-et-muxe9thodes}{}
+\textbf{Données} : Baromètre d'opinion de la Drees (2015-2019)
+
+\bigskip
+
+\textbf{Méthodes}
+
+\begin{itemize}
+\item
+  \textbf{Partie 2} : Statistiques descriptives et modèles
+  économétriques classiques
+\item
+  \textbf{Partie 3} : Construction exploratoire de l'espace social de la
+  pauvreté (ACM + AFE)
+\item
+  \textbf{Partie 4} : Construction confirmatoire de l'espace social de
+  la pauvreté (AFC)
+\end{itemize}
+\end{frame}
+
+\hypertarget{nonreducnv}{%
+\section{Le sentiment de pauvreté ne se réduit pas au niveau de
+vie}\label{nonreducnv}}
+
+\begin{frame}{Sommaire}
+\protect\hypertarget{sommaire-1}{}
+\tableofcontents[currentsection, hideothersubsections]
+\end{frame}
+
+\begin{frame}{Décorrélation au cours du temps des pauvretés objective et
+subjective}
+\protect\hypertarget{duxe9corruxe9lation-au-cours-du-temps-des-pauvretuxe9s-objective-et-subjective}{}
+\begin{figure}[!ht]
+
+{\centering \includegraphics{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/figchap1compa20152019-1} 
+
+}
+
+\caption[Différents indicateurs de pauvreté (2015 à 2019)]{Différents indicateurs de pauvreté (2015 à 2019)}\label{fig:figchap1compa20152019}
+
+\footnotesize
+
+
+\emph{Source} : \emph{Baromètre d’opinion de la DREES, 2015-2019.}
+\normalsize\end{figure}
+\end{frame}
+
+\begin{frame}{Les déterminants de la pauvreté subjective}
+\protect\hypertarget{les-duxe9terminants-de-la-pauvretuxe9-subjective}{}
+\footnotesize
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{2cm}}
+\caption{\label{tab:tabfinal21-1}Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endfirsthead
+\caption[]{Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues \textit{(suite)}}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\textit{(suite en page suivante...)}}\
+\endfoot
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}* : significatif au seuil de $5 \, \%$ ; ** : $1 \, \%$ ; *** : $0,1 \, \%$.}\\
+\endlastfoot
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Pauvreté monétaire}}\\
+\hspace{1em}Niveau de vie & Quintile 1 & 1,54*** & 4,2***\\
+\hspace{1em} & Quintile 2 & Réf. & Réf.\\
+\hspace{1em} & Quintile 3 & 0,52*** & 0,47***\\
+\hspace{1em} & Quintile 4 & 0,26*** & 0,18***\\
+\hspace{1em} & Quintile 5 & 0,18*** & 0,05***\\
+\hspace{1em}Types de ressources & Pas de revenus de locations & Réf. & Réf.\\
+\hspace{1em}perçues par le ménage & Revenus de locations & 0,27*** & 0,64***\\
+\hspace{1em}(12 mois) & Pas de revenus d'actifs financiers & Réf. & Réf.\\
+\hspace{1em} & Revenus d'actifs financiers & 0,47*** & 0,43***\\*
+\end{longtable}\footnotesize
+\normalsize
+\end{frame}
+
+\begin{frame}[noframenumbering]{Les déterminants de la pauvreté
+subjective}
+\protect\hypertarget{les-duxe9terminants-de-la-pauvretuxe9-subjective-1}{}
+\addtocounter{table}{-1}
+
+\footnotesize
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{2cm}}
+\caption{\label{tab:tabfinal21-2}Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endfirsthead
+\caption[]{Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues \textit{(suite)}}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\textit{(suite en page suivante...)}}\
+\endfoot
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}* : significatif au seuil de $5 \, \%$ ; ** : $1 \, \%$ ; *** : $0,1 \, \%$.}\\
+\endlastfoot
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Pauvreté institutionnelle}}\\
+\hspace{1em} & Pas de RSA & Réf. & Réf.\\
+\hspace{1em} & RSA & 2,01*** & 1,04\\
+\hspace{1em} & Pas d'APL & Réf. & Réf.\\
+\hspace{1em} & APL & 1,53*** & 0,8***\\
+\hspace{1em} & Pas d'allocation chômage & Réf. & Réf.\\
+\hspace{1em} & Allocation chômage & 1,31*** & 1,05\\
+\hspace{1em} & Pas d'AAH, APA, PCH (handicap) & Réf. & Réf.\\
+\hspace{1em} & AAH, APA, PCH (handicap) & 1,12 & 1,01\\
+\hspace{1em}Logement & Locataire HLM & 1 & 1,13\\
+\hspace{1em} & Locataire privé / hébergé & Réf. & Réf.\\
+ & Propriétaire & 0,48*** & 0,91\\*
+\end{longtable}\footnotesize
+\normalsize
+\end{frame}
+
+\begin{frame}[noframenumbering]{Les déterminants de la pauvreté
+subjective}
+\protect\hypertarget{les-duxe9terminants-de-la-pauvretuxe9-subjective-2}{}
+\addtocounter{table}{-1}
+
+\footnotesize
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{2cm}}
+\caption{\label{tab:tabfinal21-3}Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endfirsthead
+\caption[]{Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues \textit{(suite)}}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\textit{(suite en page suivante...)}}\
+\endfoot
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}* : significatif au seuil de $5 \, \%$ ; ** : $1 \, \%$ ; *** : $0,1 \, \%$.}\\
+\endlastfoot
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Contrôles}}\\
+\hspace{1em}Situation professionnelle & Agriculteur & 2,97** & 0,78\\
+\hspace{1em} & Artisan commerçant & 0,76 & 1,11\\
+\hspace{1em} & Cadre supérieur, profession libérale & 0,58* & 1,07\\
+\hspace{1em} & Profession intermédiaire & Réf. & Réf.\\
+\hspace{1em} & Employé & 1,55** & 1,1\\
+\hspace{1em} & Ouvrier & 1,63*** & 1,27**\\
+\hspace{1em} & Chômeur & 1,62** & 1,27\\
+\hspace{1em} & Retraité & 1,48* & 1,07\\
+\hspace{1em} & Au foyer & 1,53* & 0,73*\\
+\hspace{1em} & Autre inactif & 1,92*** & 0,88\\
+\hspace{1em}Précarité de l'emploi & N'est pas personne en emploi précaire & Réf. & Réf.\\
+(subjective) & est personne en emploi précaire & 1,44*** & 0,93\\*
+\end{longtable}\footnotesize
+\normalsize
+\end{frame}
+
+\begin{frame}[noframenumbering]{Les déterminants de la pauvreté
+subjective}
+\protect\hypertarget{les-duxe9terminants-de-la-pauvretuxe9-subjective-3}{}
+\addtocounter{table}{-1}
+
+\footnotesize
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{2cm}}
+\caption{\label{tab:tabfinal21-4}Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endfirsthead
+\caption[]{Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues \textit{(suite)}}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\textit{(suite en page suivante...)}}\
+\endfoot
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}* : significatif au seuil de $5 \, \%$ ; ** : $1 \, \%$ ; *** : $0,1 \, \%$.}\\
+\endlastfoot
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Contrôles}}\\
+\hspace{1em}Niveau de diplôme le plus élevé & CAP, BEP ou moins & 1,19* & 1,08\\
+\hspace{1em} & Baccalauréat & Réf. & Réf.\\
+\hspace{1em} & Bac + 2 & 0,75* & 0,99\\
+\hspace{1em} & Bac + 3 ou plus & 0,7** & 0,82*\\
+\hspace{1em}Classe d'âge & 18 à 29 ans & 0,56*** & 0,82*\\
+\hspace{1em} & 30 à 39 ans & Réf. & Réf.\\
+\hspace{1em} & 40 à 49 ans & 1,13 & 1,05\\
+\hspace{1em} & 50 à 59 ans & 1,01 & 1,02\\
+\hspace{1em} & 60 à 69 ans & 1,02 & 1,02\\
+ & 70 ans et plus & 0,84 & 0,71**\\*
+\end{longtable}\footnotesize
+\normalsize
+\end{frame}
+
+\begin{frame}[noframenumbering]{Les déterminants de la pauvreté
+subjective}
+\protect\hypertarget{les-duxe9terminants-de-la-pauvretuxe9-subjective-4}{}
+\addtocounter{table}{-1}
+
+\footnotesize
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{2cm}}
+\caption{\label{tab:tabfinal21-5}Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endfirsthead
+\caption[]{Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues \textit{(suite)}}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\textit{(suite en page suivante...)}}\
+\endfoot
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}* : significatif au seuil de $5 \, \%$ ; ** : $1 \, \%$ ; *** : $0,1 \, \%$.}\\
+\endlastfoot
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Contrôles}}\\
+\hspace{1em}Situation familiale & Vit seul & 1,67*** & 1,16*\\
+\hspace{1em} & Membre du couple (pas d’enfants à charge) & Réf. & Réf.\\
+\hspace{1em} & Membre du couple (enfants à charge) & 0,65*** & 0,55***\\
+\hspace{1em} & Chef famille monoparentale & 1,23 & 0,64***\\
+\hspace{1em} & Enfant & 1,02 & 0,54***\\
+\hspace{1em} & Autre situation familiale & 1,24 & 0,58**\\
+\hspace{1em}Sexe & Femme & Réf. & Réf.\\
+\hspace{1em} & Homme & 1,11 & 0,9*\\
+\hspace{1em}Entourage au RSA & Ne connaît pas de personne au RSA & Réf. & Réf.\\
+ & Connait une personne au RSA & 1,14* & 1,03\\*
+\end{longtable}\footnotesize
+\normalsize
+\end{frame}
+
+\begin{frame}[noframenumbering]{Les déterminants de la pauvreté
+subjective}
+\protect\hypertarget{les-duxe9terminants-de-la-pauvretuxe9-subjective-5}{}
+\addtocounter{table}{-1}
+
+\footnotesize
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{2cm}}
+\caption{\label{tab:tabfinal21-6}Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endfirsthead
+\caption[]{Modèle de synthèse des effets sur le sentiment de pauvreté et les difficultés financières perçues \textit{(suite)}}\\
+\toprule
+Modèle logit & Odds ratio. Variables dépendantes : & Se déclarer pauvre & Avoir un revenu inférieur au minimum déclaré\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\textit{(suite en page suivante...)}}\
+\endfoot
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26,0 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \, \%}\\
+\multicolumn{4}{l}{\rule{0pt}{1em}* : significatif au seuil de $5 \, \%$ ; ** : $1 \, \%$ ; *** : $0,1 \, \%$.}\\
+\endlastfoot
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Contrôles}}\\
+\hspace{1em}Année & 2015 & Réf. & Réf.\\
+\hspace{1em} & 2016 & 0,91 & 1,17*\\
+\hspace{1em} & 2017 & 0,93 & 1,14\\
+\hspace{1em} & 2018 & 1,78*** & 1,63***\\
+\hspace{1em} & 2019 & 1,99*** & 1,68***\\*
+\end{longtable}\footnotesize
+
+\emph{Source} : \emph{Baromètre d’opinion de la DREES, 2015-2019.}
+
+\emph{Champ} :
+\emph{Personnes d’au moins 18 ans résidant en France métropolitaine.}
+\normalsize
+
+\normalsize
+\end{frame}
+
+\hypertarget{esexplo}{%
+\section{La pauvreté comme Espace social (analyse
+exploratoire)}\label{esexplo}}
+
+\begin{frame}{Sommaire}
+\protect\hypertarget{sommaire-2}{}
+\tableofcontents[currentsection, hideothersubsections]
+\end{frame}
+
+\begin{frame}{Modèle descriptif : indicateurs mesurables de pauvreté}
+\protect\hypertarget{moduxe8le-descriptif-indicateurs-mesurables-de-pauvretuxe9}{}
+\begin{figure}[!ht]
+
+{\centering \includegraphics[width=1\linewidth]{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/cah1-1} 
+
+}
+
+\caption[Nuage des individus de l'ACM et CAH sur les deux premiers axes]{Nuage des individus de l'ACM et CAH sur les deux premiers axes}\label{fig:cah1}
+
+\footnotesize
+\normalsize\end{figure}
+\end{frame}
+
+\begin{frame}{Corrélation pas si forte entre indicateurs de pauvreté !}
+\protect\hypertarget{corruxe9lation-pas-si-forte-entre-indicateurs-de-pauvretuxe9}{}
+\begin{figure}[!ht]
+
+{\centering \includegraphics[width=1\linewidth]{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/corrplot-1} 
+
+}
+
+\caption[Corrélation de Spearman entreles différents indicateurs de pauvreté]{Corrélation de Spearman entreles différents indicateurs de pauvreté}\label{fig:corrplot}
+
+\footnotesize
+\normalsize\end{figure}
+\end{frame}
+
+\begin{frame}{Modèle structurel : les dimensions latentes de la pauvreté
+(Analyse en Facteurs communs Exploratoire)}
+\protect\hypertarget{moduxe8le-structurel-les-dimensions-latentes-de-la-pauvretuxe9-analyse-en-facteurs-communs-exploratoire}{}
+\begin{itemize}
+\item
+  Identifie des variables latentes (facteurs) cachées derrière les
+  indicateurs mesurés
+\item
+  Conserve la structure des corrélations entre ces indicateurs
+\end{itemize}
+
+\bigskip
+
+\begin{figure}[!ht]
+
+{\centering \includegraphics[width=0.75\linewidth]{../rapport/figures/decompo_var} 
+
+}
+
+\caption[Décomposition de la variance]{Décomposition de la variance}\label{fig:decompovar}
+
+\footnotesize
+\normalsize\end{figure}
+\end{frame}
+
+\begin{frame}{AFE en deux facteurs}
+\protect\hypertarget{afe-en-deux-facteurs}{}
+\begin{figure}[!ht]
+
+{\centering \includegraphics[width=1\linewidth]{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/afe-1} 
+
+}
+
+\caption[Espace des variables de pauvreté monétaire, institutionnelle et subjective (Analyse en Facteurs Communs Exploratoire)]{Espace des variables de pauvreté monétaire, institutionnelle et subjective (Analyse en Facteurs Communs Exploratoire)}\label{fig:afe}
+
+\footnotesize
+
+
+\emph{Source} : \emph{Baromètre d’opinion de la DREES, 2015-2019.}
+
+
+\emph{Champ} : \emph{Personnes d’au moins 18 ans résidant en France métropolitaine.}
+
+
+\emph{Note de lecture} : \emph{Pour la variable « HLM » (être locataire d’un logement social), la saturation sur le premier facteur est de 0,24 et celle sur le second facteur est de 0,46.}
+\normalsize\end{figure}
+\end{frame}
+
+\begin{frame}{6 classes non ordonnées de pauvreté}
+\protect\hypertarget{classes-non-ordonnuxe9es-de-pauvretuxe9}{}
+\begin{center}\includegraphics[width=1\linewidth]{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/latentclass2-1} \end{center}
+\end{frame}
+
+\hypertarget{esconfi}{%
+\section{La pauvreté comme Espace social (analyse
+confirmatoire)}\label{esconfi}}
+
+\begin{frame}{Sommaire}
+\protect\hypertarget{sommaire-3}{}
+\tableofcontents[currentsection, hideothersubsections]
+\end{frame}
+
+\begin{frame}{Modèle confirmatoire de synthèse}
+\protect\hypertarget{moduxe8le-confirmatoire-de-synthuxe8se}{}
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+\begin{figure}[!ht]
+
+{\centering \includegraphics[width=2\linewidth]{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/grviz4-1} 
+
+}
+
+\caption[Modèle confirmatoire]{Modèle confirmatoire}\label{fig:grviz4}
+
+\footnotesize
+\normalsize\end{figure}
+\end{column}
+
+\begin{column}{0.4\textwidth}
+\footnotesize
+
+\pause
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+ & Effet sur l'indice global de pauvreté\\
+\midrule
+Chef famille monoparent... & ...1***\\
+Autre inactif & 1.76***\\
+Chômeur & 1.73***\\
+Au foyer & 1.41***\\
+Vit seul & 0.9***\\
+\addlinespace
+Autre situation familiale & 0.85***\\
+Membre du couple (enfants à charge) & 0.73***\\
+... & ...\\
+Bac + 3 ou plus & -0.66***\\
+60 à 69 ans & -0.67***\\
+\addlinespace
+70 ans et plus & -0.95***\\
+\bottomrule
+\end{tabular}
+\footnotesize
+\normalsize\end{table}
+
+\normalsize
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{La structure familiale structure l'espace social}
+\protect\hypertarget{la-structure-familiale-structure-lespace-social}{}
+\begin{figure}[!ht]
+
+{\centering \includegraphics[width=0.75\linewidth]{M2_ANTUNEZ_SQD_ORAL_files/figure-beamer/ggradar-1} 
+
+}
+
+\caption[Représentation graphique de quelques coefficients du modèle 3 avec covariables]{Représentation graphique de quelques coefficients du modèle 3 avec covariables}\label{fig:ggradar}
+
+\footnotesize
+\normalsize\end{figure}
+\end{frame}
+
+\hypertarget{conclusion-et-discussion}{%
+\section*{Conclusion et Discussion}\label{conclusion-et-discussion}}
+\addcontentsline{toc}{section}{Conclusion et Discussion}
+
+\begin{frame}{Conclusion et Discussion}
+\textbf{Bilan}
+
+\begin{itemize}
+\tightlist
+\item
+  Construction d'un espace social des pauvretés monétaire,
+  institutionnelle et subjective
+\item
+  Rôle prépondérant de la pauvreté monétaire mais corrélation globale de
+  toutes les dimensions \ldots{}
+\item
+  \ldots{} avec toutefois des groupes sociaux particulièrement concernés
+  par certaines formes de pauvreté
+\end{itemize}
+
+\pause
+
+\bigskip
+
+\textbf{Prolongements possibles}
+
+\begin{itemize}
+\item
+  \emph{Travail sur les données} : travail sur la non-réponse, sur
+  l'impact de la formulation des questions, sources de données
+  alternatives\ldots{}
+\item
+  \emph{Travail sur les méthodes} : les méthodes en variables latentes
+  n'ont rien d'évident !
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Merci pour votre attention !}
+\protect\hypertarget{merci-pour-votre-attention}{}
+\begin{center}
+\includegraphics[width = 2.5cm]{../rapport/logos/avatar_antuki_v2_small.png}
+\end{center}
+
+\bigskip
+
+\begin{center}
+\includegraphics[width = 2cm]{../rapport/logos/logo.png}
+\includegraphics[width = 4cm]{../rapport/logos/saclay_violet.png}
+\end{center}
+\end{frame}
+
+
+
+\end{document}
