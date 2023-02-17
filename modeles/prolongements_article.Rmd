@@ -1215,6 +1215,7 @@ kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26
                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  #%>% add_footnote_kable()
 ```
 
+
 # Statistique descriptives "insécurité" versus "infériorité" 
 
 
@@ -1670,4 +1671,397 @@ saveRDS(grviz4,"../rapport/figures/grviz4.RDS")
 
 grviz4
 ```
+
+
+\newpage 
+
+# Reprendre le tableau 4.1 
+
+"Tableau 4.1 portant sur le modèle 2 revu : effets des covariables sur les trois dimensions de pauvreté"
+
+```{r,  include = FALSE}
+
+pauv_model_mimic_inter_old <- '
+m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
+m ~~ s_sentpauvrisque_std
+i ~~ s_sentpauvrisque_std
+# + Controles intermediaires : cf ci-dessous
+'
+
+pauv_model_mimic_inter <- '
+s =~ s_sentpauvrisque + s_infminidecla
+m =~ m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ i_rsa + i_chom + i_log + i_handi + i_bourse + i_hlm 
+s_infminidecla ~~ m_quantilenivie_inv
+m ~~ s
+i ~~ s
+# Controles intermediaires
+i ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+m ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+s_sentpauvrisque_std ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+'
+
+
+
+fit_mimic_inter <- lavaan::cfa(pauv_model_mimic_inter, data = bdd_CFA_rmnasup,ordered=TRUE, orthogonal=FALSE,std.lv = TRUE)
+
+sum2 <- summary(fit_mimic_inter, standardized = TRUE, fit.measures = TRUE)
+```
+
+```{r tab41,  echo=FALSE}
+tab_covariates_inter_cfa <- sum2$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+         ) %>% 
+  dplyr::select(lhs,variable,estimateur) %>%
+  pivot_wider(
+    names_from = lhs,
+    values_from = estimateur
+  ) %>% dplyr::right_join(
+    data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+"Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+ "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+           libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+) ,
+    by="variable")  %>% 
+     arrange(match(variable,c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme")))  %>% 
+  dplyr::select(libelle_var,libelle_mod,m,i,s_sentpauvrisque_std)  %>% 
+  replace(is.na(.), "Réf.") %>% 
+  setNames(c("","Pauvreté...","Monétaire","Institutionnelle","Subjective"))
+  # setNames(c("","Pauvreté...","Monétaire","Institutionnelle","Sentiment de pauvreté"))
+ 
+
+  
+```
+
+```{r tab41b, eval=TRUE, echo=FALSE}
+
+tab_covariates_inter_cfa %>%
+  kable(caption="Effets des covariables sur les différentes dimensions de la pauvreté", booktabs = TRUE, longtable = TRUE) %>%
+   kableExtra::column_spec(1, width = "4cm") %>%
+   kableExtra::column_spec(2, width = "5cm") %>%
+   kableExtra::column_spec(3:5, width = "2cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+
+```
+
+# Reprendre et prolonger le tableau 4.2 
+
+Tableau 4.2 Portant sur le modèle 4 : effets des covariables sur l'indice global de pauvreté. 
+
+* Ajouter également les effets non significatifs.
+
+
+```{r, include=FALSE}
+pauv_model_mimic_global_old <- '
+m =~ 0.83*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ 0.74*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm
+pauvrete =~ NA*m + i + s_sentpauvrisque_std
+
+
+# Correction de la variance négative : cf. ci-dessous
+# Controles globaux : cf. ci-dessous
+'
+
+pauv_model_mimic_global <- '
+m =~ 0.81*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ 0.75*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm
+s =~ 0.73*s_sentpauvrisque + s_infminidecla
+s_infminidecla ~~ m_quantilenivie_inv
+
+pauvrete =~ NA*m + i + s
+
+
+# Correction de la variance négative
+m ~~ 0.04*m
+pauvrete ~~ 1 * pauvrete
+
+
+# Controles globaux
+pauvrete ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+'
+
+
+
+fit_mimic_global <- lavaan::cfa(pauv_model_mimic_global, data = bdd_CFA_rmnasup,ordered=TRUE)
+
+sum <- summary(fit_mimic_global, standardized = TRUE, fit.measures = TRUE)
+```
+
+```{r, echo=FALSE, eval = TRUE}
+
+
+tab_covariates_global_cfa <- sum$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+         ) %>% 
+  dplyr::select(lhs,variable,estimateur) %>%
+  pivot_wider(
+    names_from = lhs,
+    values_from = estimateur
+  ) %>% dplyr::right_join(
+    data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+"Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+ "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+           libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+) ,
+    by="variable")  %>% 
+     arrange(match(variable,c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme")))  %>% 
+  dplyr::select(libelle_var,libelle_mod,pauvrete)  %>% 
+  replace(is.na(.), "Réf.") %>% 
+  setNames(c("","","Effet sur l'indice global de pauvreté (m+i+s)"))
+
+
+# tab_covariates_global_cfa <- sum$PE %>% 
+#   filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+#   mutate(variable=gsub("cov_","",rhs),
+#          pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+#                                       include.lowest = TRUE,
+#                                       labels = c('***', '**', '*', '')),
+#          estimateur=paste0(round(est,2),pvaleur) 
+#          ) %>% arrange(desc(abs(est))) %>% 
+#   dplyr::select(lhs,variable,estimateur) %>%
+#   pivot_wider(
+#     names_from = lhs,
+#     values_from = estimateur
+#   ) %>% dplyr::left_join(
+#     data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+# "prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+#  "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+#  "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+# 	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+# "Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+#  "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+#  "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+#            libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+# ) ,
+#     by="variable")  %>% 
+#   dplyr::select(libelle_mod,pauvrete) %>%
+#   setNames(c("","Effet sur l'indice global de pauvreté (m+i+s)"))
+# 
+# 
+tab_covariates_global_cfa %>%
+  kable(caption="Effets des covariables sur l'indice global de pauvreté", booktabs = TRUE, longtable = TRUE) %>%
+      kableExtra::column_spec(1:2, width = "4cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+
+```
+
+* Modélisation supplémentaire n°1 : modèle de l'indice global de pauvreté avec seulement deux dimensions : monétaire et institutionnelle
+
+
+```{r, include=FALSE}
+
+pauv_model_mimic_global_new1 <- '
+m =~ 0.81*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+i =~ 0.75*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm
+#s =~ 0.73*s_sentpauvrisque + s_infminidecla
+#s_infminidecla ~~ m_quantilenivie_inv
+
+#pauvrete =~ NA*m + i + s
+pauvrete =~ NA*m + i
+
+
+# Correction de la variance négative
+m ~~ 0.04*m
+pauvrete ~~ 1 * pauvrete
+
+
+# Controles globaux
+pauvrete ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+'
+
+
+
+fit_mimic_global_new1 <- lavaan::cfa(pauv_model_mimic_global_new1, data = bdd_CFA_rmnasup,ordered=TRUE)
+
+sum_new1 <- summary(fit_mimic_global_new1, standardized = TRUE, fit.measures = TRUE)
+```
+
+```{r, echo=FALSE, eval = TRUE}
+
+
+tab_covariates_global_cfa_new1 <- sum_new1$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+         ) %>% 
+  dplyr::select(lhs,variable,estimateur) %>%
+  pivot_wider(
+    names_from = lhs,
+    values_from = estimateur
+  ) %>% dplyr::right_join(
+    data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+"Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+ "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+           libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+) ,
+    by="variable")  %>% 
+     arrange(match(variable,c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme")))  %>% 
+  dplyr::select(libelle_var,libelle_mod,pauvrete)  %>% 
+  replace(is.na(.), "Réf.") %>% 
+  setNames(c("","","Effet sur l'indice global de pauvreté (m+i)"))
+ 
+tab_covariates_global_cfa_new1 %>%
+  kable(caption="Effets des covariables sur l'indice global de pauvreté", booktabs = TRUE, longtable = TRUE) %>%
+      kableExtra::column_spec(1:2, width = "4cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+
+```
+
+
+
+* Modélisation supplémentaire n°2 : modèle de l'indice global de pauvreté avec uniquement la dimension monétaire (il s'agit d'un modèle simple - sans dimension supra de pauvreté supplémentaire - qui construit la dimension de pauvreté monétaire à partir des trois indicatrices que sont le quantile niveau de vie, les revenus locatifs et les revenus financiers)"
+
+
+```{r, include=FALSE}
+
+pauv_model_mimic_global_new2 <- '
+#m =~ 0.81*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+pauvrete =~ 0.81*m_quantilenivie_inv + m_locatif_inv + m_financier_inv
+#i =~ 0.75*i_rsa +  i_chom + i_log + i_handi + i_bourse + i_hlm
+#s =~ 0.73*s_sentpauvrisque + s_infminidecla
+#s_infminidecla ~~ m_quantilenivie_inv
+#pauvrete =~ NA*m + i
+
+
+# Correction de la variance négative
+#m ~~ 0.04*m
+pauvrete ~~ 1 * pauvrete
+
+
+# Controles globaux
+pauvrete ~  cov_prof_statut_act_agri + cov_prof_statut_act_commer + cov_prof_statut_act_cadre + cov_prof_statut_act_employ + cov_prof_statut_act_ouv + cov_prof_statut_act_chom + 
+cov_prof_statut_act_retr +  cov_prof_statut_act_foyer +
+cov_prof_statut_act_autrinac + cov_diplome_sans + cov_diplome_bacplus2 + cov_diplome_bacplus3 + cov_age_tranche_1829 + cov_age_tranche_4049 + cov_age_tranche_5059 + cov_age_tranche_6069 + cov_age_tranche_70 +
+cov_vie_fam_seul + cov_vie_fam_coupenf + cov_vie_fam_mono +
+cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
+'
+
+
+
+fit_mimic_global_new2 <- lavaan::cfa(pauv_model_mimic_global_new2, data = bdd_CFA_rmnasup,ordered=TRUE)
+
+sum_new2 <- summary(fit_mimic_global_new2, standardized = TRUE, fit.measures = TRUE)
+```
+
+```{r, echo=FALSE, eval = TRUE}
+
+
+tab_covariates_global_cfa_new2 <- sum_new2$PE %>% 
+  filter(op=="~" & substr(rhs,1,3)=="cov") %>% 
+  mutate(variable=gsub("cov_","",rhs),
+         pvaleur=cut(pvalue, breaks = c(0, 0.001, 0.01, 0.05, 1),
+                                      include.lowest = TRUE,
+                                      labels = c('***', '**', '*', '')),
+         estimateur=paste0(round(est,2),pvaleur) 
+         ) %>% 
+  dplyr::select(lhs,variable,estimateur) %>%
+  pivot_wider(
+    names_from = lhs,
+    values_from = estimateur
+  ) %>% dplyr::right_join(
+    data.frame(variable = c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
+	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+"Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
+ "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+           libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
+) ,
+    by="variable")  %>% 
+     arrange(match(variable,c("prof_statut_act_agri", "prof_statut_act_commer", "prof_statut_act_cadre", "prof_statut_act_inter", "prof_statut_act_employ", "prof_statut_act_ouv", "prof_statut_act_chom",
+"prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
+ "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
+ "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme")))  %>% 
+  dplyr::select(libelle_var,libelle_mod,pauvrete)  %>% 
+  replace(is.na(.), "Réf.") %>% 
+  setNames(c("","","Effet sur l'indice global de pauvreté (m)"))
+ 
+tab_covariates_global_cfa_new2 %>%
+  kable(caption="Effets des covariables sur l'indice global de pauvreté", booktabs = TRUE, longtable = TRUE) %>%
+      kableExtra::column_spec(1:2, width = "4cm") %>%
+  kableExtra::kable_styling(
+  latex_options = c("hold_position", "repeat_header"),
+  repeat_header_text = "\\textit{(suite)}",
+  repeat_header_continued = "\\textit{(suite en page suivante...)}"
+  ) %>%
+  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
+
+```
+
+
 

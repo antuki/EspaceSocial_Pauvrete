@@ -30,7 +30,10 @@ Ces méthodes ont pu montrer que les dimensions de la pauvreté sont non seuleme
   
   *	*Fiche 5* : [Constuction de l'espace social de la pauvreté par Analyse des Correspondances Multiples](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles5.html)
   
-  *	*Fiche 6* : [Constuction de l'espace social de la pauvreté par Analyses en Facteurs communs Exploratoire et Confirmatoire](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles6.pdf) 
+  *	*Fiche 6* : [Constuction de l'espace social de la pauvreté par Analyses en Facteurs communs Exploratoire et Confirmatoire](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/modeles6.pdf)
+  
+   *	*Annexe* : [Prolongements du mémoire en vu d'un article de recherche](https://antuki.github.io/EspaceSocial_Pauvrete/modeles/prolongements_article.pdf) 
+  
   
 ### Reproductibilité
 
