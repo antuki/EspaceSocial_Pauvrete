@@ -1,0 +1,951 @@
+---
+title: |
+    | Résultats complémentaires 2
+subtitle : "pour l'article de recherche (insécu / infério)"
+author: |
+    | Kim Antunez
+automaticcontents: true
+output:
+  bookdown::pdf_document2:
+        toc: false
+        toc_depth: 2
+        number_sections: true
+        fig_caption: true
+        highlight: default
+        keep_tex: no
+        includes:
+          in_header: preamble.tex
+themeoptions: "coding=utf8,language=french"
+classoption: 'french'
+fontsize: 11pt
+geometry: margin=0.90in
+lang: "french"
+documentclass: "article"
+---
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+#library(rmdformats)
+
+## Global options
+#options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.width = 5,
+               fig.height = 3
+               )
+options(knitr.kable.NA = '')
+#opts_knit$set(width=75)
+```
+
+```{r}
+#chargement des packages
+library(knitr)
+library(dplyr) #manipuler les bases de données
+library(tidyr) #pour pivot_longer
+library(ggplot2) #pour les graphiques
+library(RColorBrewer) #pour les palettes de couleur
+```
+
+```{r}
+#chargement des packages
+library(psych) #EFA
+library(lavaan) #CFA et SEM
+library(semPlot) #path draw CFA SEM
+library(poLCA) #pour les Latent Categorical Variables
+library(ade4) #pour la fonction s5 de plot des classes de CAH
+library(tibble) #pour rownames_to_column
+library(DiagrammeR) #pour refaire les graphiques de path
+```
+
+```{r, echo=FALSE}
+#Chargement de la base de données
+bdd <- readRDS("../data/2019/barometre2000_2019_diff.rds") %>% 
+  filter(annee%in%2015:2019) #NEW : 2015 à 2019
+
+revenus_a_imputer <- bdd %>%
+  mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
+  group_by(sdrevtr) %>% 
+  summarise(sdrevcl = mean(sdrevcl,na.rm=TRUE))
+
+
+bdd <- bdd %>% 
+  mutate(
+    sdrevcl_imput_moy = case_when(
+      sdrevcl!=999999999 ~ sdrevcl,
+      sdrevcl==999999999 & sdrevtr==1 ~ revenus_a_imputer$sdrevcl[1],
+      sdrevcl==999999999 & sdrevtr==2 ~ revenus_a_imputer$sdrevcl[2],
+      sdrevcl==999999999 & sdrevtr==3 ~ revenus_a_imputer$sdrevcl[3],
+      sdrevcl==999999999 & sdrevtr==4 ~ revenus_a_imputer$sdrevcl[4],
+      sdrevcl==999999999 & sdrevtr==5 ~ revenus_a_imputer$sdrevcl[5],
+      sdrevcl==999999999 & sdrevtr==6 ~ revenus_a_imputer$sdrevcl[6],
+      sdrevcl==999999999 & sdrevtr==7 ~ revenus_a_imputer$sdrevcl[7]
+             )
+  )
+
+bdd <- bdd %>% 
+   mutate(seuil_pauvrete = do.call(c,lapply(annee,function(annee_selec){
+0.6*median(bdd[bdd$annee==annee_selec,"sdrevcl_imput_moy"]/bdd[bdd$annee==annee_selec,"sduc"],
+           na.rm=TRUE)
+}
+))) %>% 
+  mutate(subj_inf_mini_decla = factor(
+     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
+     levels=c(TRUE,FALSE),
+     labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
+     ) %>%
+   # mutate(subj_inf_mini_decla = sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0) %>% 
+  mutate(subj_pauvrete = 
+           ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_risque_pauvrete = 
+           ifelse(pe3==1, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
+  mutate(subj_besoin_aide_etat =
+                   ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE))) %>%
+  mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete) %>% 
+  #NEW KIM NOV
+  mutate(insti_rsa = ifelse(sdres_3==1, TRUE,ifelse(sdres_3==3,NA,FALSE))) %>% 
+  mutate(insti_cho = ifelse(sdres_4==1, TRUE,ifelse(sdres_4==3,NA,FALSE))) %>% 
+  mutate(insti_apl = ifelse(sdres_9==1, TRUE,ifelse(sdres_9==3,NA,FALSE)))
+```
+
+```{r, echo=FALSE}
+bdd_logit <- bdd %>%
+  mutate(nivie = sdrevcl_imput_moy/sduc) %>% 
+  mutate(quantile_nivie = factor(
+    cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
+        breaks=quantile(sdrevcl_imput_moy/sduc,
+                        probs=seq(0,1,0.2),na.rm=TRUE),
+        labels=1:5),
+    levels=c(2,1,3,4,5),
+    labels=paste0("-Quintile ",c(2,1,3,4,5)))
+  ) %>% 
+  mutate(
+    statact = factor(case_when(
+      sdsitua==1 & sdstatemp%in%c(1)   ~ 1,
+      sdsitua%in%c(2,3) | (sdsitua==1 & sdstatemp%in%c(NA,2,3,4,5)) ~ 2,
+      sdsitua==4 ~ 3,
+      sdsitua==5 ~ 4,
+      sdsitua==6 ~ 5,
+      sdsitua==7 ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=1:6,
+    labels=paste0("-",
+                  c("CDI temps plein",
+                    "Emploi précaire ou à temps partiel",
+                    "Recherche d’emploi",
+                    "Étudiant",
+                    "Retraité",
+                    "Aucune activité professionnelle"))
+    )) %>% 
+  mutate(prof = factor(
+    #ifelse(sdpcs7!=7,sdpcs7,NA),
+    sdpcs7,
+    levels=c(4,1,2,3,5,6,7),
+    labels=paste0("-",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Aucune"))
+  )) %>%
+  # fastDummies::dummy_cols(select_columns = 'prof') %>% 
+  mutate(
+    diplome = factor(case_when(
+      sddipl%in%c(1,2,3,4) ~ 1,
+      sddipl%in%c(5,6) ~ 2,
+      sddipl%in%c(7) ~ 3,
+      sddipl%in%c(8) ~ 4,
+      TRUE ~ NA_real_
+    ),
+    levels=c(2,1,3,4),
+    labels=paste0("-",c("Baccalauréat","CAP, BEP ou moins","Bac + 2","Bac + 3 ou plus"))
+    )) %>% 
+  mutate(aide_log = factor(
+    ifelse(sdres_9!=3,sdres_9,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas d'aide au logement","Aide au logement reçue"))
+  )) %>% 
+  mutate(aide_rsa = factor(
+    ifelse(sdres_3!=3,sdres_3,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas de RSA","RSA reçu"))
+  )) %>% 
+  mutate(aide_handi = factor(
+    ifelse(sdres_10!=3,sdres_10,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas d'alloc. hand./invalid./dépend.",
+                        "Alloc. hand./invalid./dépend. reçu"))
+  )) %>% 
+  mutate(sexe = factor(
+    ifelse(sdsexe!=3,sdsexe,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Femme","Homme"))
+  )) %>% 
+  mutate(age_tranche = factor(
+    cut(sdage,
+        breaks=c(18,30,40,50,60,70,120),
+        include.lowest=TRUE,
+        labels=1:6),
+    levels=c(2,1,3,4,5,6),
+    labels=paste0("-",c("30 à 39 ans","18 à 29 ans","40 à 49 ans",
+                        "50 à 59 ans","60 à 69 ans", "70 ans et plus")))
+  ) %>% 
+  mutate(
+    vie_fam = factor(case_when(
+      sdsitfam==1 ~ 1,
+      sdsitfam==2 & sdnbenf==1 ~ 2, #attention dépend des bases
+      sdsitfam==2 & sdnbenf!=1 ~ 3, #attention dépend des bases
+      sdsitfam==3 ~ 4,
+      sdsitfam==4 ~ 5,
+      sdsitfam%in%c(5,6,7) ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=c(2,1,3,4,5,6),
+    labels=paste0("-",
+                  c("Membre du couple (pas d’enfants à charge)","Vit seul",
+                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
+                    "Enfant","Autre"))
+    )) %>% 
+  mutate(
+    statut_occup0 = factor(case_when(
+      lo1%in%c(2,3,4)  ~ 1,
+      lo1==1 ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire ou hébergé","Propriétaire")) 
+    )) %>% 
+  mutate(annee_fac = factor(annee,labels=paste0("-",2015:2019))) %>%  #NEW : 2015 à 2019
+  mutate(pauvrete_mon_rel= factor(
+    ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
+                                  ifelse(sdrevcl_imput_moy/sduc>=1.2*seuil_pauvrete,1,
+                                         ifelse(sdrevcl_imput_moy/sduc<1.2*seuil_pauvrete &
+                                                  sdrevcl_imput_moy/sduc>=seuil_pauvrete ,
+                                                2,NA)
+                                  )),
+    levels=c(1,2,3),
+    labels=paste0("-",c("Revenus > 20 pourcents seuil pauvreté",
+                        "Entre le seuil et 20 pourcents au dessus",
+                        "Pauvreté monétaire"))
+  )
+  )
+
+#NEW depuis fiche 3
+bdd_logit <- bdd %>% 
+   mutate(nivie = sdrevcl_imput_moy/sduc) %>% 
+  mutate(quantile_nivie = factor(
+    cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
+        breaks=quantile(sdrevcl_imput_moy/sduc,
+                        probs=seq(0,1,0.2),na.rm=TRUE),
+        labels=1:5),
+    levels=c(2,1,3,4,5),
+    labels=paste0("-Quintile ",c(2,1,3,4,5)))
+  ) %>% 
+  mutate(
+    statact = factor(case_when(
+      sdsitua==1 & sdstatemp%in%c(1)   ~ 1,
+      sdsitua%in%c(2,3) | (sdsitua==1 & sdstatemp%in%c(NA,2,3,4,5)) ~ 2,
+      sdsitua==4 ~ 3,
+      sdsitua==5 ~ 4,
+      sdsitua==6 ~ 5,
+      sdsitua==7 ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=1:6,
+    labels=paste0("-",
+                  c("CDI temps plein",
+                    "Emploi précaire ou à temps partiel",
+                    "Recherche d’emploi",
+                    "Étudiant",
+                    "Retraité",
+                    "Aucune activité professionnelle"))
+    )) %>%
+  # fastDummies::dummy_cols(select_columns = 'prof') %>% 
+  mutate(
+    diplome = factor(case_when(
+      sddipl%in%c(1,2,3,4) ~ 1,
+      sddipl%in%c(5,6) ~ 2,
+      sddipl%in%c(7) ~ 3,
+      sddipl%in%c(8) ~ 4,
+      TRUE ~ NA_real_
+    ),
+    levels=c(2,1,3,4),
+    labels=paste0("-",c("Baccalauréat","CAP, BEP ou moins","Bac + 2","Bac + 3 ou plus"))
+    )) %>% 
+  mutate(aide_log = factor(
+    ifelse(sdres_9!=3,sdres_9,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas d'aide au logement","Aide au logement reçue"))
+  )) %>% 
+  mutate(aide_rsa = factor(
+    ifelse(sdres_3!=3,sdres_3,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas de RSA","RSA reçu"))
+  )) %>% 
+  mutate(aide_handi = factor(
+    ifelse(sdres_10!=3,sdres_10,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Pas d'alloc. hand./invalid./dépend.",
+                        "Alloc. hand./invalid./dépend. reçu"))
+  )) %>% 
+  mutate(sexe = factor(
+    ifelse(sdsexe!=3,sdsexe,NA),
+    levels=c(2,1),
+    labels=paste0("-",c("Femme","Homme"))
+  )) %>% 
+  mutate(age_tranche = factor(
+    cut(sdage,
+        breaks=c(18,30,40,50,60,70,120),
+        include.lowest=TRUE,
+        labels=1:6),
+    levels=c(2,1,3,4,5,6),
+    labels=paste0("-",c("30 à 39 ans","18 à 29 ans","40 à 49 ans",
+                        "50 à 59 ans","60 à 69 ans", "70 ans et plus")))
+  ) %>% 
+  mutate(
+    vie_fam = factor(case_when(
+      sdsitfam==1 ~ 1,
+      #sdsitfam==2 & sdnbenf==0 ~ 2,
+      #sdsitfam==2 & sdnbenf!=0 ~ 3,
+      sdsitfam==2 & sdnbenf==1 ~ 2,
+      sdsitfam==2 & sdnbenf!=1 ~ 3,
+      sdsitfam==3 ~ 4,
+      sdsitfam==4 ~ 5,
+      sdsitfam%in%c(5,6,7) ~ 6,
+      TRUE ~ NA_real_
+    ),
+    levels=c(2,1,3,4,5,6),
+    labels=paste0("-",
+                  c("Membre du couple (pas d’enfants à charge)","Vit seul",
+                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
+                    "Enfant","Autre situation familiale"))
+    )) %>% 
+  mutate(
+    statut_occup0 = factor(case_when(
+      lo1%in%c(2,3,4)  ~ 1,
+      lo1==1 ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire ou hébergé","Propriétaire ")) 
+    )) %>% 
+  mutate(
+    statut_occup = factor(case_when(
+      lo1%in%c(3,4)  ~ 1,
+      lo1==2  ~ 2,
+      lo1==1 ~ 3,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2,3),
+    labels=paste0("-",
+                  c("Locataire privé / hébergé",
+                    "Locataire HLM","Propriétaire")) 
+    )) %>% 
+  mutate(annee_fac = factor(annee,labels=paste0("-",2015:2019))) %>% 
+  mutate(annee_fac_paires = factor(ifelse(annee%in%c(2016,2018),annee,NA),labels=paste0("-",c(2016,2018)))) %>% 
+  mutate(pauvrete_mon_rel= factor(
+    ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
+                                  ifelse(sdrevcl_imput_moy/sduc>=1.2*seuil_pauvrete,1,
+                                         ifelse(sdrevcl_imput_moy/sduc<1.2*seuil_pauvrete &
+                                                  sdrevcl_imput_moy/sduc>=seuil_pauvrete ,
+                                                2,NA)
+                                  )),
+    levels=c(1,2,3),
+    labels=paste0("-",c("Revenus > 20 pourcents seuil pauvreté",
+                        "Entre le seuil et 20 pourcents au dessus",
+                        "Pauvreté monétaire"))
+  )
+  )
+
+# bdd_logit <- bdd_logit %>% mutate(sdniviecl_imput_quint = 
+# factor(
+#     cut(sdniviecl_imput, include.lowest=TRUE,
+#         breaks=quantile(sdniviecl_imput,
+#                         probs=seq(0,1,0.2),na.rm=TRUE),
+#         labels=1:5),
+#     levels=c(2,1,3,4,5),
+#     labels=paste0("-Quintile ",c(2,1,3,4,5))))
+
+#NEW depuis fiche 3
+bdd_logit <- bdd_logit %>% #chômeur indemnise 
+  mutate(
+    conn_choindemnise = factor(case_when(
+      sdproxim_1%in%c(1,4)  ~ 1,
+      sdproxim_1%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_1==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de chômeur indemnisé",
+                    "Connait un chômeur indemnisé")) 
+    )) %>% 
+  mutate(
+    est_choindemnise = factor(case_when(
+      sdproxim_1%in%c(4,6,7,8)  ~ 2,
+      sdproxim_1%in%c(1,2,3,5)  ~ 1,
+      sdproxim_1==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas chômeur indemnisé",
+                    "est chômeur indemnisé")) 
+    )) %>%
+  mutate(
+    conn_chononindemnise = factor(case_when(
+      sdproxim_2%in%c(1,4)  ~ 1,
+      sdproxim_2%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_2==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de chômeur non indemnisé",
+                    "Connait un chômeur non indemnisé")) 
+    )) %>% 
+  mutate(
+    est_chononindemnise = factor(case_when(
+      sdproxim_2%in%c(4,6,7,8)  ~ 2,
+      sdproxim_2%in%c(1,2,3,5)  ~ 1,
+      sdproxim_2==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas chômeur non indemnisé",
+                    "est chômeur non indemnisé")) 
+    )) %>% #SDF
+  mutate(
+    conn_sdf = factor(case_when(
+      sdproxim_3%in%c(1,4)  ~ 1,
+      sdproxim_3%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_3==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de SDF",
+                    "Connait un SDF")) 
+    )) %>% 
+  mutate(
+    est_sdf = factor(case_when(
+      sdproxim_3%in%c(4,6,7,8)  ~ 2,
+      sdproxim_3%in%c(1,2,3,5)  ~ 1,
+      sdproxim_3==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas SDF",
+                    "est SDF")) 
+    )) %>% #personne élevant seul ses enfants avec moins du SMIC 
+  mutate(
+    conn_eleveseulsmic = factor(case_when(
+      sdproxim_4%in%c(1,4)  ~ 1,
+      sdproxim_4%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_4==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne élevant seul ses enfants avec moins du SMIC",
+                    "Connait une personne élevant seul ses enfants avec moins du SMIC")) 
+    )) %>% 
+  mutate(
+    est_eleveseulsmic = factor(case_when(
+      sdproxim_4%in%c(4,6,7,8)  ~ 2,
+      sdproxim_4%in%c(1,2,3,5)  ~ 1,
+      sdproxim_4==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne élevant seul ses enfants avec moins du SMIC",
+                    "est personne élevant seul ses enfants avec moins du SMIC")) 
+    )) %>% #pensionné invalide indicapé ne pouvant pas travailler 
+  mutate(
+    conn_pensionhandi = factor(case_when(
+      sdproxim_5%in%c(1,4)  ~ 1,
+      sdproxim_5%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_5==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de pensionné invalide indicapé ne pouvant pas travailler",
+                    "Connait un pensionné invalide indicapé ne pouvant pas travailler")) 
+    )) %>% 
+  mutate(
+    est_pensionhandi = factor(case_when(
+      sdproxim_5%in%c(4,6,7,8)  ~ 2,
+      sdproxim_5%in%c(1,2,3,5)  ~ 1,
+      sdproxim_5==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas pensionné invalide indicapé ne pouvant pas travailler",
+                    "est pensionné invalide indicapé ne pouvant pas travailler")) 
+    )) %>% #personne en emploi précaire 
+  mutate(
+    conn_emploiprecaire = factor(case_when(
+      sdproxim_6%in%c(1,4)  ~ 1,
+      sdproxim_6%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_6==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne en emploi précaire",
+                    "Connait une personne en emploi précaire")) 
+    )) %>% 
+  mutate(
+    est_emploiprecaire = factor(case_when(
+      sdproxim_6%in%c(4,6,7,8)  ~ 2,
+      sdproxim_6%in%c(1,2,3,5)  ~ 1,
+      sdproxim_6==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne en emploi précaire",
+                    "est personne en emploi précaire")) 
+    )) %>%  mutate(
+    conn_rsa_fam = factor(case_when(
+      sdproxim_7%in%c(1,3,4,7)  ~ 1,
+      sdproxim_7%in%c(2,5,6,8)  ~ 2,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne dans sa famille au RSA",
+                    "Connait une personne dans sa famille au RSA")) 
+    )) %>%
+   mutate(
+    conn_rsa_horsfam = factor(case_when(
+      sdproxim_7%in%c(1,2,4,6)  ~ 1,
+      sdproxim_7%in%c(3,5,7,8)  ~ 2,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne hors de sa famille au RSA",
+                    "Connait une personne hors de sa famille au RSA")) 
+    )) %>% #personne au RSA 
+  mutate(
+    conn_rsa = factor(case_when(
+      sdproxim_7%in%c(1,4)  ~ 1,
+      sdproxim_7%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne au RSA",
+                    "Connait une personne au RSA")) 
+    )) %>% 
+  mutate(
+    est_rsa = factor(case_when(
+      sdproxim_7%in%c(4,6,7,8)  ~ 2,
+      sdproxim_7%in%c(1,2,3,5)  ~ 1,
+      sdproxim_7==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne au RSA",
+                    "est personne au RSA")) 
+    )) %>% #personne handicapée de moins de 60 ans
+  mutate(
+    conn_handijeune = factor(case_when(
+      sdproxim_8%in%c(1,4)  ~ 1,
+      sdproxim_8%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_8==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne handicapée de moins de 60 ans",
+                    "Connait une personne handicapée de moins de 60 ans")) 
+    )) %>% 
+  mutate(
+    est_handijeune = factor(case_when(
+      sdproxim_8%in%c(4,6,7,8)  ~ 2,
+      sdproxim_8%in%c(1,2,3,5)  ~ 1,
+      sdproxim_8==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne handicapée de moins de 60 ans",
+                    "est personne handicapée de moins de 60 ans")) 
+    )) %>% #personne âgée dépendante
+  mutate(
+    conn_dependant = factor(case_when(
+      sdproxim_9%in%c(1,4)  ~ 1,
+      sdproxim_9%in%c(2,3,5,6,7,8)  ~ 2,
+      sdproxim_9==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Ne connaît pas de personne âgée dépendante",
+                    "Connait une personne âgée dépendante")) 
+    )) %>% 
+  mutate(
+    est_dependant = factor(case_when(
+      sdproxim_9%in%c(4,6,7,8)  ~ 2,
+      sdproxim_9%in%c(1,2,3,5)  ~ 1,
+      sdproxim_9==9 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("N'est pas personne âgée dépendante",
+                    "est personne âgée dépendante")) 
+    )) %>% 
+  mutate(
+    revenus_salaires = factor(case_when(
+      sdres_1%in%c(2)  ~ 1,
+      sdres_1%in%c(1)  ~ 2,
+      sdres_1==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus de salaires",
+                    "Revenus de salaires")) 
+    )) %>% 
+  mutate(
+    revenus_independant = factor(case_when(
+      sdres_2%in%c(2)  ~ 1,
+      sdres_2%in%c(1)  ~ 2,
+      sdres_2==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus d'activité indépendante",
+                    "Revenus d'activité indépendante")) 
+    )) %>%
+  mutate(
+    presta_hlm = factor(case_when(
+      lo1%in%c(1,3,4) ~ 1,
+      lo1==2  ~ 2,
+      lo1==5 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Locataire privé / hébergé, Propriétaire","Locataire HLM")) 
+    )) %>% 
+  mutate(
+    presta_rsa = factor(case_when(
+      sdres_3%in%c(2)  ~ 1,
+      sdres_3%in%c(1)  ~ 2,
+      sdres_3==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de RSA",
+                    "RSA")) 
+    )) %>% 
+  mutate(
+    presta_chomage = factor(case_when(
+      sdres_4%in%c(2)  ~ 1,
+      sdres_4%in%c(1)  ~ 2,
+      sdres_4==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas d'allocation chômage",
+                    "Allocation chômage")) 
+    )) %>% 
+  mutate(
+    revenus_retraite = factor(case_when(
+      sdres_5%in%c(2)  ~ 1,
+      sdres_5%in%c(1)  ~ 2,
+      sdres_5==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus de retraite",
+                    "Revenus de retraite")) 
+    )) %>%
+  mutate(
+    revenus_financiers = factor(case_when(
+      sdres_6%in%c(2)  ~ 1,
+      sdres_6%in%c(1)  ~ 2,
+      sdres_6==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus d'actifs financiers",
+                    "Revenus d'actifs financiers")) 
+    )) %>% 
+  mutate(
+    revenus_locatifs = factor(case_when(
+      sdres_7%in%c(2)  ~ 1,
+      sdres_7%in%c(1)  ~ 2,
+      sdres_7==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de revenus de locations",
+                    "Revenus de locations")) 
+    )) %>% 
+  mutate(
+    presta_fam = factor(case_when(
+      sdres_8%in%c(2)  ~ 1,
+      sdres_8%in%c(1)  ~ 2,
+      sdres_8==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de prestations familiales",
+                    "Prestations familiales")) 
+    )) %>% 
+  mutate(
+    presta_apl = factor(case_when(
+      sdres_9%in%c(2)  ~ 1,
+      sdres_9%in%c(1)  ~ 2,
+      sdres_9==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas d'APL",
+                    "APL")) 
+    )) %>% 
+  mutate(
+    presta_handi = factor(case_when(
+      sdres_10%in%c(2)  ~ 1,
+      sdres_10%in%c(1)  ~ 2,
+      sdres_10==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas d'AAH, APA, PCH (handicap)",
+                    "AAH, APA, PCH (handicap)")) 
+    )) %>% 
+  mutate(
+    presta_etudes = factor(case_when(
+      sdres_11%in%c(2)  ~ 1,
+      sdres_11%in%c(1)  ~ 2,
+      sdres_11==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de bourse d'étude",
+                    "Bourse d'étude")) 
+    )) %>% 
+  mutate(
+    presta_pensionalim = factor(case_when(
+      sdres_12%in%c(2)  ~ 1,
+      sdres_12%in%c(1)  ~ 2,
+      sdres_12==3 ~ NA_real_
+   ),
+    levels=c(1,2),
+    labels=paste0("-",
+                  c("Pas de pension alimentaire",
+                    "pension alimentaire")) 
+    )) %>% 
+  mutate(
+    statut_activite = factor(case_when(
+      sdstat==2 & (sdsitua==1 & sdstatemp==1) ~ 1,
+      sdstat==2 & !(sdsitua==1 & sdstatemp==1) ~ 2,
+      sdstat==1 & (sdsitua==1 & sdstatemp==1) ~ 3,
+      sdstat==1 & !(sdsitua==1 & sdstatemp==1) ~ 4,
+      sdstat==3 ~ 5,
+      sdstat==4 ~ 6,
+      sdstat==5 ~ 7,
+      sdstat==6 ~ 8,
+      sdstat==7 ~ 9,
+      sdstat==8 ~ NA_real_
+   ),
+    levels=1:9,
+    labels=paste0("-",
+                  c("Salarié du secteur privé (en CDI à temps plein)",
+"Salarié du secteur privé (précaire ou à temps partiel)",
+"Salarié du secteur public (en CDI à temps plein)",
+"Salarié du secteur public (précaire ou à temps partiel)",
+"Indépendant sans salarié",
+"Employeur",
+"Chômeur",
+"Inactif",
+"Autre statut d'activité")
+) 
+    )) %>% 
+  mutate(prof = factor(
+    sdpcs7,
+    levels=c(4,1,2,3,5,6,7),
+    labels=paste0("-",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Aucune"))
+  ))  %>% 
+  mutate(prof_statut_act = factor(
+    sdpcs10,
+    levels=c(4,1,2,3,5,6,7,8,9,10),
+    labels=paste0("-",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Chômeur",
+                        "Retraité","Au foyer","Autre inactif"))
+  )) %>%
+  mutate(
+    statut_activite_resp = factor(case_when(
+      sdprstat==2 & (sdprsitua==1) ~ 1,
+      sdprstat==2 & !(sdprsitua==1) ~ 2,
+      sdprstat==1 & (sdprsitua==1) ~ 3,
+      sdprstat==1 & !(sdprsitua==1) ~ 4,
+      sdprstat==3 ~ 5,
+      sdprstat==4 ~ 6,
+      sdprstat==5 ~ 7,
+      sdprstat==6 ~ 8,
+      sdprstat==7 ~ 9,
+      sdprstat==8 ~ NA_real_
+   ),
+    levels=1:9,
+    labels=paste0("-Pers. réf. ",
+                  c("Salarié du secteur privé (à temps plein)",
+"Salarié du secteur privé (à temps partiel)",
+"Salarié du secteur public (à temps plein)",
+"Salarié du secteur public (à temps partiel)",
+"Indépendant sans salarié",
+"Employeur",
+"Chômeur",
+"Inactif",
+"Autre statut d'activité")
+) 
+    )) %>% 
+  mutate(prof_resp = factor(
+    sdprpcs7,
+    levels=c(4,1,2,3,5,6,7),
+    labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Aucune"))
+  )) %>% 
+  mutate(prof_statut_act_resp = factor(
+    sdprpcs10,
+    levels=c(4,1,2,3,5,6,7,8,9,10),
+    labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
+                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Employé","Ouvrier","Chômeur",
+                        "Retraité","Au foyer","Autre inactif"))
+  ))
+
+
+```
+
+
+# Statistique descriptives "insécurité" versus "infériorité" 
+
+
+
+"Extensions: apporter quelques éclaircissements sur l'interprétation du sentiment de pauvreté - s'agit-il d'un indicateur de "insécurité" (Duvoux et Papuchon) ou de "infériorité" (Paugam) - en se servant de quelques variables supplémentaires d'opinion. Cette discussion intervient au tout début du manuscrit et il ne s'agit ici que de présenter des analyses descriptives sans trop se soucier d'utiliser des variables présentes sur l'ensemble des années. Cela devrait simplifier le travail"
+
+**A FAIRE**
+
+<!-- Duvoux : insécurité sociale = déficit de garantie face à l'avenir -->
+
+
+
+<!-- risque de devenir pauvre dans les années à venir -->
+
+<!-- insécurité sociale : incertitude face à  la capacité d'assurer sa subsistance et donc son statut social. -->
+
+
+
+<!-- - optimisme face à l’avenir -->
+<!-- - vision sur l’évolution passée et à venir des inégalités, de la pauvreté et l’exclusion. -->
+
+
+
+<!-- infériorité sociale : "manque de reconnaissance dans les différentes sphères de la vie sociale que l’on peut résumer par le sentiment de ne « compter pour » personne." (Paugam) -->
+
+
+<!-- - sentiment ou non d’avoir une moins bonne situation que leur parent au même âge (déclassement intergénérationnel) -->
+
+
+
+
+<!-- IN9 filtre : non MODULE ANNEES PAIRES 2014 - -->
+<!-- Et où placeriez-vous la famille dans laquelle vous avez grandi ? -->
+
+<!-- IN11f -->
+<!-- _1 Que gagnent en moyenne les gens qui ont la même profession que vous ? -->
+<!-- \__________/ -->
+<!-- _2 Que devraient gagner en moyenne les gens qui ont la même profession que vous ? -->
+<!-- \__________/ -->
+
+<!-- PE6 Filtre : non MODULE ANNEES PAIRES 2000 - -->
+<!-- Voici un certain nombre de raisons qui peuvent expliquer que des personnes se trouvent en -->
+<!-- situation d'exclusion ou de pauvreté. Pour chacune d'entre elles, dites-moi si vous êtes tout à fait -->
+<!-- d’accord, plutôt d'accord, plutôt pas d'accord ou pas du tout d’accord. Si des personnes se -->
+<!-- trouvent en situation d'exclusion ou de pauvreté, c'est parce qu'... ? -->
+<!-- 1. Tout à fait d'accord -->
+<!-- 2. Plutôt d'accord -->
+<!-- 3. Plutôt pas d'accord -->
+<!-- 4. Pas du tout d'accord -->
+<!-- 5. [NSP] -->
+<!-- ENQUETEUR : MONTRER ECRAN ET ENUMERER- UNE SEULE REPONSE – ROTATION DES ITEMS -->
+<!-- _1 Elles ne veulent pas travailler -->
+<!-- _2 Elles manquent de qualifications, de diplômes, pour trouver ou retrouver un emploi -->
+<!-- _3 Elles n'ont pas eu de chance -->
+<!-- _4 Il n'y a plus assez de travail pour tout le monde -->
+
+
+<!-- PE15 Filtre : non MODULE ANNEES PAIRES 2014 - -->
+<!-- Actuellement, compte tenu de votre situation globale, du montant des aides publiques (RSA, -->
+<!-- allocations familiales, aides au logement), et du montant de vos impôts, vous considérez que : -->
+<!-- 1. Vous êtes suffisamment aidé.e par les pouvoirs publics, ou n’avez pas besoin d’être aidé.e -->
+<!-- 2. Vous auriez besoin d’être aidé.e davantage par les pouvoir publics -->
+<!-- 3. [Non concerné.e] -->
+<!-- 4. [NSP] -->
+
+<!-- SA6_AB filtre : sdsplit = 1 ou 2 SOCLE 2000 - -->
+<!-- Êtes-vous d'accord ou pas avec les opinions suivantes ? En France … -->
+<!-- 1. Plutôt d'accord -->
+<!-- 2. Plutôt pas d'accord -->
+<!-- 3. [NSP] -->
+<!-- _1 Tout le monde peut être soigné quel que soit son revenu -->
+<!-- _2 On a la même qualité de soins quel que soit son revenu -->
+<!-- _3 Tout le monde peut être soigné quel que soit le lieu où il habite 2010 - -->
+<!-- _4 On a la même qualité de soins quel que soit le lieu où l'on habite -->
+<!-- _5 Les délais d'attente pour se faire soigner ne dépendent pas du revenu 2010 – -->
+<!-- _6 Les délais d'attente pour se faire soigner ne dépendent pas du lieu où l'on habite 2010 - -->
+
+<!-- CS1 filtre : non SOCLE 2014 - -->
+<!-- Selon vous, la cohésion sociale en France est-elle actuellement : -->
+<!-- 1. Très forte -->
+<!-- 2. Assez forte -->
+<!-- 3. Pas très forte -->
+<!-- 4. Pas du tout forte -->
+<!-- 5. [NSP] -->
+
+<!-- Selon vous, comment la solidarité entre les générations a-t-elle évolué au cours des dix dernières -->
+<!-- années ? -->
+<!-- 1. Elle a augmenté -->
+<!-- 2. Elle a diminué -->
+<!-- 3. Elle n’a ni augmenté ni diminué -->
+<!-- 4. [NSP] -->
+
+<!-- Avez-vous le sentiment d’être intégré.e dans la société française ? -->
+<!-- 1. Très bien intégré.e -->
+<!-- 2. Assez bien intégré.e -->
+<!-- 3. Pas bien intégré.e -->
+<!-- 4. Pas intégré.e du tout -->
+<!-- 5. [NSP] -->
+
+<!-- CS18 filtre : non SOCLE 2015 - -->
+<!-- Estimez-vous que les pouvoirs publics font trop, font ce qu'ils doivent ou ne font pas assez pour -->
+<!-- les plus démunis ? -->
+<!-- 1. Les pouvoirs publics font trop -->
+<!-- 2. Les pouvoirs publics font ce qu'ils doivent -->
+<!-- 3. Les pouvoirs publics ne font pas assez pour les plus démunis -->
+<!-- 4. [NSP] -->
+
+<!-- CS22 filtre : non SOCLE 2017 - -->
+<!-- Selon vous, entre quels types de groupes les tensions seront-elles les plus fortes à l’avenir ? -->
+<!-- 1. Entre les différentes générations -->
+<!-- 2. Entre les différentes catégories socio-économiques -->
+<!-- 3. Entre les différents partis ou tendances politiques -->
+<!-- 4. Entre les différents territoires -->
+<!-- 5. Entre les différentes confessions religieuses -->
+<!-- 6. Entre les personnes d’origines différentes -->
+<!-- 7. [NSP] -->
+<!-- module 2018 -->
+<!-- penser pouvoir compter sur quelqu’un en cas d’un grave problème personnel -->
+<!-- avoir du mal à boucler ses fins de mois -->
+<!-- avoir des revenus variables d’un mois sur l’autre -->
+<!-- penser pouvoir faire face à une dépense imprévueêtre inquiet de ne pas pouvoir être soigné en cas d’un grave problème de santé. -->
+
+ 
