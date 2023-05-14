@@ -4,13 +4,13 @@ correlation_ggplot <- function(mat,ordre=row.names(mat),titre_legende="Corrélat
   cbind(
     data.frame(mat)  %>%
       rownames_to_column(var="mesure1") %>%
-      pivot_longer(-mesure1, "mesure2") %>%
+      tidyr::pivot_longer(-mesure1, names_to="mesure2") %>%
       mutate(mesure1 = factor(mesure1,levels = unique(mesure1)),
              mesure2 = factor(mesure2,levels = unique(mesure1))
       ),
     data.frame(ggcorrplot::cor_pmat(mat))  %>%
       rownames_to_column(var="mesure1") %>%
-      pivot_longer(-mesure1, "mesure2") %>% 
+      tidyr::pivot_longer(-mesure1, names_to="mesure2") %>%
       mutate(value=ifelse(value>0.05,"0","1")) %>% 
       dplyr::select(value) %>% 
       setNames("signi")

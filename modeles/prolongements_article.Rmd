@@ -9,7 +9,7 @@ output:
   bookdown::pdf_document2:
         toc: false
         toc_depth: 2
-        number_sections: true
+        number_sections: false
         fig_caption: true
         highlight: default
         keep_tex: no
@@ -862,7 +862,37 @@ tableauA1
 
 # Figure 1
 
-Trou de mémoire. D'où sont tirés les chiffres et la figure cités dans l'article ? 
+```{r, fig.height=3, fig.width=6}
+fig_intro <- bdd_logit %>%
+  filter(annee==2019 & !is.na(quantile_nivie)) %>% 
+  mutate(quantile_nivie = factor(quantile_nivie,
+         levels=paste0("-Quintile ",c(1,2,3,4,5)),
+         labels=paste0("Quintile ",c(1,2,3,4,5))
+           )) %>% 
+  group_by(quantile_nivie) %>% 
+  count(pe3, wt=poids) %>% 
+  mutate(n = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  mutate(#quantile_nivie=factor(quantile_nivie,labels=names(attr(bdd$quantile_nivie,"labels"))),
+         pe3=factor(pe3,labels=
+           c(names(attr(bdd$pe3,"labels"))[1:2],"Je me considère déjà\ncomme pauvre",names(attr(bdd$pe3,"labels"))[4])), 
+         pe3=factor(pe3,levels=levels(pe3)[c(4,2,1,3)])) %>% 
+  ggplot(aes(x=quantile_nivie, y=n, fill=pe3)) +
+  geom_bar(stat="identity") + coord_flip() +
+  labs(
+   # title="Sentiment de pauvreté en fonction du niveau de vie en 2019",
+    y="Part (%)", x="Niveau de vie") +
+  theme_minimal() +
+  scale_fill_manual(name= paste(strwrap(gsub("PE3. ","",attr(bdd$pe3,"label")),30),collapse="\n"),
+                    #values=rev(c('red','orange','lightgreen','gray')),
+                    values=brewer.pal(6,"Greys")[2:5], 
+                    guide=guide_legend(reverse=TRUE)) + 
+  geom_text(aes(label = paste0(round(n,0))), 
+            position = position_stack(vjust = 0.5))
+
+fig_intro
+```
+
 ```{r, echo=FALSE, fig.width = 4, eval=FALSE}
 data_fig1 <- bdd %>%
   filter(annee == 2019)  %>%
@@ -1385,45 +1415,257 @@ kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26
                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  #%>% add_footnote_kable()
 ```
 
-# Statistique descriptives "insécurité" versus "infériorité" 
+\newpage
+
+# Tableau X ("insécurité" versus "infériorité")
+
+```{r, echo=FALSE}
+#Chargement de la base de données
+bdd2018 <- read.csv(file="../data/2018/barometre2000_2018_diff.csv", sep=";", colClasses = "character", na.strings="") %>%
+  filter(annee==2018)  #2018 uniquement (module spécial)
+
+# Transformation de certaines variables en numérique
+for(var in c("poids","sduc","sdrevcl","in11_1","in11_2","pe16")){ 
+  bdd2018[[var]] <- as.numeric(gsub(",",".", bdd2018[[var]]))
+}
+
+
+revenus_a_imputer <- bdd2018 %>%
+  mutate(sdrevcl = ifelse(sdrevcl==999999999,NA,sdrevcl)) %>%
+  group_by(sdrevtr) %>% 
+  summarise(sdrevcl = mean(sdrevcl,na.rm=TRUE))
+
+bdd2018 <- bdd2018 %>% 
+  mutate(
+    sdrevcl_imput_moy = case_when(
+      sdrevcl!=999999999 ~ sdrevcl,
+      sdrevcl==999999999 & sdrevtr==1 ~ revenus_a_imputer$sdrevcl[1],
+      sdrevcl==999999999 & sdrevtr==2 ~ revenus_a_imputer$sdrevcl[2],
+      sdrevcl==999999999 & sdrevtr==3 ~ revenus_a_imputer$sdrevcl[3],
+      sdrevcl==999999999 & sdrevtr==4 ~ revenus_a_imputer$sdrevcl[4],
+      sdrevcl==999999999 & sdrevtr==5 ~ revenus_a_imputer$sdrevcl[5],
+      sdrevcl==999999999 & sdrevtr==6 ~ revenus_a_imputer$sdrevcl[6],
+      sdrevcl==999999999 & sdrevtr==7 ~ revenus_a_imputer$sdrevcl[7]
+             )
+  )  %>% 
+   mutate(seuil_pauvrete = do.call(c,lapply(annee,function(annee_selec){
+0.6*median(bdd2018[bdd2018$annee==annee_selec,"sdrevcl_imput_moy"]/bdd2018[bdd2018$annee==annee_selec,"sduc"],
+           na.rm=TRUE)
+}
+))) %>% 
+  mutate(subj_inf_mini_decla = factor(
+     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
+     levels=c(TRUE,FALSE),
+     labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
+     ) %>%
+  mutate(subj_pauvrete = 
+           ifelse(pe3==3, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_risque_pauvrete = 
+           ifelse(pe3==1, TRUE,ifelse(pe3==4,NA,FALSE))) %>% 
+  mutate(subj_pauvrete_et_risque = 
+           factor(
+           ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
+           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+         ) %>% 
+  mutate(inf_besoin_aide_etat = 
+           factor(
+           ifelse(pe15==2, TRUE,ifelse(pe15==4,NA,FALSE)),
+           labels=c("Être suffisamment aidé par les pouvoirs publics","Avoir besoin d’être aidé davantage par les pouvoirs publics"))
+         ) %>% 
+    mutate(inf_prof_souspayee = 
+           factor(
+           ifelse(in11_1<in11_2, TRUE,ifelse(in11_1==999999999 | in11_2==999999999 ,NA,FALSE)),
+           labels=c("Les personnes qui ont la même profession ne devraient pas gagner plus","Les personnes qui ont la même profession devraient gagner plus"))
+         ) %>%
+    mutate(inf_integre =
+           factor(
+           ifelse(cs5_ab%in%c(3,4) | cs5_cd%in%c(3,4), TRUE,ifelse((cs5_ab=="5" & is.na(cs5_cd)) | (cs5_cd=="5" & is.na(cs5_ab)) ,NA,FALSE)),
+          labels=c("Ne pas avoir le sentiment de ne pas être intégré dans la société","Avoir le sentiment de ne pas être intégré dans la société"))
+         ) %>%
+      mutate(inf_declassement_intergenerationnel = 
+           factor(
+           ifelse(og2%in%c(4,5), TRUE,ifelse(og2==6,NA,FALSE)),
+           labels=c("Ne dirait pas que sa situation actuelle moins bonne que la situation de ses parents au même âge","Dirait que sa situation actuelle moins bonne que la situation de ses parents au même âge"))
+         ) %>%
+  mutate(ins_grave_pb_perso = 
+           factor(
+           ifelse(me1%in%c(3,4), TRUE,ifelse(me1==5,NA,FALSE)),
+           labels=c("Ne pas pouvoir compter sur quelqu'un en cas de grave problème personnel","Pouvoir compter sur quelqu'un en cas de grave problème personnel"))
+         ) %>%
+   mutate(ins_diff_boucler_fin_mois = 
+           factor(
+           ifelse(me2%in%c(1,2), TRUE,ifelse(me2==5,NA,FALSE)),
+           labels=c("Ne pas avoir de difficultés à boucler ses fins de mois","Avoir des difficultés à boucler ses fins de mois"))
+         ) %>%
+  mutate(ins_faire_face_dep_imprevue = 
+           factor(
+           ifelse(me3%in%c(2,3), TRUE,ifelse(me3==4,NA,FALSE)),
+           labels=c("Ne pas avoir du mal à faire face à une dépense imprévue de 500 euros dans l'année qui vient","Avoir du mal à faire face à une dépense imprévue de 500 euros dans l'année qui vient"))
+         ) %>% 
+    mutate(ins_inquiet_sante = 
+           factor(
+           ifelse(me4%in%c(1,2), TRUE,ifelse(me4==5,NA,FALSE)),
+           labels=c("Non inquiet à l’idée de ne pas pouvoir être bien soigné en cas de gros problème de santé","Inquiet à l’idée de ne pas pouvoir être bien soigné en cas de gros problème de santé"))
+         ) %>% 
+    mutate(ins_revenus_instables = 
+           factor(
+           ifelse(me5%in%c(2), TRUE,ifelse(me5==3,NA,FALSE)),
+           labels=c("Revenus stables d'un mois sur l'autre","Revenus instables d'un mois sur l'autre"))
+         ) %>% 
+    mutate(ins_revenus_vont_diminuer = 
+           factor(
+           ifelse(me6%in%c(2), TRUE,ifelse(me6==4,NA,FALSE)),
+           labels=c("Ne pense pas que les revenus du foyers vont diminuer dans les prochains mois","Pense que les revenus du foyers vont diminuer dans les prochains mois"))
+         ) %>% 
+  mutate(obj_pauvrete= sdrevcl_imput_moy/sduc<seuil_pauvrete) %>% 
+  mutate(nivie = sdrevcl_imput_moy/sduc) %>% 
+  mutate(quantile_nivie = factor(
+    cut(sdrevcl_imput_moy/sduc, include.lowest=TRUE,
+        breaks=quantile(sdrevcl_imput_moy/sduc,
+                        probs=seq(0,1,0.2),na.rm=TRUE),
+        labels=1:5),
+    levels=c(2,1,3,4,5),
+    labels=paste0("-Quintile ",c(2,1,3,4,5)))
+  ) %>% 
+  mutate(pauvrete_mon_rel= factor(
+    ifelse(sdrevcl_imput_moy/sduc<seuil_pauvrete,3,
+                                  ifelse(sdrevcl_imput_moy/sduc>=1.2*seuil_pauvrete,1,
+                                         ifelse(sdrevcl_imput_moy/sduc<1.2*seuil_pauvrete &
+                                                  sdrevcl_imput_moy/sduc>=seuil_pauvrete ,
+                                                2,NA)
+                                  )),
+    levels=c(1,2,3),
+    labels=paste0("-",c("Revenus > 20 pourcents seuil pauvreté",
+                        "Entre le seuil et 20 pourcents au dessus",
+                        "Pauvreté monétaire"))
+  )
+  )
+
+```
+
+<!-- Que signifie "se sentir pauvre" ? -->
+
+<!-- 1. *Duvoux et Papuchon*  : **insécurité sociale** = déficit de garantie face à l'avenir. incertitude face à  la capacité d'assurer sa subsistance et donc son statut social. -->
+<!--   * Mesure 1 : Ne pas pouvoir compter sur quelqu'un en cas de grave problème personnel (me1, module 2018) -->
+<!--   * Mesure 2 : Avoir des difficultés à boucler ses fins de mois (me2, module 2018) -->
+<!--   * Mesure 3 : Avoir du mal à faire face à une dépense imprévue de 500 euros dans l'année qui vient (me3, module 2018) -->
+<!--   * Mesure 4 : Être inquiet à l’idée de ne pas pouvoir être bien soigné en cas de gros problème de santé (me4, module 2018) -->
+<!--   * Mesure 5 : Avoirs des revenus instables d'un mois sur l'autre (me5, module 2018) -->
+<!--   * Mesure 6 : Penser que les revenus du foyers vont diminuer dans les prochains mois (me6, module 2018) -->
+
+<!-- 2. *Paugam* : **infériorité sociale** "manque de reconnaissance dans les différentes sphères de la vie sociale que l’on peut résumer par le sentiment de ne « compter pour » personne.". Ne se mesure pas directement dans le baromètre mais peut s'approcher par des proxys -->
+<!--    * Mesure 1 : Ne pas se sentir suffisamment aidé par les pouvoirs publics (pe15, années paires) -->
+<!--    * Mesure 2 : Trouver que les personnes qui ont la même profession devraient gagner plus (in11) -->
+<!--    * Mesure 3 : Avoir le sentiment de ne pas être intégré dans la société (cs5_ab et cs5_cd) -->
+<!--    * Mesure 4 : Avoir le sentiment d'avoir une moins bonne situation que ses parents au même âge (og2) -->
 
 
 
-"Extensions: apporter quelques éclaircissements sur l'interprétation du sentiment de pauvreté - s'agit-il d'un indicateur de "insécurité" (Duvoux et Papuchon) ou de "infériorité" (Paugam) - en se servant de quelques variables supplémentaires d'opinion. Cette discussion intervient au tout début du manuscrit et il ne s'agit ici que de présenter des analyses descriptives sans trop se soucier d'utiliser des variables présentes sur l'ensemble des années. Cela devrait simplifier le travail"
-
-**A FAIRE**
-
-<!-- Duvoux : insécurité sociale = déficit de garantie face à l'avenir -->
 
 
+<!-- INSECURITE -->
 
-<!-- risque de devenir pauvre dans les années à venir -->
+<!-- ME1 filtre : non 2018 -->
+<!-- Pensez-vous pouvoir compter sur quelqu’un en cas de grave problème personnel ? -->
+<!-- 1. Oui, certainement -->
+<!-- 2. Oui, probablement -->
+<!-- 3. Non probablement pas -->
+<!-- 4. Non, certainement pas -->
+<!-- 5. [NSP] -->
 
-<!-- insécurité sociale : incertitude face à  la capacité d'assurer sa subsistance et donc son statut social. -->
+<!-- ME2 filtre : non 2018 -->
+<!-- Compte tenu de vos ressources, diriez-vous que votre ménage a des difficultés pour boucler ses -->
+<!-- fins de mois ... ? -->
+<!-- 1. Souvent -->
+<!-- 2. De temps en temps -->
+<!-- 3. Rarement -->
+<!-- 4. Jamais -->
+<!-- 5. [NSP] -->
 
 
+<!-- ME3 Filtre : non 2018 -->
+<!-- En imaginant que vous deviez faire face à une dépense imprévue de 500 € dans l’année qui vient, -->
+<!-- pensez-vous... ? -->
+<!-- 1. Que vous y feriez face sans trop de problème -->
+<!-- 2. Qu’il vous serait assez difficile d’y faire face -->
+<!-- 3. Qu’il vous serait très difficile d’y faire face -->
+<!-- 4. [NSP] -->
 
-<!-- - optimisme face à l’avenir -->
-<!-- - vision sur l’évolution passée et à venir des inégalités, de la pauvreté et l’exclusion. -->
+<!-- ME4 filtre : non 2018 -->
+<!-- Êtes-vous inquiet.e à l’idée de ne pas pouvoir être bien soigné en cas de gros problème de santé ? -->
+<!-- 1. Oui, très inquiet.e -->
+<!-- 2. Oui, assez inquiet.e -->
+<!-- 3. Non, pas très inquiet.e -->
+<!-- 4. Non, pas inquiet.e du tout -->
+<!-- 5. [NSP] -->
 
+<!-- ME5 filtre : non 2018 -->
+<!-- Globalement, diriez-vous que les revenus de votre foyer sont plutôt variables ou plutôt stables d’un -->
+<!-- mois sur l’autre ? -->
+<!-- 1. Plutôt stables -->
+<!-- 2. Plutôt variables -->
+<!-- 3. [NSP] -->
 
+<!-- ME6 filtre : non 2018 -->
+<!-- Dans les mois qui viennent, pensez-vous que les revenus de votre foyer vont... ? -->
+<!-- 1. Plutôt augmenter -->
+<!-- 2. Plutôt diminuer -->
+<!-- 3. Rester stables -->
+<!-- 4. [NSP] -->
 
-<!-- infériorité sociale : "manque de reconnaissance dans les différentes sphères de la vie sociale que l’on peut résumer par le sentiment de ne « compter pour » personne." (Paugam) -->
+<!-- INFERIORITE  -->
 
+<!-- PE15 Filtre : non MODULE ANNEES PAIRES 2014 - -->
+<!-- Actuellement, compte tenu de votre situation globale, du montant des aides publiques (RSA, -->
+<!-- allocations familiales, aides au logement), et du montant de vos impôts, vous considérez que : -->
+<!-- 1. Vous êtes suffisamment aidé.e par les pouvoirs publics, ou n’avez pas besoin d’être aidé.e -->
+<!-- 2. Vous auriez besoin d’être aidé.e davantage par les pouvoir publics -->
+<!-- 3. [Non concerné.e] -->
+<!-- 4. [NSP] -->
 
-<!-- - sentiment ou non d’avoir une moins bonne situation que leur parent au même âge (déclassement intergénérationnel) -->
-
-
-
-
-<!-- IN9 filtre : non MODULE ANNEES PAIRES 2014 - -->
-<!-- Et où placeriez-vous la famille dans laquelle vous avez grandi ? -->
-
-<!-- IN11f -->
+<!-- IN11filtre : ne pas poser aux étudiants, inactifs... SOCLE 2014 - -->
 <!-- _1 Que gagnent en moyenne les gens qui ont la même profession que vous ? -->
 <!-- \__________/ -->
 <!-- _2 Que devraient gagner en moyenne les gens qui ont la même profession que vous ? -->
 <!-- \__________/ -->
+
+<!-- CS5_AB filtre : si sdsplit = 1 ou 2 SOCLE 2014 - -->
+<!-- Avez-vous le sentiment d’être intégré.e dans la société française ? -->
+<!-- 1. Très bien intégré.e -->
+<!-- 2. Assez bien intégré.e -->
+<!-- 3. Pas bien intégré.e -->
+<!-- 4. Pas intégré.e du tout -->
+<!-- 5. [NSP] -->
+<!-- ENQUETEUR : PRÉSENTEZ LA LISTE – UNE SEULE RÉPONSE -->
+<!-- CS5_CD filtre : si sdsplit = 3 ou 4 2018 -->
+<!-- Avez-vous le sentiment d’être intégré.e dans la société ? -->
+<!-- 1. Très bien intégré.e -->
+<!-- 2. Assez bien intégré.e -->
+<!-- 3. Pas bien intégré.e -->
+<!-- 4. Pas intégré.e du tout -->
+<!-- 5. [NSP] -->
+<!-- ENQUETEUR : PRÉSENTEZ LA LISTE – UNE SEULE RÉPONSE -->
+
+
+<!-- OG2 filtre : non SOCLE 2017 - -->
+<!-- Par rapport à la situation de vos parents au même âge, diriez-vous que votre situation actuelle -->
+<!-- est... ? -->
+<!-- 1. Bien meilleure -->
+<!-- 2. Plutôt meilleure -->
+<!-- 3. À peu près identique -->
+<!-- 4. Plutôt moins bonne -->
+<!-- 5. Bien moins bonne -->
+<!-- 6. [NSP] -->
+
+
+
+
+
+<!-- NON TRAITES A CE STADE -->
+
+<!-- - optimisme face à l’avenir -->
+<!-- - vision sur l’évolution passée et à venir des inégalités, de la pauvreté et l’exclusion. -->
+
 
 <!-- PE6 Filtre : non MODULE ANNEES PAIRES 2000 - -->
 <!-- Voici un certain nombre de raisons qui peuvent expliquer que des personnes se trouvent en -->
@@ -1440,15 +1682,6 @@ kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26
 <!-- _2 Elles manquent de qualifications, de diplômes, pour trouver ou retrouver un emploi -->
 <!-- _3 Elles n'ont pas eu de chance -->
 <!-- _4 Il n'y a plus assez de travail pour tout le monde -->
-
-
-<!-- PE15 Filtre : non MODULE ANNEES PAIRES 2014 - -->
-<!-- Actuellement, compte tenu de votre situation globale, du montant des aides publiques (RSA, -->
-<!-- allocations familiales, aides au logement), et du montant de vos impôts, vous considérez que : -->
-<!-- 1. Vous êtes suffisamment aidé.e par les pouvoirs publics, ou n’avez pas besoin d’être aidé.e -->
-<!-- 2. Vous auriez besoin d’être aidé.e davantage par les pouvoir publics -->
-<!-- 3. [Non concerné.e] -->
-<!-- 4. [NSP] -->
 
 <!-- SA6_AB filtre : sdsplit = 1 ou 2 SOCLE 2000 - -->
 <!-- Êtes-vous d'accord ou pas avec les opinions suivantes ? En France … -->
@@ -1477,13 +1710,6 @@ kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26
 <!-- 3. Elle n’a ni augmenté ni diminué -->
 <!-- 4. [NSP] -->
 
-<!-- Avez-vous le sentiment d’être intégré.e dans la société française ? -->
-<!-- 1. Très bien intégré.e -->
-<!-- 2. Assez bien intégré.e -->
-<!-- 3. Pas bien intégré.e -->
-<!-- 4. Pas intégré.e du tout -->
-<!-- 5. [NSP] -->
-
 <!-- CS18 filtre : non SOCLE 2015 - -->
 <!-- Estimez-vous que les pouvoirs publics font trop, font ce qu'ils doivent ou ne font pas assez pour -->
 <!-- les plus démunis ? -->
@@ -1501,12 +1727,94 @@ kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26
 <!-- 5. Entre les différentes confessions religieuses -->
 <!-- 6. Entre les personnes d’origines différentes -->
 <!-- 7. [NSP] -->
-<!-- module 2018 -->
-<!-- penser pouvoir compter sur quelqu’un en cas d’un grave problème personnel -->
-<!-- avoir du mal à boucler ses fins de mois -->
-<!-- avoir des revenus variables d’un mois sur l’autre -->
-<!-- penser pouvoir faire face à une dépense imprévueêtre inquiet de ne pas pouvoir être soigné en cas d’un grave problème de santé. -->
 
+```{r, echo=FALSE}
+var_subj <- c("subj_pauvrete_et_risque")
+var_inf <- colnames(bdd2018)[which(substr(colnames(bdd2018),1,4)=="inf_")]
+var_ins <- colnames(bdd2018)[which(substr(colnames(bdd2018),1,4)=="ins_")]
+```
+
+```{r, fig.width = 7.5,fig.height = 4, echo=FALSE, eval=FALSE}
+bdd2018_small <- bdd2018 %>% dplyr::select(var_subj,var_inf,var_ins) %>% 
+  mutate_all(as.numeric)
+
+mat = cor(bdd2018_small %>% na.omit(), method = "spearman")
+ordre = c(var_subj,var_inf,var_ins)
+seuilcroix = 0.3
+
+mat <- mat[ordre,ordre]
+#mat[lower.tri(mat)] <- NA
+gg_corrplot <- cbind(
+  data.frame(mat)  %>%
+    rownames_to_column(var="mesure1") %>%
+    tidyr::pivot_longer(-mesure1, names_to="mesure2") %>%
+    mutate(mesure1 = factor(mesure1,levels = unique(mesure1)),
+           mesure2 = factor(mesure2,levels = levels(mesure1)),
+          # mesure1 = factor(mesure1, labels=c("(-) Niveau\nde vie", "(-) Revenus\nlocatifs", "(-) Revenus\nfinanciers", "Sentiment de\npauvreté", "Difficultés\n financières\nperçues", "RSA", "APL", "HLM", "Chômage", "Bourse d'étude", "Handicap/\nDépendance")),
+          # mesure2 = factor(mesure2,labels=levels(mesure1))
+    ),
+  data.frame(ggcorrplot::cor_pmat(mat))  %>%
+    rownames_to_column(var="mesure1") %>%
+    tidyr::pivot_longer(-mesure1, names_to="mesure2") %>%
+    mutate(value=ifelse(value>0.05,1,2)) %>% 
+    dplyr::select(value) %>% 
+    setNames("signi")
+)  %>% 
+  mutate(label = round(value,2)) %>% 
+  mutate(highval = ifelse(abs(value)>seuilcroix,2,1)) %>% 
+  ggplot() + ## to get the rect filled
+  geom_tile(aes(x=mesure1, y=mesure2), color="white", fill="white") +
+  geom_point(aes(x=mesure1, y=mesure2, fill=value, stroke= highval),size = 5, shape=21) +
+ # geom_point(aes(x=mesure1, y=mesure2, shape = highval),size = 2,color = "black")+
+  labs(x = NULL, y = NULL, fill = "Corrélation Spearman") +
+  theme_classic()+
+  #scale_shape_manual(name=paste0("Corrélation > ",seuilcroix),values=c(4,NA), breaks=c("1","0"),labels=c("Oui","Non"))+
+    continuous_scale("stroke", "stroke", name= paste0("Corrélation (val.\nabs.) > ",seuilcroix),
+                   palette = function(x){scales::rescale(x, c(1, 2))},
+                   breaks = c(2, 1), labels=c("Oui","Non")) +
+  scale_fill_gradient(low="#FBFEF9",high="#E46726",
+                        limits=c(0,1), na.value="#FFFFFF")  +
+  scale_x_discrete(expand=c(0.05,0.05)) +
+  scale_y_discrete(expand=c(0.05,0.05)) +
+  scale_size(range=c(4,10), guide=NULL) +
+   geom_rect(data=data.frame(x1=c(0.5,0.5), x2=c(1.5,1.5), y1=c(1.5,5.5), y2=c(5.5,11.5), t=c('Infériorité','Insécurité')), mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, linetype=t), color="black", size=1, fill=NA) +
+  scale_linetype_manual(name="Interprétation du sentiment de pauvreté", breaks=c('Infériorité','Insécurité'), values=c("dotted","solid")) +
+ theme(axis.text.x = element_text(angle = 45, hjust=1))  
+
+gg_corrplot
+ 
+```
+
+Part des personnes concernées par des situations d'insécurité ou infériorité en fonction de leur sentiment de pauvreté (%)
+
+```{r, echo=FALSE}
+fig <- bdd2018 %>%
+  filter(!is.na(subj_pauvrete_et_risque)) %>% 
+  group_by(subj_pauvrete_et_risque)
+tableauX <- NULL
+for(var in c(var_ins, var_inf)){
+  moda <- levels(fig[[var]])[2]
+  fig2 <- fig %>%
+    mutate(variable = get(var)) %>% 
+    summarise(variable = round(100*weighted.mean(ifelse(variable==moda,1,0),poids, na.rm=TRUE))
+              ) %>% 
+    setNames(c("subj_pauvrete_et_risque",moda))
+  tableauX <- rbind(tableauX,c(moda,t(fig2)[-1,]))
+    
+}
+
+tableauX <- data.frame(tableauX) %>% 
+  setNames(c("","Non pauvre","Risque pauvreté futur", "Déjà pauvre")) %>%  
+kable(format = 'latex',
+      #caption= "Part des personnes concernées par des situations d'insécurité ou infériorité en fonction de leur sentiment de pauvreté (%)",
+      booktabs = FALSE, longtable = FALSE)  %>%  
+             kableExtra::column_spec(1, width = "6cm") %>% 
+             kableExtra::column_spec(2:4, width = "2cm") %>% 
+ kableExtra::footnote(c("Champ : Baromètre 2018", "Note : Les questions du Baromètre d'opinion qui correspondent aux lignes","du tableau correspondent, dans l'ordre,", "aux questions ME1, ME2, ME3, ME4, ME5, ME6, PE15, IN11, CS5 et OG2."), escape = FALSE)
+
+tableauX
+
+```
 
 # Figure 3
 
@@ -2358,7 +2666,8 @@ f3 <- fitMeasures(fit_hier3_var)
 tab_modfit_afc[4,2:6] <- c(round(f3[c("chisq","df")]), gsub("\\.",",", round(f3[c("cfi","rmsea", "srmr")],3)))
 
 tab_modfit_afc %>%
-  kable(caption="Indices d'ajustement des 4 modèles d'AFC")
+  kable(#caption="Indices d'ajustement des 4 modèles d'AFC"
+        )
 
 ```
 
