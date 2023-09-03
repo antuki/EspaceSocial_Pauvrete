@@ -1417,7 +1417,7 @@ kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26
 
 \newpage
 
-# Tableau X ("insécurité" versus "infériorité")
+# Tableau 3 ("insécurité" versus "infériorité")
 
 ```{r, echo=FALSE}
 #Chargement de la base de données
@@ -2021,7 +2021,7 @@ ordered = TRUE, orthogonal=FALSE,std.lv = TRUE) #estimator = "WLSMV"
 
 semPaths(fit2_var, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
+intercepts = FALSE, rotation = 4, thresholdColor = "black",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 # fitMeasures
@@ -2052,7 +2052,7 @@ digraph boxes_and_circles {
   edge [shape = circle, alpha=1 color=black style=filled penwidth=1 arrowsize=.75 minlen=2]
   subgraph {
     rank = same;
-  S -> M [label = 0.93 penwidth=1.15  dir=both color=red];
+  S -> M [label = 0.93 penwidth=1.15  dir=both color=black];
   M -> I [label = 0.94 penwidth=1.15  dir=both];
   S -> I [label = 0.78 penwidth=1.15  dir=both];
   }
@@ -2114,7 +2114,7 @@ grviz2
 
 \newpage
 
-# Tableau 3
+# Tableau 4
 
 ```{r,  include = FALSE}
 
@@ -2202,9 +2202,9 @@ tab_covariates_inter_cfa %>%
   kable(
     #caption="Effets des covariables sur les différentes dimensions de la pauvreté",
     booktabs = TRUE, longtable = FALSE) %>%
-   kableExtra::column_spec(1, width = "3cm") %>%
-   kableExtra::column_spec(2, width = "5cm") %>%
-   kableExtra::column_spec(3:5, width = "2cm") %>%
+   kableExtra::column_spec(1, width = "2.5cm") %>%
+   kableExtra::column_spec(2, width = "4cm") %>%
+   kableExtra::column_spec(3:5, width = "2.5cm") %>%
   kableExtra::kable_styling(
   latex_options = c("hold_position", "repeat_header"),
   repeat_header_text = "\\textit{(suite)}",
@@ -2263,7 +2263,7 @@ ordered = TRUE, orthogonal=TRUE, std.lv=FALSE)
 
 semPaths(fit_hier3_var, what = "est", edge.label.cex = 0.7,
 edge.color = 1, esize = 1, sizeMan = 4.5, asize = 2.5,
-intercepts = FALSE, rotation = 4, thresholdColor = "red",
+intercepts = FALSE, rotation = 4, thresholdColor = "black",
 mar = c(1, 5, 1.5, 5), fade = FALSE, nCharNodes = 4)
 
 # Pour m
@@ -2367,7 +2367,7 @@ grviz4
 
 \newpage 
 
-# Tableau 4
+# Tableau 5
 
 
 ```{r, include=FALSE}
@@ -2408,6 +2408,13 @@ cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
 fit_mimic_global <- lavaan::cfa(pauv_model_mimic_global, data = bdd_CFA_rmnasup,ordered=TRUE)
 
 sum <- summary(fit_mimic_global, standardized = TRUE, fit.measures = TRUE)
+
+f <- fitMeasures(fit_mimic_global)[c("chisq","df","cfi","rmsea", "srmr")]
+f <- c(round(f[c("chisq","df")]), gsub("\\.",",", round(f[c("cfi","rmsea", "srmr")],3)))
+names(f) <- c("chisq","df","cfi","rmsea", "srmr")
+#R2_ajuste1 <- round(100*with(sum, 1 - deviance/null.deviance),1)," %"))
+#N1 <- length(summary(reg1)$deviance.resid)
+
 ```
 
 ```{r, echo=FALSE, eval = TRUE}
@@ -2517,6 +2524,10 @@ cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
 fit_mimic_global_new1 <- lavaan::cfa(pauv_model_mimic_global_new1, data = bdd_CFA_rmnasup,ordered=TRUE)
 
 sum_new1 <- summary(fit_mimic_global_new1, standardized = TRUE, fit.measures = TRUE)
+
+f <- fitMeasures(fit_mimic_global_new1)[c("chisq","df","cfi","rmsea", "srmr")]
+f <- c(round(f[c("chisq","df")]), gsub("\\.",",", round(f[c("cfi","rmsea", "srmr")],3)))
+names(f) <- c("chisq","df","cfi","rmsea", "srmr")
 ```
 
 ```{r, echo=FALSE, eval = TRUE}
@@ -2583,6 +2594,10 @@ cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
 
 
 fit_mimic_global_new2 <- lavaan::cfa(pauv_model_mimic_global_new2, data = bdd_CFA_rmnasup,ordered=TRUE)
+
+f <- fitMeasures(fit_mimic_global_new2)[c("chisq","df","cfi","rmsea", "srmr")]
+f <- c(round(f[c("chisq","df")]), gsub("\\.",",", round(f[c("cfi","rmsea", "srmr")],3)))
+names(f) <- c("chisq","df","cfi","rmsea", "srmr")
 
 sum_new2 <- summary(fit_mimic_global_new2, standardized = TRUE, fit.measures = TRUE)
 ```
