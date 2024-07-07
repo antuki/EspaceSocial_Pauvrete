@@ -5,6 +5,8 @@ subtitle : "pour l'article de recherche"
 author: |
     | Kim Antunez
 automaticcontents: true
+#output:
+#   bookdown::html_document2:
 output:
   bookdown::pdf_document2:
         toc: false
@@ -850,14 +852,15 @@ for(couple in list(c(8,9),c(41,42),c(48,49),c(49,50),c(59,60),c(70,71))){
 }
 
 tableauA1 <- df_fin %>% 
-            kable(format = 'latex', booktabs = TRUE,
-                  longtable = TRUE 
-                  ) %>%  
+  kable(booktabs = TRUE,longtable = TRUE) %>% 
+   kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
             kableExtra::column_spec(1, width = "8cm") %>% 
             kableExtra::column_spec(2, width = "4cm") %>% 
-            kableExtra::row_spec(c(1,4,7,13,16,19,22,25,28,31,34,37,40,47,58,65,69),bold=TRUE)
+            kableExtra::row_spec(c(1,4,7,13,16,19,22,25,28,31,34,37,40,47,58,65,69),bold=TRUE) %>% 
+   kableExtra::footnote(c("")) #ajoutée pour faciliter le copier coller html
 
 tableauA1
+
 ```
 
 # Figure 1
@@ -1132,7 +1135,7 @@ if(kable){
             kableExtra::column_spec(3:5, width = "2cm") %>% 
             kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
             kableExtra::footnote(c(paste0("Modèle logit (Variable dépendante = ",titre_y,")")), paste0("N = ",
-                                        N," / R2 ajusté = ",
+                                        N," / R2 ajusté de McFadden = ",
                                         round(100*R2_ajuste,1)," %")) 
 }
     
@@ -1143,13 +1146,24 @@ if(kable){
 
 
 ```{r, echo=FALSE}
-#N = 13567 / R2 ajusté = 25.9
+#N = 13567 / R2 ajusté de McFadden = 25.9
 tab_final21_sentpauv <- run_regression(y="subj_pauvrete", 
                x= c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_apl","presta_chomage","presta_handi",
                     "presta_etudes",
                     "statut_occup", "prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", #"conn_rsa", 
                     "annee_fac"
-), kable = FALSE) %>% 
+), kable = FALSE) 
+
+for(couple in list(c(2,3),c(24,25),c(25,26),
+                   c(26,27),c(36,37),c(40,41),
+                   c(46,47)
+                   )){
+  tab_final21_sentpauv[couple,] <- tab_final21_sentpauv[rev(couple),]
+}
+
+
+
+tab_final21_sentpauv <- tab_final21_sentpauv %>% 
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
   )) %>% 
@@ -1169,13 +1183,22 @@ tab_final21_sentpauv <- run_regression(y="subj_pauvrete",
 ```
 
 ```{r, echo=FALSE}
-#N = 13698 / R2 ajusté = 28.6
+#N = 13698 / R2 ajusté de McFadden = 28.6
 tab_final21_infminidecla <- run_regression(y="subj_inf_mini_decla", 
                x= c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_apl","presta_chomage","presta_handi",
                      "presta_etudes",
                     "statut_occup", "prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe", #"conn_rsa",
                     "annee_fac"
-), kable = FALSE) %>% 
+), bdd_log=bdd_logit %>% mutate(subj_inf_mini_decla = ifelse(as.numeric(subj_inf_mini_decla)==2,0,1)), kable = FALSE) 
+
+for(couple in list(c(2,3),c(24,25),c(25,26),
+                   c(26,27),c(36,37),c(40,41),
+                   c(46,47)
+                   )){
+  tab_final21_infminidecla[couple,] <- tab_final21_infminidecla[rev(couple),]
+}
+
+tab_final21_infminidecla <-tab_final21_infminidecla %>% 
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
   )) %>% 
@@ -1218,7 +1241,7 @@ tab_final21 <- tab_final21 %>%
   kableExtra::pack_rows("Contrôles", 20, 57) 
 
 tab_final21 %>% 
-kableExtra::footnote(c("Sentiment de pauvreté : N = 13567 et $R^2$ ajusté = 25,9 \\\\, \\\\%","Difficultés financières perçues : N = 13698 et $R^2$ ajusté = 28,6 \\\\, \\\\%",
+kableExtra::footnote(c("Sentiment de pauvreté : N = 13567 et $R^2$ ajusté de McFadden = 25,9 \\\\, \\\\%","Difficultés financières perçues : N = 13698 et $R^2$ ajusté de McFadden = 28,6 \\\\, \\\\%",
                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  #%>% add_footnote_kable()
 ```
 
@@ -1315,7 +1338,7 @@ kableExtra::kable_styling(
   repeat_header_text = "\\textit{(suite)}",
   repeat_header_continued = "\\textit{(suite en page suivante...)}"
   ) %>% 
-    kableExtra::footnote(c("Modèle 2015-2017 : N = 8460 et $R^2$ ajusté = 24,8 \\\\, \\\\%","Modèle 2015-2019 : N = 13590 et $R^2$ ajusté = 25,5 \\\\, \\\\%.",
+    kableExtra::footnote(c("Modèle 2015-2017 : N = 8460 et $R^2$ ajusté de McFadden = 24,8 \\\\, \\\\%","Modèle 2015-2019 : N = 13590 et $R^2$ ajusté de McFadden = 25,5 \\\\, \\\\%.",
                            "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."),
                          escape = FALSE) %>% add_footnote_kable()
 
@@ -1329,7 +1352,7 @@ tab_compa
 # Tableau 2
 
 ```{r, echo=FALSE}
-#N = 13548 / R2 ajusté = 26.1 \%
+#N = 13548 / R2 ajusté de McFadden = 26.1 \%
 tab_final21_sentpauv_bis <- run_regression(y="subj_pauvrete", 
                x= c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_apl","presta_chomage","presta_handi",
                     "presta_etudes",
@@ -1357,15 +1380,16 @@ tab_final21_sentpauv_bis <- run_regression(y="subj_pauvrete",
 ```
 
 ```{r, echo=FALSE}
-#N = 13678 / R2 ajusté = 28.6 \%
+#N = 13678 / R2 ajusté de McFadden = 28.6 \%
 tab_final21_infminidecla_bis <- run_regression(y="subj_inf_mini_decla", 
                x= c("quantile_nivie","revenus_locatifs","revenus_financiers","presta_rsa","presta_apl","presta_chomage","presta_handi",
                      "presta_etudes",
                     "statut_occup", "prof_statut_act","est_emploiprecaire", "diplome", "age_tranche","vie_fam", "sexe",
                     "conn_rsa_fam","conn_rsa_horsfam",
                     #"conn_rsa",
-                    "annee_fac"
-), kable = FALSE) %>% 
+                    "annee_fac"), 
+                    bdd_log=bdd_logit %>% mutate(subj_inf_mini_decla = ifelse(as.numeric(subj_inf_mini_decla)==2,0,1))
+, kable = FALSE) %>% 
   mutate(odds_ratio = ifelse(
     !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
   )) %>% 
@@ -1411,7 +1435,7 @@ tab_final21_bis <- tab_final21_bis %>%
   # kableExtra::pack_rows("Contrôles", 20, 57) 
 
 tab_final21_bis %>% 
-kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté = 26.1 \\\\, \\\\%","Difficultés financières perçues : N = 13678 et $R^2$ ajusté = 28,6 \\\\, \\\\%",
+kableExtra::footnote(c("Sentiment de pauvreté : N = 13548 et $R^2$ ajusté de McFadden = 26.1 \\\\, \\\\%","Difficultés financières perçues : N = 13678 et $R^2$ ajusté de McFadden = 28,6 \\\\, \\\\%",
                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  #%>% add_footnote_kable()
 ```
 
@@ -1452,10 +1476,10 @@ bdd2018 <- bdd2018 %>%
 0.6*median(bdd2018[bdd2018$annee==annee_selec,"sdrevcl_imput_moy"]/bdd2018[bdd2018$annee==annee_selec,"sduc"],
            na.rm=TRUE)
 }
-))) %>% 
+))) %>%
   mutate(subj_inf_mini_decla = factor(
-     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16) <0,
-     levels=c(TRUE,FALSE),
+     sdrevcl_imput_moy - ifelse(pe16==999999999,NA,pe16)<0,
+     levels=c(TRUE,FALSE), 
      labels=paste0("-",c("Rev. inf. au minimum décla.","Rev. sup. au minimum décla.")))
      ) %>%
   mutate(subj_pauvrete = 
@@ -1490,7 +1514,7 @@ bdd2018 <- bdd2018 %>%
   mutate(ins_grave_pb_perso = 
            factor(
            ifelse(me1%in%c(3,4), TRUE,ifelse(me1==5,NA,FALSE)),
-           labels=c("Ne pas pouvoir compter sur quelqu'un en cas de grave problème personnel","Pouvoir compter sur quelqu'un en cas de grave problème personnel"))
+           labels=c("Pouvoir compter sur quelqu'un en cas de grave problème personnel","Ne pas pouvoir compter sur quelqu'un en cas de grave problème personnel"))
          ) %>%
    mutate(ins_diff_boucler_fin_mois = 
            factor(
@@ -1805,20 +1829,22 @@ for(var in c(var_ins, var_inf)){
 
 tableauX <- data.frame(tableauX) %>% 
   setNames(c("","Non pauvre","Risque pauvreté futur", "Déjà pauvre")) %>%  
-kable(format = 'latex',
-      #caption= "Part des personnes concernées par des situations d'insécurité ou infériorité en fonction de leur sentiment de pauvreté (%)",
-      booktabs = FALSE, longtable = FALSE)  %>%  
+kable(#caption= "Part des personnes concernées par des situations d'insécurité ou infériorité en fonction de leur sentiment de pauvreté (%)",
+      booktabs = TRUE, longtable = TRUE)  %>%
+     kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
              kableExtra::column_spec(1, width = "6cm") %>% 
              kableExtra::column_spec(2:4, width = "2cm") %>% 
- kableExtra::footnote(c("Champ : Baromètre 2018", "Note : Les questions du Baromètre d'opinion qui correspondent aux lignes","du tableau correspondent, dans l'ordre,", "aux questions ME1, ME2, ME3, ME4, ME5, ME6, PE15, IN11, CS5 et OG2."), escape = FALSE)
+ kableExtra::footnote(c("Champ : Baromètre 2018", "Note : Les questions du Baromètre d'opinion qui correspondent aux lignes","du tableau correspondent, dans l'ordre,", "aux questions ME1, ME2, ME3, ME4, ME5, ME6, PE15, IN11, CS5 et OG2."), escape = FALSE) 
 
 tableauX
 
 ```
 
+
+
 # Figure 3
 
-```{r corrplot, echo=FALSE, fig.width=7, fig.height=5}
+```{r corrplot_data, echo=FALSE, fig.width=7, fig.height=5}
 # library(ggnewscale)
 # gg_corrplot <- readRDS("../rapport/figures/gg_corrplot.RDS")
 
@@ -1855,7 +1881,8 @@ seuilcroix = 0.3
 
 mat <- mat[ordre,ordre]
 #mat[lower.tri(mat)] <- NA
-gg_corrplot <- cbind(
+
+data_mat <- cbind(
   data.frame(mat)  %>%
     rownames_to_column(var="mesure1") %>%
     tidyr::pivot_longer(-mesure1, names_to="mesure2") %>%
@@ -1867,13 +1894,18 @@ gg_corrplot <- cbind(
   data.frame(ggcorrplot::cor_pmat(mat))  %>%
     rownames_to_column(var="mesure1") %>%
     pivot_longer(-mesure1, names_to="mesure2") %>% #names_to : new 08/05
-    mutate(value=ifelse(value>0.05,1,2)) %>% 
+    mutate(value=ifelse(value>0.10,"Non","Oui")) %>% 
     dplyr::select(value) %>% 
     setNames("signi")
 )  %>% 
   mutate(label = round(value,2)) %>% 
-  mutate(highval = ifelse(abs(value)>seuilcroix,2,1)) %>% 
-  ggplot() + ## to get the rect filled
+  mutate(highval = ifelse(abs(value)>seuilcroix,2,1)) 
+
+```
+
+```{r corrplot_old, echo=FALSE, eval=FALSE, fig.width=7, fig.height=5}
+# Ancienne figure 3 avant juillet 2024
+gg_corrplot_old <-  ggplot(data_mat) + ## to get the rect filled
   geom_tile(aes(x=mesure1, y=mesure2), color="white", fill="white") +
   geom_point(aes(x=mesure1, y=mesure2, fill=value, stroke= highval),size = 5, shape=21) +
  # geom_point(aes(x=mesure1, y=mesure2, shape = highval),size = 2,color = "black")+
@@ -1894,8 +1926,33 @@ gg_corrplot <- cbind(
   scale_linetype_manual(name="Dimension de la pauvreté", breaks=c("Monétaire","Subjective","Institutionnelle"), values=c("dotted","dashed", "solid")) +
  theme(axis.text.x = element_text(angle = 45, hjust=1))  
 
+gg_corrplot_old
+```
+
+```{r corrplot, echo=FALSE, fig.width=7, fig.height=5}
+# Nouvelle figure 3 après juillet 2024
+gg_corrplot <-  ggplot(data_mat) +
+  geom_tile(aes(x=mesure1, y=mesure2), color="white", fill="white") +
+  labs(x = NULL, y = NULL, fill = "Corrélation Spearman\nsignificative à 5 %") +
+   geom_point(aes(x=mesure1, y=mesure2, stroke= highval, fill=signi),size = 9, shape=21) +
+    geom_label(aes(x=mesure1, y=mesure2, label=label),size = 3, label.size=0, fill=NA) +
+  theme_classic() +
+     continuous_scale("stroke", "stroke", name= paste0("Corrélation (val.\nabs.) > ",seuilcroix),
+                    palette = function(x){scales::rescale(x, c(1, 2))},
+                    breaks = c(2, 1), labels=c("Oui","Non")) +
+  scale_fill_manual(values = c("#FFFFFF","grey"), 
+                  guide = guide_legend(reverse = TRUE))  +
+  scale_x_discrete(expand=c(0.05,0.05)) +
+  scale_y_discrete(expand=c(0.05,0.05)) +
+  scale_size(range=c(2,5), guide=NULL) +
+  geom_rect(data=data.frame(x1=c(0.5,3.5,5.5), x2=c(3.5,5.5,11.5), y1=c(0.5,3.5,5.5), y2=c(3.5,5.5,11.5), t=c('Monétaire','Subjective','Institutionnelle')), mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, linetype=t), color="black", size=1, fill=NA) +
+  scale_linetype_manual(name="Dimension de la pauvreté", breaks=c("Monétaire","Subjective","Institutionnelle"), values=c("dotted","dashed", "solid")) +
+ theme(axis.text.x = element_text(angle = 45, hjust=1))  
+
 gg_corrplot
 ```
+
+
 
 # Figure 4
 
