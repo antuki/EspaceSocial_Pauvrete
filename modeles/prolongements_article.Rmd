@@ -1993,7 +1993,7 @@ gg_loadings
 
 \newpage
 
-# Figure 5A 
+# Figure 5
 
 ```{r, echo=FALSE}
 actives_autres <- c("quantile_nivie","revenus_financiers","revenus_locatifs","presta_rsa","presta_chomage","presta_apl","presta_handi","presta_etudes", "presta_hlm")
@@ -2272,7 +2272,7 @@ tab_covariates_inter_cfa %>%
 ```
 
 
-# Figure 5B
+# Figure 6
 
 ```{r, echo=FALSE, include = FALSE}
 # pauv_model_hier3_var <- '
@@ -2743,5 +2743,52 @@ tab_modfit_afc %>%
 
 ```
 
+
+
+
+```{r, eval=FALSE, include=FALSE}
+# Statsitiques ajustement modèle tableau 5 demandé par Ivaylo le 25/02/26
+tab_modfit_mimic <- data.frame(
+  Modele = c("MIMIC 1D (Monétaire)",
+             "MIMIC 2D (Monétaire + institutionnel)",
+             "MIMIC 3D (Monétaire + institutionnel + subjectif)"),
+  chisq = NA,
+  df = NA,
+  cfi = NA,
+  rmsea = NA,
+  srmr = NA
+)
+
+# 1D : monétaire seul
+f1 <- fitMeasures(fit_mimic_global_new2)
+tab_modfit_mimic[1, 2:6] <- c(round(f1[c("chisq","df")]),
+                              gsub("\\.", ",", round(f1[c("cfi","rmsea", "srmr")], 3)))
+
+# 2D : monétaire + institutionnel
+f2 <- fitMeasures(fit_mimic_global_new1)
+tab_modfit_mimic[2, 2:6] <- c(round(f2[c("chisq","df")]),
+                              gsub("\\.", ",", round(f2[c("cfi","rmsea", "srmr")], 3)))
+
+# 3D : monétaire + institutionnel + subjectif
+get_fit_safe <- function(fit) {
+  out <- c(
+    chisq = tryCatch(fitMeasures(fit, "chisq"), error = function(e) NA),
+    df    = tryCatch(fitMeasures(fit, "df"),    error = function(e) NA),
+    cfi   = tryCatch(fitMeasures(fit, "cfi"),   error = function(e) NA),
+    rmsea = tryCatch(fitMeasures(fit, "rmsea"), error = function(e) NA),
+    srmr  = tryCatch(fitMeasures(fit, "srmr"),  error = function(e) NA)
+  )
+  return(out)
+}
+
+f3 <- get_fit_safe(fit_mimic_global)
+names(f3) <- c("chisq","df","cfi","rmsea","srmr")
+tab_modfit_mimic[3, 2:6] <- c(round(f3[c("chisq","df")]),
+                              gsub("\\.", ",", round(f3[c("cfi","rmsea", "srmr")], 3)))
+
+tab_modfit_mimic %>%
+  kable(#caption="Indices d'ajustement des 4 modèles d'AFC"
+        )
+```
 
 
