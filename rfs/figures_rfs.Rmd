@@ -1,9 +1,9 @@
 ---
 title: |
-    | Résultats complémentaires 
-subtitle : "pour l'article de recherche"
+    | Figures
+subtitle : "Au-delà du revenu : la place de la dimension subjective dans la structure de la pauvreté en France"
 author: |
-    | Kim Antunez
+    | Kim Antunez, Ivaylo Petev
 automaticcontents: true
 #output:
 #   bookdown::html_document2:

@@ -11,7 +11,7 @@ Ce lien github rassemble les codes ayant permis la production des modélisations
    *	[Figures de l'article](https://antuki.github.io/EspaceSocial_Pauvrete/rfs/figures_rfs.pdf) 
    *    [Manuel technique : Analyses factorielles et Analyses en facteurs communs](https://antuki.github.io/EspaceSocial_Pauvrete/rfs/manuel_technique.pdf)
 
-_Note : la [branche RFS](https://github.com/antuki/EspaceSocial_Pauvrete/tree/RFS) de ce répertoire se limite aux travaux présents dans l'article de recherche. La [branche *main*](https://github.com/antuki/EspaceSocial_Pauvrete) contient également les travaux initiaux émanent d'un mémoire de recherche._
+_Note : la [branche RFS](https://github.com/antuki/EspaceSocial_Pauvrete/tree/RFS) de ce répertoire se limite aux travaux présents dans l'article de recherche. La [branche *main*](https://github.com/antuki/EspaceSocial_Pauvrete) contient également les travaux initiaux tirés d'un mémoire de recherche._
 
 ## Reproductibilité
 
