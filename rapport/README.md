@@ -1,1 +1,0 @@
-Mémoire pour le Master 2 de Sociologie Quantitative et Démographie (Kim Antunez)
