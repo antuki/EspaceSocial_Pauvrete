@@ -2,8 +2,6 @@
 
 *Auteurs : Kim Antunez, Ivaylo Petev*
 
-<center><img src="rapport/logos/accueil.png" height=300 /></center>
-
 Ce lien github rassemble les codes ayant permis la production des modélisations et figures de l'article. 
 
 **Liens utiles**
