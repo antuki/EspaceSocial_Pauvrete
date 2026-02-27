@@ -15,7 +15,7 @@ _Note : la [branche RFS](https://github.com/antuki/EspaceSocial_Pauvrete/tree/RF
 
 ## Reproductibilité
 
-Pour pouvoir reproduire les travaux de ce papier, il vous faudra télécharger les [données 2019 du Baromètre d'opinion de la Drees](https://drees2-sgsocialgouv.opendatasoft.com/explore/dataset/431_le-barometre-d-opinion/information/). Puis, il faudra créer à la racine de ce projet un dossier appelé *data/2019*. Les bases de données intermédiaires sont créées grâce aux codes contenus dans le dossier [preprocessing](preprocessing). 
+Pour pouvoir reproduire les travaux de ce papier, il vous faudra télécharger les [données 2019 du Baromètre d'opinion de la Drees](https://drees2-sgsocialgouv.opendatasoft.com/explore/dataset/431_le-barometre-d-opinion/information/). Puis, il faudra créer à la racine de ce projet un dossier appelé *data/2019*. Les bases de données intermédiaires sont créées grâce aux codes contenus dans le dossier [preprocessing](https://github.com/antuki/EspaceSocial_Pauvrete/tree/main/preprocessing). 
 
 Le langage informatique utilisé dans ce projet est R. 
 
