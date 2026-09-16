@@ -157,7 +157,7 @@ bdd_logit <- bdd %>%
     sdpcs7,
     levels=c(4,1,2,3,5,6,7),
     labels=paste0("-",c("Profession intermédiaire","Agriculteur",
-                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Artisan, commerçant","Cadre ou profession intellectuelle supérieure",
                         "Employé","Ouvrier","Aucune"))
   )) %>%
   # fastDummies::dummy_cols(select_columns = 'prof') %>% 
@@ -214,8 +214,8 @@ bdd_logit <- bdd %>%
     ),
     levels=c(2,1,3,4,5,6),
     labels=paste0("-",
-                  c("Membre du couple (pas d’enfants à charge)","Vit seul",
-                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
+                  c("Vit en couple (pas d’enfants à charge)","Vit seul",
+                    "Vit en couple (enfants à charge)", "Parent seul (enfants à charge)",
                     "Enfant","Autre"))
     )) %>% 
   mutate(
@@ -329,8 +329,8 @@ bdd_logit <- bdd %>%
     ),
     levels=c(2,1,3,4,5,6),
     labels=paste0("-",
-                  c("Membre du couple (pas d’enfants à charge)","Vit seul",
-                    "Membre du couple (enfants à charge)", "Chef famille monoparentale",
+                  c("Vit en couple (pas d’enfants à charge)","Vit seul",
+                    "Vit en couple (enfants à charge)", "Parent seul (enfants à charge)",
                     "Enfant","Autre situation familiale"))
     )) %>% 
   mutate(
@@ -511,8 +511,8 @@ bdd_logit <- bdd_logit %>% #chômeur indemnise
    ),
     levels=c(1,2),
     labels=paste0("-",
-                  c("N'est pas personne en emploi précaire",
-                    "est personne en emploi précaire")) 
+                  c("Sans emploi ou en emploi non précaire",
+                    "En emploi précaire")) 
     )) %>%  mutate(
     conn_rsa_fam = factor(case_when(
       sdproxim_7%in%c(1,3,4,7)  ~ 1,
@@ -773,14 +773,14 @@ bdd_logit <- bdd_logit %>% #chômeur indemnise
     sdpcs7,
     levels=c(4,1,2,3,5,6,7),
     labels=paste0("-",c("Profession intermédiaire","Agriculteur",
-                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Artisan, commerçant","Cadre ou profession intellectuelle supérieure",
                         "Employé","Ouvrier","Aucune"))
   ))  %>% 
   mutate(prof_statut_act = factor(
     sdpcs10,
     levels=c(4,1,2,3,5,6,7,8,9,10),
     labels=paste0("-",c("Profession intermédiaire","Agriculteur",
-                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Artisan, commerçant","Cadre ou profession intellectuelle supérieure",
                         "Employé","Ouvrier","Chômeur",
                         "Retraité","Au foyer","Autre inactif"))
   )) %>%
@@ -814,14 +814,14 @@ bdd_logit <- bdd_logit %>% #chômeur indemnise
     sdprpcs7,
     levels=c(4,1,2,3,5,6,7),
     labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
-                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Artisan, commerçant","Cadre ou profession intellectuelle supérieure",
                         "Employé","Ouvrier","Aucune"))
   )) %>% 
   mutate(prof_statut_act_resp = factor(
     sdprpcs10,
     levels=c(4,1,2,3,5,6,7,8,9,10),
     labels=paste0("-Pers. réf. ",c("Profession intermédiaire","Agriculteur",
-                        "Artisan commerçant","Cadre supérieur, profession libérale",
+                        "Artisan, commerçant","Cadre ou profession intellectuelle supérieure",
                         "Employé","Ouvrier","Chômeur",
                         "Retraité","Au foyer","Autre inactif"))
   ))
@@ -987,7 +987,7 @@ fig_chap1_compa20152019_new <- ggplot(
     values = brewer.pal(6,"Greys")[2:6]
                     )+
   theme_minimal() +
-  scale_x_discrete(name ="Part des Français concernés (%)",
+  scale_x_discrete(name ="",
                    limits=c("subj_pauvrete",
                             "subj_inf_mini_decla",
                             "obj_pauvrete",
@@ -1005,7 +1005,7 @@ fig_chap1_compa20152019_new <- ggplot(
       "insti_cho" = "Part des bénéfi-\nciaires du chômage"
       ))+
   #ggtitle("Graphique 1 : Différents indicateurs de pauvreté") +
-  ylab("")+
+  ylab("Part des Français concernés (%)")+
   labs(fill="Année")
 fig_chap1_compa20152019_new
 #saveRDS(fig_chap1_compa20152019,"../rapport/figures/fig_chap1_compa20152019.RDS")
@@ -1165,7 +1165,7 @@ for(couple in list(c(2,3),c(24,25),c(25,26),
 
 tab_final21_sentpauv <- tab_final21_sentpauv %>% 
   mutate(odds_ratio = ifelse(
-    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+    !is.na(valeur),paste0(formatC(odds, format = "f", digits = 2, decimal.mark = ","),pvaleur),"Réf."
   )) %>% 
   dplyr::select(modalite_y,modalite,odds_ratio) %>% 
   slice(-1) %>% 
@@ -1200,7 +1200,7 @@ for(couple in list(c(2,3),c(24,25),c(25,26),
 
 tab_final21_infminidecla <-tab_final21_infminidecla %>% 
   mutate(odds_ratio = ifelse(
-    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+    !is.na(valeur),paste0(formatC(odds, format = "f", digits = 2, decimal.mark = ","),pvaleur),"Réf."
   )) %>% 
   dplyr::select(modalite_y,modalite,odds_ratio) %>% 
   slice(-1) %>% 
@@ -1241,7 +1241,7 @@ tab_final21 <- tab_final21 %>%
   kableExtra::pack_rows("Contrôles", 20, 57) 
 
 tab_final21 %>% 
-kableExtra::footnote(c("Sentiment de pauvreté : N = 13567 et $R^2$ ajusté de McFadden = 25,9 \\\\, \\\\%","Difficultés financières perçues : N = 13698 et $R^2$ ajusté de McFadden = 28,6 \\\\, \\\\%",
+kableExtra::footnote(c("Le modèle contient une constante dont le coefficient de régression n'a pas été représenté ici.","Sentiment de pauvreté : N = 13567 et $R^2$ ajusté de McFadden = 25,9 \\\\, \\\\%","Difficultés financières perçues : N = 13698 et $R^2$ ajusté de McFadden = 28,6 \\\\, \\\\%",
                           "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)  #%>% add_footnote_kable()
 ```
 
@@ -1338,7 +1338,7 @@ kableExtra::kable_styling(
   repeat_header_text = "\\textit{(suite)}",
   repeat_header_continued = "\\textit{(suite en page suivante...)}"
   ) %>% 
-    kableExtra::footnote(c("Modèle 2015-2017 : N = 8460 et $R^2$ ajusté de McFadden = 24,8 \\\\, \\\\%","Modèle 2015-2019 : N = 13590 et $R^2$ ajusté de McFadden = 25,5 \\\\, \\\\%.",
+    kableExtra::footnote(c("Le modèle contient une constante dont le coefficient de régression n'a pas été représenté ici.","Modèle 2015-2017 : N = 8460 et $R^2$ ajusté de McFadden = 24,8 \\\\, \\\\%","Modèle 2015-2019 : N = 13590 et $R^2$ ajusté de McFadden = 25,5 \\\\, \\\\%.",
                            "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."),
                          escape = FALSE) %>% add_footnote_kable()
 
@@ -1362,7 +1362,7 @@ tab_final21_sentpauv_bis <- run_regression(y="subj_pauvrete",
                     "annee_fac"
 ), kable = FALSE) %>% 
   mutate(odds_ratio = ifelse(
-    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+    !is.na(valeur),paste0(formatC(odds, format = "f", digits = 2, decimal.mark = ","),pvaleur),"Réf."
   )) %>% 
   dplyr::select(modalite_y,modalite,odds_ratio) %>% 
   slice(-1) %>% 
@@ -1391,7 +1391,7 @@ tab_final21_infminidecla_bis <- run_regression(y="subj_inf_mini_decla",
                     bdd_log=bdd_logit %>% mutate(subj_inf_mini_decla = ifelse(as.numeric(subj_inf_mini_decla)==2,0,1))
 , kable = FALSE) %>% 
   mutate(odds_ratio = ifelse(
-    !is.na(valeur),paste0(gsub("\\.",",",odds),pvaleur),"Réf."
+    !is.na(valeur),paste0(formatC(odds, format = "f", digits = 2, decimal.mark = ","),pvaleur),"Réf."
   )) %>% 
   dplyr::select(modalite_y,modalite,odds_ratio) %>% 
   slice(-1) %>% 
@@ -1489,7 +1489,7 @@ bdd2018 <- bdd2018 %>%
   mutate(subj_pauvrete_et_risque = 
            factor(
            ifelse(pe3==4, NA, ifelse(pe3==1,2,ifelse(pe3==2,1,3))),
-           labels=c("Non pauvre","Risque pauvreté futur", "Déjà pauvre"))
+           labels=c("Pas de risque de pauvreté futur","Risque de pauvreté futur", "Déjà pauvre"))
          ) %>% 
   mutate(inf_besoin_aide_etat = 
            factor(
@@ -1933,7 +1933,7 @@ gg_corrplot_old
 # Nouvelle figure 3 après juillet 2024
 gg_corrplot <-  ggplot(data_mat) +
   geom_tile(aes(x=mesure1, y=mesure2), color="white", fill="white") +
-  labs(x = NULL, y = NULL, fill = "Corrélation Spearman\nsignificative à 5 %") +
+  labs(x = NULL, y = NULL, fill = "Corrélation Spearman\nsignificative à 10 %") +
    geom_point(aes(x=mesure1, y=mesure2, stroke= highval, fill=signi),size = 9, shape=21) +
     geom_label(aes(x=mesure1, y=mesure2, label=label),size = 3, label.size=0, fill=NA) +
   theme_classic() +
@@ -1959,6 +1959,9 @@ gg_corrplot
 
 ```{r afe, echo=FALSE, fig.width=7, fig.height=5, out.width="100%"}
 bdd_poLCA_poly <- polychoric(bdd_poLCA_small, smooth = TRUE, global=FALSE)
+
+#Valeurs propres des 4 premiers axes
+#eigen(bdd_poLCA_poly$rho)$values[1:4]
 
 #Analyse en facteurs
 pauvFA2 <- fa(bdd_poLCA_poly$rho, nfactors = 2, rotate = "oblimin", fm = "ml", cor="poly", scores= "regression", missing = TRUE, impute = "median") 
@@ -2032,24 +2035,24 @@ bdd_CFA_rmnasup  <- bdd_logit %>%
          cov_prof_statut_act_inter = ifelse(prof_statut_act=="-Profession intermédiaire",1,0),
          cov_prof_statut_act_chom = ifelse(prof_statut_act=="-Chômeur",1,0),
          cov_prof_statut_act_ouv = ifelse(prof_statut_act=="-Ouvrier",1,0),
-         cov_prof_statut_act_commer = ifelse(prof_statut_act=="-Artisan commerçant",1,0),
+         cov_prof_statut_act_commer = ifelse(prof_statut_act=="-Artisan, commerçant",1,0),
          cov_prof_statut_act_employ = ifelse(prof_statut_act=="-Employé",1,0),
          cov_prof_statut_act_autrinac = ifelse(prof_statut_act=="-Autre inactif",1,0),
          cov_prof_statut_act_foyer = ifelse(prof_statut_act=="-Au foyer",1,0),
-         cov_prof_statut_act_cadre = ifelse(prof_statut_act=="-Cadre supérieur, profession libérale",1,0),
+         cov_prof_statut_act_cadre = ifelse(prof_statut_act=="-Cadre ou profession intellectuelle supérieure",1,0),
          cov_prof_statut_act_retr = ifelse(prof_statut_act=="-Retraité",1,0),
          cov_prof_statut_act_agri = ifelse(prof_statut_act=="-Agriculteur",1,0),
-         cov_prof_statut_act_commer = ifelse(prof_statut_act=="-Artisan commerçant",1,0),
+         cov_prof_statut_act_commer = ifelse(prof_statut_act=="-Artisan, commerçant",1,0),
          cov_age_tranche_1829 = ifelse(age_tranche=="-18 à 29 ans",1,0),
          cov_age_tranche_3039 = ifelse(age_tranche=="-30 à 39 ans",1,0),
          cov_age_tranche_4049 = ifelse(age_tranche=="-40 à 49 ans",1,0),
          cov_age_tranche_5059 = ifelse(age_tranche=="-50 à 59 ans",1,0),
          cov_age_tranche_6069 = ifelse(age_tranche=="-60 à 69 ans",1,0),
          cov_age_tranche_70 = ifelse(age_tranche=="-70 ans et plus",1,0),
-         cov_vie_fam_mono = ifelse(vie_fam=="-Chef famille monoparentale",1,0),
+         cov_vie_fam_mono = ifelse(vie_fam=="-Parent seul (enfants à charge)",1,0),
          cov_vie_fam_seul = ifelse(vie_fam=="-Vit seul",1,0),
-         cov_vie_fam_coupsansenf = ifelse(vie_fam=="-Membre du couple (pas d’enfants à charge)",1,0),
-         cov_vie_fam_coupenf = ifelse(vie_fam=="-Membre du couple (enfants à charge)",1,0),
+         cov_vie_fam_coupsansenf = ifelse(vie_fam=="-Vit en couple (pas d’enfants à charge)",1,0),
+         cov_vie_fam_coupenf = ifelse(vie_fam=="-Vit en couple (enfants à charge)",1,0),
          cov_vie_fam_autre = ifelse(vie_fam=="-Autre situation familiale",1,0),
          cov_vie_fam_enf = ifelse(vie_fam=="-Enfant",1,0)
   ) %>%
@@ -2213,6 +2216,13 @@ cov_vie_fam_enf   + cov_vie_fam_autre +  cov_sexe_homme
 fit_mimic_inter <- lavaan::cfa(pauv_model_mimic_inter, data = bdd_CFA_rmnasup,ordered=TRUE, orthogonal=FALSE,std.lv = TRUE)
 
 sum2 <- summary(fit_mimic_inter, standardized = TRUE, fit.measures = TRUE)
+
+
+f1 <- fitMeasures(fit_mimic_inter)
+f1[c("cfi", "rmsea","srmr")]
+#         cfi       rmsea        srmr 
+# 0.005730662 0.900855042 0.127399980
+
 ```
 
 ```{r tab41,  echo=FALSE, eval=TRUE}
@@ -2233,10 +2243,10 @@ tab_covariates_inter_cfa <- sum2$pe %>%
 "prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
  "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
  "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
-	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+	   libelle_mod = c("Agriculteur", "Artisan, commerçant", "Cadre ou profession intellectuelle supérieure", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
 "Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
- "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
- "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Vit en couple (pas d’enfants à charge)", "Vit en couple (enfants à charge)",
+ "Parent seul (enfants à charge)", "Enfant", "Autre situation familiale", "Femme", "Homme"),
            libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
 ) ,
     by="variable")  %>% 
@@ -2266,9 +2276,9 @@ tab_covariates_inter_cfa %>%
   latex_options = c("hold_position", "repeat_header"),
   repeat_header_text = "\\textit{(suite)}",
   repeat_header_continued = "\\textit{(suite en page suivante...)}"
-  ) %>%
-  kableExtra::footnote("* : significatif au seuil de 5 % ; ** : 1 % ; *** : 0,1 %.")
-
+  ) %>% 
+kableExtra::footnote(c("Statistiques d'ajustement du modèle : CFI = 0.006, RMSEA = 0.90, SRMR = 0.13",
+                          "* : significatif au seuil de $5 \\\\, \\\\%$ ; ** : $1 \\\\, \\\\%$ ; *** : $0,1 \\\\, \\\\%$."), escape = FALSE)
 ```
 
 
@@ -2494,10 +2504,10 @@ tab_covariates_global_cfa <- sum$pe %>%
 "prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
  "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
  "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
-	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+	   libelle_mod = c("Agriculteur", "Artisan, commerçant", "Cadre ou profession intellectuelle supérieure", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
 "Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
- "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
- "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Vit en couple (pas d’enfants à charge)", "Vit en couple (enfants à charge)",
+ "Parent seul (enfants à charge)", "Enfant", "Autre situation familiale", "Femme", "Homme"),
            libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
 ) ,
     by="variable")  %>% 
@@ -2527,10 +2537,10 @@ tab_covariates_global_cfa <- sum$pe %>%
 # "prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
 #  "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
 #  "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
-# 	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+# 	   libelle_mod = c("Agriculteur", "Artisan, commerçant", "Cadre ou profession intellectuelle supérieure", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
 # "Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
-#  "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
-#  "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+#  "60 à 69 ans", "70 ans et plus", "Vit seul", "Vit en couple (pas d’enfants à charge)", "Vit en couple (enfants à charge)",
+#  "Parent seul (enfants à charge)", "Enfant", "Autre situation familiale", "Femme", "Homme"),
 #            libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
 # ) ,
 #     by="variable")  %>% 
@@ -2607,10 +2617,10 @@ tab_covariates_global_cfa_new1 <- sum_new1$pe %>%
 "prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
  "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
  "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
-	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+	   libelle_mod = c("Agriculteur", "Artisan, commerçant", "Cadre ou profession intellectuelle supérieure", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
 "Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
- "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
- "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Vit en couple (pas d’enfants à charge)", "Vit en couple (enfants à charge)",
+ "Parent seul (enfants à charge)", "Enfant", "Autre situation familiale", "Femme", "Homme"),
            libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
 ) ,
     by="variable")  %>% 
@@ -2679,10 +2689,10 @@ tab_covariates_global_cfa_new2 <- sum_new2$pe %>%
 "prof_statut_act_retr", "prof_statut_act_foyer", "prof_statut_act_autrinac", "diplome_sans","diplome_bac", "diplome_bacplus2", "diplome_bacplus3", "age_tranche_1829","age_tranche_3039",
  "age_tranche_4049", "age_tranche_5059", "age_tranche_6069", "age_tranche_70", "vie_fam_seul", "vie_fam_coupsansenf", "vie_fam_coupenf",
  "vie_fam_mono", "vie_fam_enf", "vie_fam_autre","sexe_femme", "sexe_homme"),
-	   libelle_mod = c("Agriculteur", "Artisan commerçant", "Cadre supérieur, profession libérale", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
+	   libelle_mod = c("Agriculteur", "Artisan, commerçant", "Cadre ou profession intellectuelle supérieure", "Profession intermédiaire", "Employé", "Ouvrier", "Chômeur", "Retraité",
 "Au foyer", "Autre inactif", "CAP, BEP ou moins", "Baccalauréat", "Bac + 2", "Bac + 3 ou plus", "18 à 29 ans", "30 à 39 ans", "40 à 49 ans", "50 à 59 ans",
- "60 à 69 ans", "70 ans et plus", "Vit seul", "Membre du couple (pas d’enfants à charge)", "Membre du couple (enfants à charge)",
- "Chef famille monoparentale", "Enfant", "Autre situation familiale", "Femme", "Homme"),
+ "60 à 69 ans", "70 ans et plus", "Vit seul", "Vit en couple (pas d’enfants à charge)", "Vit en couple (enfants à charge)",
+ "Parent seul (enfants à charge)", "Enfant", "Autre situation familiale", "Femme", "Homme"),
            libelle_var=c("Situation professionnelle",rep("",9),"Niveau de diplôme le plus élevé",rep("",3), "Classe d'âge",rep("",5),"Situation familiale",rep("",5),"Sexe",rep("",1))
 ) ,
     by="variable")  %>% 
